@@ -2,9 +2,10 @@
 
 import NotificationItem from "./NotificationItem";
 import { CheckCheck } from "lucide-react";
+import type { Notification } from "@/types";
 
 interface NotificationDropdownProps {
-  notifications: any[];
+  notifications: Notification[];
   onMarkRead: (id: string) => void;
   onMarkAllRead: () => void;
 }

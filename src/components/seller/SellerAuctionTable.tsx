@@ -1,9 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import { Edit, Trash2, ImageOff } from "lucide-react";
+import type { Auction } from "@/types";
 
 interface SellerAuctionTableProps {
-  auctions: any[];
+  auctions: Auction[];
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 }
@@ -34,7 +36,13 @@ export default function SellerAuctionTable({ auctions, onEdit, onDelete }: Selle
             <tr key={auction.id}>
               <td>
                 {auction.product?.image ? (
-                  <img src={auction.product.image} alt="" className="w-12 h-12 rounded-lg object-cover" />
+                  <Image
+                    src={auction.product.image}
+                    alt=""
+                    width={48}
+                    height={48}
+                    className="w-12 h-12 rounded-lg object-cover"
+                  />
                 ) : (
                   <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
                     <ImageOff size={16} />
@@ -58,7 +66,7 @@ export default function SellerAuctionTable({ auctions, onEdit, onDelete }: Selle
                 </span>
               </td>
               <td className="text-gray-500 text-sm">
-                {auction.endTime ? new Date(auction.endTime).toLocaleDateString() : "—"}
+                {auction.endDate || (auction.endTime ? new Date(auction.endTime).toLocaleDateString() : "—")}
               </td>
               <td>
                 <div className="flex items-center gap-2">

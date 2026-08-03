@@ -3,9 +3,17 @@
 import { useState } from "react";
 import { CreditCard, Lock, Loader2 } from "lucide-react";
 
+interface PaymentData {
+  cardNumber: string;
+  expiry: string;
+  cvv: string;
+  name: string;
+  amount: number;
+}
+
 interface PaymentFormProps {
   amount: number;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: PaymentData) => void;
   loading?: boolean;
 }
 

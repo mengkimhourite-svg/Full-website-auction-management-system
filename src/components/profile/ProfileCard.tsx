@@ -1,4 +1,5 @@
 import { Calendar, Mail, Shield, User } from "lucide-react";
+import Image from "next/image";
 
 interface ProfileCardProps {
   user: {
@@ -15,7 +16,7 @@ export default function ProfileCard({ user }: ProfileCardProps) {
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center">
       <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-600 to-sky-500 flex items-center justify-center text-white text-3xl font-bold mx-auto overflow-hidden">
         {user.avatar ? (
-          <img src={user.avatar} alt="" className="w-full h-full object-cover" />
+          <Image src={user.avatar} alt="" width={80} height={80} className="w-full h-full object-cover" />
         ) : (
           <User size={36} />
         )}

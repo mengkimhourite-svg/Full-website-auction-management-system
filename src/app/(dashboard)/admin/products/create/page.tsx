@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Package, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import ProductImageUpload from "@/components/admin/ProductImageUpload";
 
 const CATEGORIES = ["Watches", "Jewelry", "Art", "Cars", "Wine", "Antiques"];
 
@@ -49,12 +50,12 @@ export default function AdminProductsCreatePage() {
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.message || "Failed to create product");
+        throw new Error(errData.error || errData.message || "Failed to create product");
       }
 
       router.push("/admin/products");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create product");
     } finally {
       setLoading(false);
     }
@@ -93,8 +94,11 @@ export default function AdminProductsCreatePage() {
         </div>
 
         <div>
-          <label className={labelClass}>Image URL</label>
-          <input name="image" value={form.image} onChange={handleChange} placeholder="https://example.com/image.jpg" className={inputClass} />
+          <label className={labelClass}>Product Image</label>
+          <ProductImageUpload
+            value={form.image}
+            onChange={(dataUrl) => setForm((prev) => ({ ...prev, image: dataUrl }))}
+          />
         </div>
 
         <div>

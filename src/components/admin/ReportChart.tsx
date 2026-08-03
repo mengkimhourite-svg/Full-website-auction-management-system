@@ -1,5 +1,7 @@
+import type { ReportSeriesItem } from "@/types";
+
 interface ReportChartProps {
-  data: any[];
+  data: (ReportSeriesItem & { label?: string; value?: number })[];
   title: string;
 }
 
@@ -22,7 +24,7 @@ export default function ReportChart({ data, title }: ReportChartProps) {
       <h3 className="text-sm font-semibold text-gray-700 mb-4">{title}</h3>
       <div className="flex items-end gap-3 h-48">
         {data.map((item, idx) => {
-          const height = maxValue > 0 ? (item.value / maxValue) * 100 : 0;
+          const height = maxValue > 0 ? ((item.value || 0) / maxValue) * 100 : 0;
           return (
             <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
               <span className="text-xs font-semibold text-gray-600">{item.value}</span>

@@ -24,8 +24,9 @@ export default function LoginForm() {
       if (role === "ADMIN") router.push("/admin");
       else if (role === "SELLER") router.push("/seller/auctions");
       else router.push("/");
-    } catch (err: any) {
-      setError(err?.response?.data?.error || "Invalid email or password");
+    } catch (err) {
+      const axiosError = err as { response?: { data?: { error?: string } } };
+      setError(axiosError?.response?.data?.error || "Invalid email or password");
     }
   }
 

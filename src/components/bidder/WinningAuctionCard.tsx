@@ -1,22 +1,26 @@
 "use client";
 
 import { CheckCircle, CreditCard, ImageOff } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
+import type { Auction, Product } from "@/types";
+
+type WonAuction = Auction & { paymentStatus?: string };
 
 interface WinningAuctionCardProps {
-  auction: any;
+  auction: WonAuction;
 }
 
 export default function WinningAuctionCard({ auction }: WinningAuctionCardProps) {
-  const product = auction.product || {};
+  const product = auction.product || ({} as Product);
   const paymentStatus = auction.paymentStatus || "PENDING";
 
   return (
     <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all">
       <div className="flex items-center gap-4 p-4">
-        <Link href={`/auctions/${auction.id}`} className="w-20 h-20 rounded-xl overflow-hidden shrink-0 no-underline">
+        <Link href={`/auctions/${auction.id}`} className="relative w-20 h-20 rounded-xl overflow-hidden shrink-0 no-underline">
           {product.image ? (
-            <img src={product.image} alt={product.title} className="w-full h-full object-cover" />
+            <Image src={product.image} alt={product.title} fill sizes="80px" className="object-cover" />
           ) : (
             <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
               <ImageOff size={20} />

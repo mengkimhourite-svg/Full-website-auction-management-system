@@ -1,7 +1,8 @@
 import PaymentStatus from "./PaymentStatus";
+import type { Payment } from "@/types";
 
 interface PaymentHistoryProps {
-  payments: any[];
+  payments: Payment[];
 }
 
 export default function PaymentHistory({ payments }: PaymentHistoryProps) {

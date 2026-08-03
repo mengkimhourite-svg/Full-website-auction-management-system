@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import { BarChart3, TrendingUp, Download, Users, Gavel, DollarSign, Wallet } from "lucide-react";
 import DashboardStats from "@/components/admin/DashboardStats";
 import ReportChart from "@/components/admin/ReportChart";
+import type { MonthlyReport } from "@/types";
 
 export default function AdminReportsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [report, setReport] = useState<any>(null);
+  const [report, setReport] = useState<MonthlyReport | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -19,8 +20,8 @@ export default function AdminReportsPage() {
         if (!res.ok) throw new Error("Failed to fetch reports");
         const json = await res.json();
         setReport(json.data || json.report || json);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch reports");
       } finally {
         setLoading(false);
       }

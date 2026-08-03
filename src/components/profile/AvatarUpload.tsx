@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Image from "next/image";
 import { Camera, Loader2 } from "lucide-react";
 
 interface AvatarUploadProps {
@@ -25,9 +26,11 @@ export default function AvatarUpload({ currentAvatar, onUpload, loading }: Avata
       <div className="relative">
         <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-600 to-sky-500 flex items-center justify-center text-white text-3xl font-bold overflow-hidden">
           {preview || currentAvatar ? (
-            <img
+            <Image
               src={preview || currentAvatar || ""}
               alt="Avatar"
+              width={96}
+              height={96}
               className="w-full h-full object-cover"
             />
           ) : (

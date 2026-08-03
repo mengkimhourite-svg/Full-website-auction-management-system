@@ -23,7 +23,7 @@ export default function SellerHeader() {
               <p className="text-sm font-semibold text-gray-900">{user.name}</p>
               <span className="text-xs text-gray-500">{user.role}</span>
             </div>
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-600 to-sky-500 flex items-center justify-center text-white">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white">
               <User size={16} />
             </div>
           </div>

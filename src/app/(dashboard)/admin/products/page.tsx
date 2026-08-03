@@ -2,11 +2,44 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Package, Plus, Edit3, Trash2, ImageOff } from "lucide-react";
+import type { Auction, Product } from "@/types";
+
+interface ExtractedProduct {
+  id: string;
+  productId: string;
+  title: string;
+  description: string;
+  image: string;
+  category: string;
+  seller: string;
+  sellerEmail: string;
+  hasAuction: boolean;
+  auctionId: string;
+}
+
+type AuctionWithProduct = Auction & { product: Product; category?: string };
+
+const extractProducts = (auctions: Auction[]): ExtractedProduct[] =>
+  auctions
+    .filter((a): a is AuctionWithProduct => !!a.product)
+    .map((a) => ({
+      id: a.id,
+      productId: a.product.id,
+      title: a.product.title || "Untitled",
+      description: a.product.description || "",
+      image: a.product.image || "",
+      category: a.product.category || a.category || "Uncategorized",
+      seller: a.product.seller?.name || a.product.seller?.email || "Unknown",
+      sellerEmail: a.product.seller?.email || "",
+      hasAuction: true,
+      auctionId: a.id,
+    }));
 
 export default function AdminProductsPage() {
   const router = useRouter();
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<ExtractedProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -17,24 +50,10 @@ export default function AdminProductsPage() {
       const res = await fetch("/api/auctions");
       if (!res.ok) throw new Error("Failed to fetch products");
       const json = await res.json();
-      const auctions = json.data || [];
-      const extracted = auctions
-        .filter((a: any) => a.product)
-        .map((a: any) => ({
-          id: a.id,
-          productId: a.product.id,
-          title: a.product.title || "Untitled",
-          description: a.product.description || "",
-          image: a.product.image || "",
-          category: a.product.category || a.category || "Uncategorized",
-          seller: a.product.seller?.name || a.product.seller?.email || "Unknown",
-          sellerEmail: a.product.seller?.email || "",
-          hasAuction: true,
-          auctionId: a.id,
-        }));
-      setProducts(extracted);
-    } catch (err: any) {
-      setError(err.message);
+      const auctions: Auction[] = json.data || [];
+      setProducts(extractProducts(auctions));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch products");
     } finally {
       setLoading(false);
     }
@@ -46,25 +65,11 @@ export default function AdminProductsPage() {
         const res = await fetch("/api/auctions");
         if (!res.ok) throw new Error("Failed to fetch products");
         const json = await res.json();
-        const auctions = json.data || [];
-        const extracted = auctions
-          .filter((a: any) => a.product)
-          .map((a: any) => ({
-            id: a.id,
-            productId: a.product.id,
-            title: a.product.title || "Untitled",
-            description: a.product.description || "",
-            image: a.product.image || "",
-            category: a.product.category || a.category || "Uncategorized",
-            seller: a.product.seller?.name || a.product.seller?.email || "Unknown",
-            sellerEmail: a.product.seller?.email || "",
-            hasAuction: true,
-            auctionId: a.id,
-          }));
-        setProducts(extracted);
+        const auctions: Auction[] = json.data || [];
+        setProducts(extractProducts(auctions));
         setError("");
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch products");
       } finally {
         setLoading(false);
       }
@@ -77,8 +82,8 @@ export default function AdminProductsPage() {
       const res = await fetch(`/api/auctions/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete product");
       fetchProducts();
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to delete product");
     }
   };
 
@@ -149,7 +154,7 @@ export default function AdminProductsPage() {
                 <tr key={product.productId || product.id}>
                   <td>
                     {product.image ? (
-                      <img src={product.image} alt={product.title} className="w-12 h-12 rounded-lg object-cover" />
+                      <Image src={product.image} alt={product.title} width={48} height={48} className="w-12 h-12 rounded-lg object-cover" onError={(e) => (e.currentTarget.style.display = "none")} />
                     ) : (
                       <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
                         <ImageOff size={16} />

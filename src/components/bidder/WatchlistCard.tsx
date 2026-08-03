@@ -1,24 +1,28 @@
 "use client";
 
 import { Clock, Trash2, TrendingUp, ImageOff } from "lucide-react";
+import Image from "next/image";
 import CountdownTimer from "@/components/auction/CountdownTimer";
+import type { Auction, Product } from "@/types";
 
 interface WatchlistCardProps {
-  auction: any;
+  auction: Auction;
   onRemove: (id: string) => void;
 }
 
 export default function WatchlistCard({ auction, onRemove }: WatchlistCardProps) {
-  const product = auction.product || {};
+  const product = auction.product || ({} as Product);
 
   return (
     <div className="bg-white rounded-2xl shadow-md overflow-hidden group hover:shadow-xl transition-all duration-300">
       <div className="relative h-48 overflow-hidden">
         {product.image ? (
-          <img
+          <Image
             src={product.image}
             alt={product.title || "Auction item"}
-            className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+            fill
+            sizes="(max-width: 768px) 100vw, 400px"
+            className="object-cover group-hover:scale-110 transition duration-500"
           />
         ) : (
           <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">

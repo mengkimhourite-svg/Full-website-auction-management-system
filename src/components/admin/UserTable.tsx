@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Edit, Ban, User as UserIcon, Check, X } from "lucide-react";
 import UserStatusBadge from "./UserStatusBadge";
+import type { User, Role } from "@/types";
 
 interface UserTableProps {
-  users: any[];
+  users: User[];
   onBan: (id: string) => void;
-  onUpdate: (id: string, data: any) => void;
+  onUpdate: (id: string, data: { name: string; role: Role }) => void;
 }
 
 const roles = ["BIDDER", "SELLER", "ADMIN"];
@@ -15,7 +17,7 @@ const roles = ["BIDDER", "SELLER", "ADMIN"];
 export default function UserTable({ users, onBan, onUpdate }: UserTableProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
-  const [editRole, setEditRole] = useState("BIDDER");
+  const [editRole, setEditRole] = useState<Role>("BIDDER");
 
   if (!users.length) {
     return (
@@ -23,7 +25,7 @@ export default function UserTable({ users, onBan, onUpdate }: UserTableProps) {
     );
   }
 
-  const startEdit = (user: any) => {
+  const startEdit = (user: User) => {
     setEditingId(user.id);
     setEditName(user.name || "");
     setEditRole(user.role || "BIDDER");
@@ -33,7 +35,7 @@ export default function UserTable({ users, onBan, onUpdate }: UserTableProps) {
     setEditingId(null);
   };
 
-  const saveEdit = (user: any) => {
+  const saveEdit = (user: User) => {
     const name = editName.trim();
     if (!name) return;
     onUpdate(user.id, { name, role: editRole });
@@ -62,7 +64,7 @@ export default function UserTable({ users, onBan, onUpdate }: UserTableProps) {
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-600 to-sky-500 flex items-center justify-center text-white text-xs font-bold">
                       {user.avatar ? (
-                        <img src={user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
+                        <Image src={user.avatar} alt="" width={32} height={32} className="w-full h-full rounded-full object-cover" />
                       ) : (
                         <UserIcon size={14} />
                       )}
@@ -84,7 +86,7 @@ export default function UserTable({ users, onBan, onUpdate }: UserTableProps) {
                   {isEditing ? (
                     <select
                       value={editRole}
-                      onChange={(e) => setEditRole(e.target.value)}
+                      onChange={(e) => setEditRole(e.target.value as Role)}
                       className="px-2 py-1 border border-gray-200 rounded-lg text-sm outline-none focus:border-indigo-500"
                     >
                       {roles.map((r) => (

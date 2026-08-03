@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Gavel, Plus, RefreshCw } from "lucide-react";
 import AuctionTable from "@/components/admin/AuctionTable";
+import type { Auction } from "@/types";
 
 export default function AdminAuctionsPage() {
   const router = useRouter();
-  const [auctions, setAuctions] = useState<any[]>([]);
+  const [auctions, setAuctions] = useState<Auction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -18,8 +19,8 @@ export default function AdminAuctionsPage() {
       const json = await res.json();
       setAuctions(json.data || json.auctions || json || []);
       setError("");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch auctions");
     } finally {
       setLoading(false);
     }
@@ -33,8 +34,8 @@ export default function AdminAuctionsPage() {
         const json = await res.json();
         setAuctions(json.data || json.auctions || json || []);
         setError("");
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch auctions");
       } finally {
         setLoading(false);
       }
@@ -50,8 +51,8 @@ export default function AdminAuctionsPage() {
       });
       if (!res.ok) throw new Error("Failed to approve auction");
       fetchAuctions();
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to approve auction");
     }
   };
 
@@ -61,8 +62,8 @@ export default function AdminAuctionsPage() {
       const res = await fetch(`/api/auctions/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete auction");
       fetchAuctions();
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to delete auction");
     }
   };
 

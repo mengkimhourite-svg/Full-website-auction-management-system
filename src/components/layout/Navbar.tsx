@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { Bell, ChevronDown, LayoutDashboard, LogIn, LogOut, Menu, User, UserPlus, X } from "lucide-react";
+import { Bell, ChevronDown, LayoutDashboard, LogIn, LogOut, Menu, User as UserIcon, UserPlus, X } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import type { User } from "@/types";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -17,7 +19,7 @@ const transparentRoutes = ["/"];
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
@@ -64,19 +66,21 @@ export default function Navbar() {
   }
 
   const linkClass = (active: boolean) =>
-    `nav-link text-sm font-medium transition-colors ${isTransparent ? (active ? "text-white font-semibold" : "text-white/90 hover:text-white") : active ? "text-indigo-600" : "text-gray-600 hover:text-indigo-600"}`;
+    `nav-link text-sm font-medium transition-colors ${isTransparent ? (active ? "text-white font-semibold" : "text-white/90 hover:text-white") : active ? "text-indigo-700" : "text-gray-600 hover:text-indigo-700"}`;
 
   return (
     <nav className={`navbar ${isTransparent ? "navbar-transparent" : "navbar-scrolled"} animate-fade-down`}>
       <div className="navbar-inner">
         <div className="flex items-center gap-10">
-          <Link href="/" className="flex items-center gap-2.5 no-underline">
-            <img
+          <Link href="/" className="flex items-center gap-2.5 no-underline group">
+            <Image
               src="/logo.png"
               alt="AuctionPro logo"
-              className="w-10 h-10 object-contain rounded-xl shadow-lg"
+              width={40}
+              height={40}
+              className="w-10 h-10 object-contain rounded-xl shadow-lg ring-1 ring-black/5 group-hover:scale-105 transition-transform"
             />
-            <span className={`text-xl font-extrabold tracking-tight hidden lg:inline ${isTransparent ? "text-white" : "bg-linear-to-r from-indigo-600 to-sky-500 bg-clip-text text-transparent"}`}>
+            <span className={`text-xl font-extrabold tracking-tight hidden lg:inline ${isTransparent ? "text-white" : "bg-linear-to-r from-indigo-700 via-indigo-600 to-purple-600 bg-clip-text text-transparent"}`}>
               AuctionPro
             </span>
           </Link>
@@ -99,10 +103,10 @@ export default function Navbar() {
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-colors ${isTransparent ? "bg-white/15 text-white hover:bg-white/25" : "bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-colors ${isTransparent ? "bg-white/15 text-white hover:bg-white/25" : "bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
                   }`}
               >
-                <User size={16} />
+                <UserIcon size={16} />
                 <span className="text-sm font-semibold">{user.name}</span>
                 <ChevronDown size={14} className={`transition-transform ${userMenuOpen ? "rotate-180" : ""}`} />
               </button>
@@ -115,14 +119,14 @@ export default function Navbar() {
                   </div>
                   {[
                     { label: "Dashboard", href: getDashboardLink(), icon: LayoutDashboard },
-                    { label: "Profile", href: "/profile", icon: User },
+                    { label: "Profile", href: "/profile", icon: UserIcon },
                     { label: "Notifications", href: "/notifications", icon: Bell },
                   ].map(({ label, href, icon: Icon }) => (
                     <Link
                       key={label}
                       href={href}
                       onClick={() => setUserMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
                     >
                       <Icon size={16} /> {label}
                     </Link>
@@ -142,7 +146,7 @@ export default function Navbar() {
               <Link
                 href="/login"
                 aria-label="Login"
-                className={`flex items-center justify-center gap-2 px-3 lg:px-5 py-2.5 text-sm font-semibold rounded-xl border-2 transition-colors ${isTransparent ? "border-white/30 text-white hover:bg-white/10" : "border-indigo-600 text-indigo-600 hover:bg-indigo-50"
+                className={`flex items-center justify-center gap-2 px-3 lg:px-5 py-2.5 text-sm font-semibold rounded-xl border-2 transition-colors ${isTransparent ? "border-white/30 text-white hover:bg-white/10" : "border-indigo-600 text-indigo-700 hover:bg-indigo-50"
                   }`}
               >
                 <LogIn size={16} />
@@ -151,7 +155,7 @@ export default function Navbar() {
               <Link
                 href="/register"
                 aria-label="Register"
-                className="flex items-center justify-center gap-2 px-3 lg:px-5 py-2.5 text-sm font-semibold text-white rounded-xl bg-linear-to-r from-indigo-600 to-purple-600 shadow-lg hover:shadow-xl transition-shadow"
+                className="flex items-center justify-center gap-2 px-3 lg:px-5 py-2.5 text-sm font-semibold text-white rounded-xl bg-linear-to-r from-indigo-700 to-indigo-600 shadow-lg shadow-indigo-900/20 hover:shadow-xl transition-all hover:-translate-y-0.5"
               >
                 <UserPlus size={16} />
                 <span className="hidden lg:inline">Register</span>
@@ -176,7 +180,7 @@ export default function Navbar() {
                 key={href}
                 href={href}
                 onClick={() => setMobileOpen(false)}
-                className={`px-4 py-3 rounded-xl text-sm font-medium transition-colors ${pathname === href ? "text-indigo-600 bg-indigo-50" : "text-gray-700 hover:bg-indigo-50 hover:text-indigo-600"}`}
+                className={`px-4 py-3 rounded-xl text-sm font-medium transition-colors ${pathname === href ? "text-indigo-700 bg-indigo-50" : "text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"}`}
               >
                 {label}
               </Link>
@@ -200,7 +204,7 @@ export default function Navbar() {
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                 >
-                  <User size={16} /> Profile
+                  <UserIcon size={16} /> Profile
                 </Link>
                 <button
                   onClick={() => { handleLogout(); setMobileOpen(false); }}
@@ -214,14 +218,14 @@ export default function Navbar() {
                 <Link
                   href="/login"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors"
+                  className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-colors"
                 >
                   <LogIn size={16} /> Login
                 </Link>
                 <Link
                   href="/register"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-white bg-linear-to-r from-indigo-600 to-purple-600 transition-colors"
+                  className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-white bg-linear-to-r from-indigo-700 to-indigo-600 transition-colors"
                 >
                   <UserPlus size={16} /> Register
                 </Link>

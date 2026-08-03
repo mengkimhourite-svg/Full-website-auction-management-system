@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Gavel, Activity, User, X, LogOut } from "lucide-react";
 
@@ -20,34 +21,34 @@ export default function BidderSidebar({ open, onClose }: BidderSidebarProps) {
 
   return (
     <>
-      {open && <div className="fixed inset-0 bg-black/30 z-40 lg:hidden" onClick={onClose} />}
+      {open && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={onClose} />}
       <aside className={`dashboard-sidebar ${open ? "open" : ""}`}>
-        <div className="flex items-center justify-between p-5 border-b border-gray-100">
+        <div className="flex items-center justify-between p-5 border-b border-white/10">
           <Link href="/" className="flex items-center gap-2.5 no-underline">
-            <img
+            <Image
               src="/logo.png"
               alt="AuctionPro logo"
-              className="w-9 h-9 object-contain rounded-xl shadow-md"
+              width={36}
+              height={36}
+              className="w-9 h-9 object-contain rounded-xl shadow-md ring-1 ring-white/10"
             />
-            <span className="text-base font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Bidder</span>
+            <span className="text-base font-extrabold bg-linear-to-r from-purple-300 to-purple-200 bg-clip-text text-transparent">Bidder</span>
           </Link>
-          <button onClick={onClose} className="lg:hidden p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
+          <button onClick={onClose} className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:bg-white/10 transition-colors">
             <X size={18} />
           </button>
         </div>
 
         <div className="px-3 py-4">
-          <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Bidder Panel</p>
-          <nav className="space-y-1">
+          <p className="sidebar-section-label mb-3">Bidder Panel</p>
+          <nav className="space-y-1.5">
             {links.map(({ label, href, icon: Icon }) => {
               const isActive = pathname === href || pathname.startsWith(href + "/");
               return (
                 <Link key={href} href={href} onClick={onClose}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                    isActive ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                  }`}
+                  className={`sidebar-link ${isActive ? "sidebar-link-active" : ""}`}
                 >
-                  <Icon size={18} className={isActive ? "text-white" : "text-gray-400"} />
+                  <Icon size={18} className={isActive ? "text-purple-300" : ""} />
                   {label}
                 </Link>
               );
@@ -55,9 +56,9 @@ export default function BidderSidebar({ open, onClose }: BidderSidebarProps) {
           </nav>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-gray-100">
-          <Link href="/" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-all">
-            <LogOut size={18} className="text-gray-400" />
+        <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-white/10">
+          <Link href="/" className="sidebar-link text-slate-300/70">
+            <LogOut size={18} className="text-slate-400" />
             Back to Website
           </Link>
         </div>

@@ -1,9 +1,10 @@
 "use client";
 
 import { Clock } from "lucide-react";
+import type { Bid } from "@/types";
 
 interface BidHistoryProps {
-  bids: any[];
+  bids: Bid[];
 }
 
 export default function BidHistory({ bids }: BidHistoryProps) {

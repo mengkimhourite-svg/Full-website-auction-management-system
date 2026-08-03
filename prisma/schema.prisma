@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
@@ -26,7 +26,7 @@ enum PaymentStatus {
 }
 
 model User {
-  id        String   @id @default(cuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   email     String   @unique
   password  String
@@ -45,14 +45,14 @@ model User {
 }
 
 model Product {
-  id          String  @id @default(cuid())
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
   title       String
-  description String  @db.Text
+  description String
   image       String?
   category    String  @default("General")
 
-  sellerId String
-  seller   User     @relation(fields: [sellerId], references: [id])
+  sellerId String      @db.ObjectId
+  seller   User        @relation(fields: [sellerId], references: [id])
   auction  Auction?
 
   createdAt DateTime @default(now())
@@ -60,18 +60,18 @@ model Product {
 }
 
 model Auction {
-  id           String        @id @default(cuid())
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
   startPrice   Float
   currentPrice Float
   startTime    DateTime
   endTime      DateTime
   status       AuctionStatus @default(UPCOMING)
 
-  productId String  @unique
+  productId String  @unique @db.ObjectId
   product   Product @relation(fields: [productId], references: [id])
 
-  bids     Bid[]
-  payments Payment[]
+  bids      Bid[]
+  payments  Payment[]
   watchlist Watchlist[]
 
   createdAt DateTime @default(now())
@@ -79,48 +79,48 @@ model Auction {
 }
 
 model Bid {
-  id        String   @id @default(cuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   amount    Float
 
-  userId    String
-  user      User    @relation(fields: [userId], references: [id])
+  userId    String @db.ObjectId
+  user      User   @relation(fields: [userId], references: [id])
 
-  auctionId String
+  auctionId String  @db.ObjectId
   auction   Auction @relation(fields: [auctionId], references: [id])
 
   createdAt DateTime @default(now())
 }
 
 model Payment {
-  id     String        @id @default(cuid())
+  id     String        @id @default(auto()) @map("_id") @db.ObjectId
   amount Float
   status PaymentStatus @default(PENDING)
   method String        @default("card")
 
-  userId    String
+  userId    String  @db.ObjectId
   user      User    @relation(fields: [userId], references: [id])
 
-  auctionId String
+  auctionId String  @db.ObjectId
   auction   Auction @relation(fields: [auctionId], references: [id])
 
   createdAt DateTime @default(now())
 }
 
 model Notification {
-  id      String  @id @default(cuid())
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
   message String
   read    Boolean @default(false)
 
-  userId String
+  userId String @db.ObjectId
   user   User   @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
 }
 
 model Watchlist {
-  id        String   @id @default(cuid())
-  userId    String
-  auctionId String
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  auctionId String   @db.ObjectId
 
   user    User    @relation(fields: [userId], references: [id])
   auction Auction @relation(fields: [auctionId], references: [id])

@@ -1,25 +1,29 @@
 "use client";
 
+import Image from "next/image";
 import { Clock, Edit, Trash2, ImageOff, Users } from "lucide-react";
 import CountdownTimer from "@/components/auction/CountdownTimer";
+import type { Auction, Product } from "@/types";
 
 interface SellerAuctionCardProps {
-  auction: any;
+  auction: Auction;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
 export default function SellerAuctionCard({ auction, onEdit, onDelete }: SellerAuctionCardProps) {
-  const product = auction.product || {};
+  const product: Partial<Product> = auction.product || {};
 
   return (
     <div className="bg-white rounded-2xl shadow-md overflow-hidden group hover:shadow-xl transition-all">
       <div className="relative h-48 overflow-hidden">
         {product.image ? (
-          <img
+          <Image
             src={product.image}
-            alt={product.title}
-            className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+            alt={product.title || "Auction image"}
+            fill
+            className="object-cover group-hover:scale-110 transition duration-500"
+            sizes="(max-width: 768px) 100vw, 33vw"
           />
         ) : (
           <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">

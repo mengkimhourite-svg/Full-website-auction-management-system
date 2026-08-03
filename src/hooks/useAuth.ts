@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import type { AxiosError } from 'axios';
 import { loginUser, logoutUser, getCurrentUser } from '@/services/auth.service';
 
 export interface User {
@@ -35,8 +36,11 @@ export const useAuth = () => {
             const userData = await loginUser(email, password);
             setUser(userData);
             return userData;
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Invalid credentials.');
+        } catch (err) {
+            const message =
+                (err as AxiosError<{ message?: string }>).response?.data?.message ||
+                'Invalid credentials.';
+            setError(message);
             throw err;
         }
     };

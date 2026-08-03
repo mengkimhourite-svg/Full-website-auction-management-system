@@ -7,12 +7,23 @@ import { ArrowLeft, CheckCircle, AlertCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import CheckoutSummary from "@/components/payment/CheckoutSummary";
 import PaymentForm from "@/components/payment/PaymentForm";
+import type { Auction } from "@/types";
+
+type CheckoutAuction = Auction & { title?: string };
+
+type PaymentData = {
+  cardNumber: string;
+  expiry: string;
+  cvv: string;
+  name: string;
+  amount: number;
+};
 
 export default function CheckoutPage() {
   const searchParams = useSearchParams();
   const { user } = useAuth();
   const auctionId = searchParams.get("auctionId");
-  const [auction, setAuction] = useState<any>(null);
+  const [auction, setAuction] = useState<CheckoutAuction | null>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState("");
@@ -34,7 +45,7 @@ export default function CheckoutPage() {
       .finally(() => setLoading(false));
   }, [auctionId]);
 
-  const handlePayment = async (paymentData: any) => {
+  const handlePayment = async (paymentData: PaymentData) => {
     setError("");
     setProcessing(true);
 
@@ -44,7 +55,6 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           auctionId,
-          amount: auction?.currentPrice || 0,
           userId: user?.id,
           ...paymentData,
         }),
@@ -56,8 +66,8 @@ export default function CheckoutPage() {
       }
 
       setSuccess(true);
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setProcessing(false);
     }

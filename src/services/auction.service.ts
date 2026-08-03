@@ -1,18 +1,26 @@
 import axiosInstance from './api';
+import type { Auction } from '@/types';
 
-export interface Auction {
-  id: string;
-  title: string;
-  description: string;
-  startingPrice: number;
-  currentPrice: number;
+export type { Auction } from '@/types';
+
+export interface CreateAuctionInput {
+  productTitle: string;
+  productDescription: string;
+  productImage: string | null;
   category: string;
-  endDate: string;
-  image?: string | null;
-  status: string;
-  sellerId: string;
-  createdAt: string;
-  bids?: any[];
+  startPrice: number;
+  endTime: string;
+  startTime?: string;
+}
+
+export interface UpdateAuctionInput {
+  productTitle?: string;
+  productDescription?: string;
+  productImage?: string | null;
+  category?: string;
+  startPrice?: number;
+  endTime?: string;
+  startTime?: string;
 }
 
 export const getAuctions = async (): Promise<Auction[]> => {
@@ -30,12 +38,12 @@ export const searchAuctions = async (query: string): Promise<Auction[]> => {
   return res.data.data;
 };
 
-export const createAuction = async (data: any): Promise<Auction> => {
+export const createAuction = async (data: CreateAuctionInput): Promise<Auction> => {
   const res = await axiosInstance.post('/api/auctions', data);
   return res.data.data;
 };
 
-export const updateAuction = async (id: string, data: any): Promise<Auction> => {
+export const updateAuction = async (id: string, data: UpdateAuctionInput): Promise<Auction> => {
   const res = await axiosInstance.put(`/api/auctions/${id}`, data);
   return res.data.data;
 };

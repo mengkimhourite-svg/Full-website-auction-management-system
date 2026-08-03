@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Save, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import ProductImageUpload from "@/components/admin/ProductImageUpload";
 
 const CATEGORIES = ["Watches", "Jewelry", "Art", "Cars", "Wine", "Antiques"];
 
@@ -35,8 +36,8 @@ export default function AdminProductsEditPage() {
           image: auction.product?.image || "",
           category: auction.product?.category || auction.category || "",
         });
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch auction");
       } finally {
         setLoading(false);
       }
@@ -74,8 +75,8 @@ export default function AdminProductsEditPage() {
       }
 
       router.push("/admin/products");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update product");
     } finally {
       setSaving(false);
     }
@@ -131,8 +132,11 @@ export default function AdminProductsEditPage() {
         </div>
 
         <div>
-          <label className={labelClass}>Image URL</label>
-          <input name="image" value={form.image} onChange={handleChange} placeholder="https://example.com/image.jpg" className={inputClass} />
+          <label className={labelClass}>Product Image</label>
+          <ProductImageUpload
+            value={form.image}
+            onChange={(dataUrl) => setForm((prev) => ({ ...prev, image: dataUrl }))}
+          />
         </div>
 
         <div>

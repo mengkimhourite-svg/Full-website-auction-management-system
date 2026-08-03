@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/db";
+import { prisma } from "@/lib/prisma"; // កែពី "@/lib/db"
 import { getAuthUser } from "@/lib/auth";
-import { syncAuctionStatuses } from "@/lib/auction";
+import { syncAuctionStatuses, serializeAuction, cleanText, cleanOptionalText } from "@/lib/auction";
 
 export async function GET(
   request: NextRequest,
@@ -52,7 +52,7 @@ export async function GET(
     }
 
     return NextResponse.json(
-      { success: true, data: auction },
+      { success: true, data: serializeAuction(auction) },
       { status: 200 }
     );
   } catch {
@@ -92,10 +92,28 @@ export async function PUT(
     const body = await request.json();
 
     const data: Record<string, unknown> = {};
-    if (body.startPrice !== undefined) data.startPrice = body.startPrice;
-    if (body.currentPrice !== undefined) data.currentPrice = body.currentPrice;
+    if (body.startPrice !== undefined) {
+      const price = Number(body.startPrice);
+      if (!Number.isFinite(price) || price <= 0) {
+        return NextResponse.json({ success: false, error: "startPrice must be a positive number" }, { status: 400 });
+      }
+      data.startPrice = price;
+    }
+    if (body.currentPrice !== undefined) {
+      const price = Number(body.currentPrice);
+      if (!Number.isFinite(price) || price < 0) {
+        return NextResponse.json({ success: false, error: "currentPrice must be a non-negative number" }, { status: 400 });
+      }
+      data.currentPrice = price;
+    }
     if (body.endTime !== undefined) data.endTime = new Date(body.endTime);
-    if (body.status !== undefined) data.status = body.status;
+    if (body.status !== undefined) {
+      const status = cleanText(body.status, "");
+      if (!["UPCOMING", "ACTIVE", "ENDED"].includes(status)) {
+        return NextResponse.json({ success: false, error: "Invalid status" }, { status: 400 });
+      }
+      data.status = status;
+    }
 
     const auction = await prisma.$transaction(async (tx) => {
       await tx.auction.update({
@@ -113,10 +131,10 @@ export async function PUT(
         await tx.product.update({
           where: { id: existing.productId },
           data: {
-            ...(body.productTitle !== undefined && { title: body.productTitle }),
-            ...(body.productDescription !== undefined && { description: body.productDescription }),
-            ...(body.productImage !== undefined && { image: body.productImage }),
-            ...(body.category !== undefined && { category: body.category }),
+            ...(body.productTitle !== undefined && { title: cleanText(body.productTitle, "") }),
+            ...(body.productDescription !== undefined && { description: cleanText(body.productDescription, "") }),
+            ...(body.productImage !== undefined && { image: cleanOptionalText(body.productImage) }),
+            ...(body.category !== undefined && { category: cleanText(body.category, "General") }),
           },
         });
       }
@@ -128,7 +146,7 @@ export async function PUT(
     });
 
     return NextResponse.json(
-      { success: true, data: auction },
+      { success: true, data: auction ? serializeAuction(auction) : null },
       { status: 200 }
     );
   } catch {
@@ -139,6 +157,7 @@ export async function PUT(
   }
 }
 
+// នេះជាកូដ DELETE ថ្មីដែលអ្នកបានផ្ញើមក ត្រូវបានដាក់បញ្ចូលនៅទីនេះ
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -156,27 +175,28 @@ export async function DELETE(
     });
 
     if (!auction) {
-      return NextResponse.json(
-        { success: false, error: "Auction not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: "Auction not found" }, { status: 404 });
     }
 
     if (user.role !== "ADMIN" && auction.product.sellerId !== user.id) {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 
-    await prisma.bid.deleteMany({ where: { auctionId: id } });
-    await prisma.payment.deleteMany({ where: { auctionId: id } });
-    await prisma.watchlist.deleteMany({ where: { auctionId: id } });
-    await prisma.auction.delete({ where: { id } });
-    await prisma.product.delete({ where: { id: auction.productId } });
+    // ប្រើ Transaction ដើម្បីលុបទាំងអស់គ្នាជាមួយគ្នា
+    await prisma.$transaction([
+      prisma.bid.deleteMany({ where: { auctionId: id } }),
+      prisma.payment.deleteMany({ where: { auctionId: id } }),
+      prisma.watchlist.deleteMany({ where: { auctionId: id } }),
+      prisma.auction.delete({ where: { id } }),
+      prisma.product.delete({ where: { id: auction.productId } }),
+    ]);
 
     return NextResponse.json(
       { success: true, data: { message: "Auction and associated product deleted" } },
       { status: 200 }
     );
-  } catch {
+  } catch (error) {
+    console.error("DELETE Error:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: 500 }

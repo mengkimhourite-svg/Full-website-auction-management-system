@@ -5,6 +5,8 @@ import { Search, SlidersHorizontal, AlertCircle, Sparkles } from "lucide-react";
 import AuctionGrid from "@/components/auction/AuctionGrid";
 import FilterPanel from "@/components/search/FilterPanel";
 import SortDropdown from "@/components/search/SortDropdown";
+import Reveal from "@/components/animations/Reveal";
+import type { Auction } from "@/types";
 
 const categories = ["Watches", "Jewelry", "Art", "Cars", "Wine", "Antiques", "Collectibles", "Electronics"];
 const sortOptions = [
@@ -14,8 +16,14 @@ const sortOptions = [
   { label: "Ending Soon", value: "ending" },
 ];
 
+type AuctionItem = Auction & {
+  title?: string;
+  description?: string;
+  category?: string;
+};
+
 export default function AuctionsPage() {
-  const [auctions, setAuctions] = useState<any[]>([]);
+  const [auctions, setAuctions] = useState<AuctionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -74,23 +82,26 @@ export default function AuctionsPage() {
   return (
     <div className="min-h-screen bg-white pt-24">
       {/* Hero Banner */}
-      <section className="bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white py-16 lg:py-20 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.06]"
-          style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)", backgroundSize: "64px 64px" }} />
-        <div className="absolute -top-32 -right-32 w-96 h-96 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto">
-            <span className="eyebrow eyebrow-dark mb-5">
+      <section className="bg-linear-to-br from-slate-900 via-indigo-950 to-slate-900 text-white py-20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <Reveal variant="scale" className="mb-5">
+            <span className="eyebrow eyebrow-dark">
               <Sparkles size={14} className="text-yellow-400" /> Browse Auctions
             </span>
-            <h1 className="text-4xl lg:text-6xl font-extrabold tracking-tight">Discover & Bid</h1>
-            <p className="text-white/60 mt-4 text-lg max-w-xl mx-auto">Find exclusive items from premium sellers around the world</p>
-          </div>
+          </Reveal>
+          <Reveal delay={120}>
+            <h1 className="text-4xl lg:text-6xl font-extrabold tracking-tight">Discover &amp; Bid</h1>
+          </Reveal>
+          <Reveal delay={240}>
+            <p className="text-white/60 mt-4 text-lg max-w-2xl mx-auto">
+              Find exclusive items from premium sellers around the world
+            </p>
+          </Reveal>
         </div>
       </section>
 
       {/* Search & Filters */}
-      <section className="border-b border-gray-100 bg-white sticky top-[72px] z-20">
+      <section className="border-b border-gray-100 bg-white sticky top-18 z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
             <div className="flex-1 relative">

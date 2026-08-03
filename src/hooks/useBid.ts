@@ -14,8 +14,8 @@ export const useBid = (auctionId: string) => {
             const result = await placeBid(auctionId, amount);
             setSuccess(true);
             return result;
-        } catch (err: any) {
-            setError(err.message || 'Failed to place bid.');
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to place bid.');
             throw err;
         } finally {
             setLoading(false);

@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export default function AuthCard({
   title,
   subtitle,
@@ -15,7 +17,7 @@ export default function AuthCard({
       <div className="auth-card">
         <div className="auth-header">
           <div className="auth-logo">
-            <img src="/logo.png" alt="AuctionPro logo" className="w-14 h-14 object-contain" />
+            <Image src="/logo.png" alt="AuctionPro logo" width={56} height={56} className="w-14 h-14 object-contain" />
           </div>
           <h1>{title}</h1>
           {subtitle && <p>{subtitle}</p>}

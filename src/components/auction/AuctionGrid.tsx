@@ -1,7 +1,8 @@
 import AuctionCard from "./AuctionCard";
+import type { Auction } from "@/types";
 
 interface AuctionGridProps {
-  auctions: any[];
+  auctions: Auction[];
   loading?: boolean;
 }
 

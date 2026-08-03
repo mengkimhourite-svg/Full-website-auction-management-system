@@ -1,7 +1,9 @@
 "use client";
 
+import type { Notification } from "@/types";
+
 interface NotificationItemProps {
-  notification: any;
+  notification: Notification;
   onMarkRead: (id: string) => void;
 }
 

@@ -1,7 +1,8 @@
 import AuctionCard from "@/components/auction/AuctionCard";
+import type { Auction } from "@/types";
 
 interface SearchResultsProps {
-  results: any[];
+  results: Auction[];
   loading: boolean;
   query: string;
 }

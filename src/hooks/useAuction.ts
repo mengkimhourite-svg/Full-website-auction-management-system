@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { getAuctions, getAuctionById } from '@/services/auction.service';
+import type { Auction } from '@/types';
 
 export const useAuction = (id: string | null = null) => {
-    const [auction, setAuction] = useState<any>(null);
-    const [auctions, setAuctions] = useState<any[]>([]);
+    const [auction, setAuction] = useState<Auction | null>(null);
+    const [auctions, setAuctions] = useState<Auction[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -18,8 +19,8 @@ export const useAuction = (id: string | null = null) => {
                     const data = await getAuctions();
                     setAuctions(data);
                 }
-            } catch (err: any) {
-                setError(err.message || 'Failed to fetch auctions.');
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'Failed to fetch auctions.');
             } finally {
                 setLoading(false);
             }

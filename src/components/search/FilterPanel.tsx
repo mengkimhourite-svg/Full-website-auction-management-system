@@ -3,9 +3,16 @@
 import { useState } from "react";
 import { Filter } from "lucide-react";
 
+interface AuctionFilters {
+  categories?: string[];
+  minPrice?: number;
+  maxPrice?: number;
+  status?: string;
+}
+
 interface FilterPanelProps {
   categories: string[];
-  onFilter: (filters: any) => void;
+  onFilter: (filters: AuctionFilters) => void;
 }
 
 export default function FilterPanel({ categories, onFilter }: FilterPanelProps) {

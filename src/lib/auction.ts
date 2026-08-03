@@ -1,5 +1,12 @@
 import prisma from "@/lib/db";
-import type { Auction, AuctionStatus } from "@prisma/client";
+import type { Auction, AuctionStatus, Product, User } from "@prisma/client";
+import type { Bid } from "@prisma/client";
+
+type AuctionWithRelations = Auction & {
+  product?: Product & { seller?: Partial<User> | null };
+  bids?: Bid[];
+  _count?: { bids: number };
+};
 
 export function computeStatus(auction: {
   status: AuctionStatus;
@@ -10,6 +17,56 @@ export function computeStatus(auction: {
   if (now >= auction.endTime) return "ENDED";
   if (auction.status === "UPCOMING" && now >= auction.startTime) return "ACTIVE";
   return auction.status;
+}
+
+export function cleanText(value: unknown, fallback = ""): string {
+  if (typeof value !== "string") return fallback;
+  const trimmed = value.trim();
+  return trimmed || fallback;
+}
+
+export function cleanOptionalText(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed || null;
+}
+
+export function formatDateOnly(value: Date | string | null | undefined): string {
+  if (!value) return "";
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+export function serializeAuction(auction: AuctionWithRelations) {
+  const product = auction.product ?? null;
+  const bidCount = auction._count?.bids ?? auction.bids?.length ?? 0;
+  return {
+    id: auction.id,
+    title: product?.title || "Untitled Auction",
+    description: product?.description || "",
+    image: product?.image || null,
+    category: product?.category || "General",
+    sellerId: product?.sellerId || null,
+    seller: product?.seller || null,
+    startPrice: auction.startPrice,
+    currentPrice: auction.currentPrice,
+    startTime: auction.startTime,
+    endTime: auction.endTime,
+    startDate: formatDateOnly(auction.startTime),
+    endDate: formatDateOnly(auction.endTime),
+    status: auction.status,
+    bidCount,
+    _count: { bids: bidCount },
+    product,
+    bids: auction.bids ?? [],
+    createdAt: auction.createdAt,
+    updatedAt: auction.updatedAt,
+    createdDate: formatDateOnly(auction.createdAt),
+  };
 }
 
 export async function syncAuctionStatuses(): Promise<void> {

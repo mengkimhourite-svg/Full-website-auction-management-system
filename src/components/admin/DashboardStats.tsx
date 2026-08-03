@@ -1,5 +1,7 @@
+import type { LucideIcon } from "lucide-react";
+
 interface DashboardStatsProps {
-  stats: { title: string; value: string; icon: any; color: string }[];
+  stats: { title: string; value: string; icon: LucideIcon; color: string }[];
 }
 
 export default function DashboardStats({ stats }: DashboardStatsProps) {

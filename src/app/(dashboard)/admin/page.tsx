@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Users,
   Gavel,
@@ -16,13 +17,14 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
+import type { Auction, MonthlyReport, User } from "@/types";
 
 export default function AdminDashboardHomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [report, setReport] = useState<any>(null);
-  const [auctions, setAuctions] = useState<any[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
+  const [report, setReport] = useState<MonthlyReport | null>(null);
+  const [auctions, setAuctions] = useState<Auction[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -41,8 +43,8 @@ export default function AdminDashboardHomePage() {
         setAuctions((auctionsJson.data || []).slice(0, 5));
         setUsers((usersJson.data || []).slice(0, 5));
         setError("");
-      } catch (err: any) {
-        setError(err.message || "Failed to load dashboard");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load dashboard");
       } finally {
         setLoading(false);
       }
@@ -152,12 +154,17 @@ export default function AdminDashboardHomePage() {
                 <ul className="divide-y divide-gray-50">
                   {auctions.map((a) => (
                     <li key={a.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition-colors">
-                      <img
-                        src={a.product?.image || ""}
-                        alt={a.product?.title || "Auction"}
-                        className="w-11 h-11 rounded-xl object-cover bg-gray-100"
-                        onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
-                      />
+                      {a.product?.image ? (
+                        <Image
+                          src={a.product.image}
+                          alt={a.product.title || "Auction"}
+                          width={44}
+                          height={44}
+                          className="w-11 h-11 rounded-xl object-cover bg-gray-100"
+                        />
+                      ) : (
+                        <div className="w-11 h-11 rounded-xl bg-gray-100" />
+                      )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-gray-900 truncate">{a.product?.title || "Untitled"}</p>
                         <p className="text-xs text-gray-400 capitalize">{a.status?.toLowerCase()}</p>

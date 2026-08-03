@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { CreditCard, DollarSign, Calendar, Search } from "lucide-react";
 import PaymentHistory from "@/components/payment/PaymentHistory";
+import type { Payment } from "@/types";
 
 export default function AdminPaymentsPage() {
-  const [payments, setPayments] = useState<any[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
@@ -19,15 +20,15 @@ export default function AdminPaymentsPage() {
         if (!res.ok) throw new Error("Failed to fetch payments");
         const json = await res.json();
         setPayments(json.data || json.payments || json || []);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch payments");
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
-  const filtered = payments.filter((p: any) => {
+  const filtered = payments.filter((p: Payment) => {
     if (!search) return true;
     const q = search.toLowerCase();
     return (
@@ -37,9 +38,9 @@ export default function AdminPaymentsPage() {
     );
   });
 
-  const totalRevenue = payments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
-  const successfulCount = payments.filter((p: any) => p.status === "SUCCESS").length;
-  const pendingCount = payments.filter((p: any) => p.status === "PENDING").length;
+  const totalRevenue = payments.reduce((sum: number, p: Payment) => sum + (p.amount || 0), 0);
+  const successfulCount = payments.filter((p: Payment) => p.status === "SUCCESS").length;
+  const pendingCount = payments.filter((p: Payment) => p.status === "PENDING").length;
 
   return (
     <div className="space-y-6 animate-fade-in">

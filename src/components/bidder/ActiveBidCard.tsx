@@ -3,13 +3,14 @@
 import { Clock, TrendingUp } from "lucide-react";
 import CountdownTimer from "@/components/auction/CountdownTimer";
 import Link from "next/link";
+import type { Auction, Bid } from "@/types";
 
 interface ActiveBidCardProps {
-  bid: any;
+  bid: Bid;
 }
 
 export default function ActiveBidCard({ bid }: ActiveBidCardProps) {
-  const auction = bid.auction || {};
+  const auction = bid.auction || ({} as Auction);
 
   return (
     <Link href={`/auctions/${auction.id}`} className="block no-underline">

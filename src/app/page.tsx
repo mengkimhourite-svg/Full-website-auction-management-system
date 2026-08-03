@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import Hero from "@/components/home/Hero";
 import WatchCard from "@/components/home/WatchCard";
-import { ArrowRight, Shield, Zap, Trophy, Gavel, TrendingUp, Users, DollarSign, CheckCircle, Star, Sparkles, Award, Gem, Palette, Car, Watch, Wine } from "lucide-react";
+import { ArrowRight, Shield, Zap, Trophy, Gavel, Users, DollarSign, CheckCircle, Star, Sparkles, Award, Gem, Palette, Car, Watch, Wine } from "lucide-react";
+import Reveal from "@/components/animations/Reveal";
+import type { Auction } from "@/types";
 const testimonials = [
   { name: "Sarah Johnson", role: "Collector", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80", text: "AuctionPro made it so easy to find rare collectibles. The bidding process is smooth and secure." },
   { name: "Michael Chen", role: "Seller", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80", text: "I've sold over 50 items on AuctionPro. The platform's reach and reliability are unmatched." },
@@ -29,7 +32,7 @@ const staticAuctions = [
   { title: "Antique Vase", currentBid: 4200, image: "https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=400&q=80", endingIn: "2d 8h", bids: 9 },
 ];
 
-function getEndingIn(auction: any): string {
+function getEndingIn(auction: Auction): string {
   const endTime = new Date(auction.endTime);
   const diff = endTime.getTime() - Date.now();
   if (diff <= 0) return "Ended";
@@ -40,16 +43,16 @@ function getEndingIn(auction: any): string {
 }
 
 export default function Home() {
-  const [auctions, setAuctions] = useState<any[]>([]);
+  const [auctions, setAuctions] = useState<Auction[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/auctions")
       .then((r) => r.json())
       .then((data) => {
-        const items = (Array.isArray(data) ? data : data?.data || []).slice(0, 6);
+        const items: Auction[] = (Array.isArray(data) ? data : data?.data || []).slice(0, 6);
         setAuctions(
-          items.map((a: any) => ({
+          items.map((a) => ({
             ...a,
             endingIn: getEndingIn(a),
           }))
@@ -67,10 +70,16 @@ export default function Home() {
       <section className="border-y border-gray-100 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-16 text-sm text-gray-500">
-            <div className="flex items-center gap-2"><Shield size={16} className="text-indigo-600" /> Secure Escrow Payments</div>
-            <div className="flex items-center gap-2"><Award size={16} className="text-yellow-500" /> Authenticity Guaranteed</div>
-            <div className="flex items-center gap-2"><Zap size={16} className="text-indigo-600" /> Real-time Bidding</div>
-            <div className="flex items-center gap-2"><Trophy size={16} className="text-yellow-500" /> 50,000+ Trusted Users</div>
+            {[
+              { icon: Shield, text: "Secure Escrow Payments", color: "text-indigo-600" },
+              { icon: Award, text: "Authenticity Guaranteed", color: "text-yellow-500" },
+              { icon: Zap, text: "Real-time Bidding", color: "text-indigo-600" },
+              { icon: Trophy, text: "50,000+ Trusted Users", color: "text-yellow-500" },
+            ].map((item, i) => (
+              <Reveal key={item.text} variant="scale" delay={i * 100}>
+                <div className="flex items-center gap-2"><item.icon size={16} className={item.color} /> {item.text}</div>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
@@ -78,24 +87,26 @@ export default function Home() {
       {/* Categories */}
       <section className="py-20 lg:py-28 bg-gray-50/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
+          <Reveal className="text-center mb-14">
             <span className="eyebrow mb-5">
               <Sparkles size={14} /> Browse Categories
             </span>
             <h2 className="text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight">Explore Our Collections</h2>
             <p className="text-gray-500 mt-4 max-w-2xl mx-auto text-lg">Find exactly what you&apos;re looking for across our curated categories</p>
-          </div>
+          </Reveal>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {categories.map((cat) => (
-              <Link key={cat.name} href={`/auctions?category=${encodeURIComponent(cat.name)}`}
-                className="group card p-6 text-center hover:-translate-y-1 transition-all duration-300"
-              >
-                <div className={`w-14 h-14 mx-auto rounded-2xl bg-linear-to-br ${cat.color} flex items-center justify-center mb-4 shadow-lg transition-transform group-hover:scale-110 duration-300`}>
-                  <cat.icon size={24} className="text-white" />
-                </div>
-                <h4 className="text-sm font-bold text-gray-900">{cat.name}</h4>
-                <p className="text-xs text-gray-400 mt-1">{cat.count}</p>
-              </Link>
+            {categories.map((cat, i) => (
+              <Reveal key={cat.name} variant="scale" delay={i * 100}>
+                <Link href={`/auctions?category=${encodeURIComponent(cat.name)}`}
+                  className="group card p-6 text-center hover:-translate-y-1 transition-all duration-300"
+                >
+                  <div className={`w-14 h-14 mx-auto rounded-2xl bg-linear-to-br ${cat.color} flex items-center justify-center mb-4 shadow-lg transition-transform group-hover:scale-110 duration-300`}>
+                    <cat.icon size={24} className="text-white" />
+                  </div>
+                  <h4 className="text-sm font-bold text-gray-900">{cat.name}</h4>
+                  <p className="text-xs text-gray-400 mt-1">{cat.count}</p>
+                </Link>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -105,16 +116,18 @@ export default function Home() {
       <section className="py-20 lg:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-14">
-            <div>
+            <Reveal variant="left">
               <span className="eyebrow mb-5">
                 <Gem size={14} /> Featured Items
               </span>
               <h2 className="text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight">Live Auctions</h2>
               <p className="text-gray-500 mt-3 max-w-xl text-lg">Place your bids on these exclusive items before time runs out</p>
-            </div>
-            <Link href="/auctions" className="btn-outline shrink-0">
-              View All Auctions <ArrowRight size={16} />
-            </Link>
+            </Reveal>
+            <Reveal variant="right" delay={150}>
+              <Link href="/auctions" className="btn-outline shrink-0">
+                View All Auctions <ArrowRight size={16} />
+              </Link>
+            </Reveal>
           </div>
 
           {loading ? (
@@ -128,19 +141,25 @@ export default function Home() {
             </div>
           ) : auctions.length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {auctions.map((auction: any) => (
-                <WatchCard key={auction.id}
-                  title={auction.product?.title || "Untitled"}
-                  currentBid={auction.currentPrice || 0}
-                  image={auction.product?.image || ""}
-                  endingIn={auction.endingIn}
-                  bids={auction._count?.bids || auction.bids?.length || 0}
-                />
+              {auctions.map((auction, i) => (
+                <Reveal key={auction.id} variant="scale" delay={(i % 3) * 120}>
+                  <WatchCard
+                    title={auction.product?.title || "Untitled"}
+                    currentBid={auction.currentPrice || 0}
+                    image={auction.product?.image || ""}
+                    endingIn={auction.endingIn}
+                    bids={auction._count?.bids || auction.bids?.length || 0}
+                  />
+                </Reveal>
               ))}
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {staticAuctions.map((auction, i) => <WatchCard key={i} {...auction} />)}
+              {staticAuctions.map((auction, i) => (
+                <Reveal key={i} variant="scale" delay={(i % 3) * 120}>
+                  <WatchCard {...auction} />
+                </Reveal>
+              ))}
             </div>
           )}
         </div>
@@ -155,14 +174,14 @@ export default function Home() {
               { icon: Users, value: "50,000+", label: "Registered Users", color: "from-cyan-400 to-blue-400" },
               { icon: DollarSign, value: "$2M+", label: "Total Sales", color: "from-green-400 to-emerald-400" },
               { icon: Trophy, value: "98%", label: "Satisfaction", color: "from-yellow-400 to-orange-400" },
-            ].map((stat) => (
-              <div key={stat.label} className="animate-fade-up">
+            ].map((stat, i) => (
+              <Reveal key={stat.label} variant="scale" delay={i * 120}>
                 <div className={`w-16 h-16 mx-auto rounded-2xl bg-linear-to-br ${stat.color} bg-opacity-20 flex items-center justify-center mb-5 shadow-lg`}>
                   <stat.icon size={28} className="text-white" />
                 </div>
                 <p className="text-4xl font-extrabold text-white">{stat.value}</p>
                 <p className="text-white/50 text-sm mt-1.5 font-medium">{stat.label}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -171,25 +190,29 @@ export default function Home() {
       {/* How It Works */}
       <section className="py-20 lg:py-28">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <span className="eyebrow mb-5">
-            <Sparkles size={14} /> Simple Process
-          </span>
-          <h2 className="text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight">How Auction Works</h2>
-          <p className="text-gray-500 mt-4 max-w-2xl mx-auto text-lg">Get started in three simple steps</p>
+          <Reveal className="text-center mb-14">
+            <span className="eyebrow mb-5">
+              <Sparkles size={14} /> Simple Process
+            </span>
+            <h2 className="text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight">How Auction Works</h2>
+            <p className="text-gray-500 mt-4 max-w-2xl mx-auto text-lg">Get started in three simple steps</p>
+          </Reveal>
           <div className="grid md:grid-cols-3 gap-8 lg:gap-12 mt-14">
             {[
               { step: "01", title: "Create Account", text: "Sign up for free and set up your profile. Join thousands of active bidders.", icon: Users, color: "from-indigo-500 to-purple-500" },
               { step: "02", title: "Place Your Bid", text: "Browse live auctions and place your best offer in real-time with confidence.", icon: Zap, color: "from-cyan-500 to-blue-500" },
               { step: "03", title: "Win & Collect", text: "Win the auction, complete secure payment, and receive your item worldwide.", icon: Trophy, color: "from-yellow-500 to-orange-500" },
-            ].map((item) => (
-              <div key={item.title} className="card p-8 lg:p-10 text-center hover:-translate-y-1 transition-all duration-300">
-                <div className={`w-20 h-20 mx-auto rounded-2xl bg-linear-to-br ${item.color} flex items-center justify-center mb-6 shadow-xl`}>
-                  <item.icon size={36} className="text-white" />
+            ].map((item, i) => (
+              <Reveal key={item.title} variant="scale" delay={i * 150}>
+                <div className="card p-8 lg:p-10 text-center hover:-translate-y-1 transition-all duration-300 h-full">
+                  <div className={`w-20 h-20 mx-auto rounded-2xl bg-linear-to-br ${item.color} flex items-center justify-center mb-6 shadow-xl`}>
+                    <item.icon size={36} className="text-white" />
+                  </div>
+                  <div className="text-5xl font-black text-gray-100 mb-4">{item.step}</div>
+                  <h3 className="text-xl font-bold text-gray-900">{item.title}</h3>
+                  <p className="text-gray-500 mt-3 leading-relaxed">{item.text}</p>
                 </div>
-                <div className="text-5xl font-black text-gray-100 mb-4">{item.step}</div>
-                <h3 className="text-xl font-bold text-gray-900">{item.title}</h3>
-                <p className="text-gray-500 mt-3 leading-relaxed">{item.text}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -198,57 +221,61 @@ export default function Home() {
       {/* Testimonials */}
       <section className="py-20 lg:py-28 bg-gray-50/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
+          <Reveal className="text-center mb-14">
             <span className="eyebrow mb-5">
               <Star size={14} /> Testimonials
             </span>
             <h2 className="text-4xl lg:text-5xl font-extrabold text-gray-900 tracking-tight">What Our Users Say</h2>
             <p className="text-gray-500 mt-4 max-w-2xl mx-auto text-lg">Join thousands of satisfied buyers and sellers</p>
-          </div>
+          </Reveal>
           <div className="grid md:grid-cols-3 gap-8">
             {testimonials.map((t, i) => (
-              <div key={i} className="card p-8 hover:-translate-y-1 transition-all duration-300" style={{ animationDelay: `${i * 0.1}s` }}>
-                <div className="flex items-center gap-1 mb-4">
-                  {Array.from({ length: 5 }).map((_, si) => (
-                    <Star key={si} size={14} className="fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-gray-600 text-sm leading-relaxed mb-6">&ldquo;{t.text}&rdquo;</p>
-                <div className="flex items-center gap-3">
-                  <img src={t.avatar} alt={t.name} className="w-10 h-10 rounded-full object-cover ring-2 ring-indigo-100" />
-                  <div>
-                    <p className="text-sm font-bold text-gray-900">{t.name}</p>
-                    <p className="text-xs text-gray-500">{t.role}</p>
+              <Reveal key={i} variant="scale" delay={i * 150}>
+                <div className="card p-8 hover:-translate-y-1 transition-all duration-300 h-full">
+                  <div className="flex items-center gap-1 mb-4">
+                    {Array.from({ length: 5 }).map((_, si) => (
+                      <Star key={si} size={14} className="fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <p className="text-gray-600 text-sm leading-relaxed mb-6">&ldquo;{t.text}&rdquo;</p>
+                  <div className="flex items-center gap-3">
+                    <Image src={t.avatar} alt={t.name} width={40} height={40} className="w-10 h-10 rounded-full object-cover ring-2 ring-indigo-100" />
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">{t.name}</p>
+                      <p className="text-xs text-gray-500">{t.role}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-20 lg:py-28 bg-linear-gradient-to-r from-indigo-600 via-indigo-700 to-purple-800 text-white relative overflow-hidden">
+      <section className="py-20 lg:py-28 bg-linear-to-r from-indigo-950 via-[#1a2347] to-indigo-900 text-white relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/5 rounded-full blur-3xl" />
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl" />
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400/10 rounded-full blur-3xl" />
+          <div className="absolute inset-0 opacity-[0.04]"
+            style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)", backgroundSize: "64px 64px" }} />
         </div>
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <Reveal className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex items-center justify-center gap-2 mb-6">
-            <CheckCircle size={20} className="text-green-300" />
-            <span className="text-green-200 font-semibold text-sm">Trusted by 50,000+ users worldwide</span>
+            <CheckCircle size={20} className="text-yellow-400" />
+            <span className="text-yellow-300/90 font-semibold text-sm">Trusted by 50,000+ users worldwide</span>
           </div>
           <h2 className="text-4xl lg:text-6xl font-extrabold tracking-tight">Ready to Start Bidding?</h2>
           <p className="text-white/70 mt-4 max-w-2xl mx-auto text-lg">Join thousands of buyers and sellers on the most trusted auction platform.</p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <Link href="/register" className="group inline-flex items-center gap-2.5 bg-white text-indigo-700 px-8 py-4 rounded-2xl font-bold text-base hover:bg-indigo-50 hover:-translate-y-0.5 transition-all shadow-xl">
+            <Link href="/register" className="group inline-flex items-center gap-2.5 gold-shimmer text-white px-8 py-4 rounded-2xl font-bold text-base hover:-translate-y-0.5 transition-all shadow-xl hover:shadow-2xl">
               Get Started Free <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link href="/auctions" className="inline-flex items-center gap-2.5 bg-white/10 backdrop-blur-sm text-white border border-white/20 px-8 py-4 rounded-2xl font-semibold text-base hover:bg-white/20 transition-all">
               Browse Auctions
             </Link>
           </div>
-        </div>
+        </Reveal>
       </section>
     </div>
   );

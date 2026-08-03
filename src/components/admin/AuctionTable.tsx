@@ -1,9 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import { CheckCircle, Trash2, ImageOff } from "lucide-react";
+import type { Auction, AuctionStatus } from "@/types";
 
 interface AuctionTableProps {
-  auctions: any[];
+  auctions: Auction[];
   onApprove: (id: string) => void;
   onDelete: (id: string) => void;
 }
@@ -33,9 +35,11 @@ export default function AuctionTable({ auctions, onApprove, onDelete }: AuctionT
             <tr key={auction.id}>
               <td>
                 {auction.product?.image ? (
-                  <img
+                  <Image
                     src={auction.product.image}
                     alt={auction.product.title}
+                    width={48}
+                    height={48}
                     className="w-12 h-12 rounded-lg object-cover"
                   />
                 ) : (
@@ -51,7 +55,7 @@ export default function AuctionTable({ auctions, onApprove, onDelete }: AuctionT
                   className={`badge ${
                     auction.status === "ACTIVE"
                       ? "badge-success"
-                      : auction.status === "PENDING"
+                      : auction.status === ("PENDING" as AuctionStatus)
                       ? "badge-warning"
                       : auction.status === "ENDED"
                       ? "badge-neutral"
@@ -62,11 +66,11 @@ export default function AuctionTable({ auctions, onApprove, onDelete }: AuctionT
                 </span>
               </td>
               <td className="text-gray-500 text-sm">
-                {auction.endTime ? new Date(auction.endTime).toLocaleDateString() : "—"}
+                {auction.endDate || (auction.endTime ? new Date(auction.endTime).toLocaleDateString() : "—")}
               </td>
               <td>
                 <div className="flex items-center gap-2">
-                  {auction.status === "PENDING" && (
+                  {auction.status === ("PENDING" as AuctionStatus) && (
                     <button
                       onClick={() => onApprove(auction.id)}
                       className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-green-700 bg-green-50 rounded-lg hover:bg-green-100 transition-all"

@@ -55,8 +55,8 @@ export default function AdminCreatePage() {
       }
 
       router.push("/admin/auctions");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create auction");
     } finally {
       setLoading(false);
     }

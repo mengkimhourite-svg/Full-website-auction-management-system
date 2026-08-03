@@ -13,10 +13,11 @@ import {
   AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
+import type { ApiResponse, Auction, Bid, Watchlist } from "@/types";
 
 export default function BidderReportsPage() {
-  const [bids, setBids] = useState<any[]>([]);
-  const [won, setWon] = useState<any[]>([]);
+  const [bids, setBids] = useState<Bid[]>([]);
+  const [won, setWon] = useState<Bid[]>([]);
   const [watchlistCount, setWatchlistCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -30,16 +31,16 @@ export default function BidderReportsPage() {
           fetch("/api/watchlist"),
         ]);
         const [bidsJson, wonJson, watchJson] = await Promise.all([
-          bidsRes.json(),
-          wonRes.json(),
-          watchRes.json(),
+          bidsRes.json() as Promise<ApiResponse<Bid[]>>,
+          wonRes.json() as Promise<ApiResponse<Bid[]>>,
+          watchRes.json() as Promise<ApiResponse<Watchlist[]>>,
         ]);
         if (!bidsRes.ok) throw new Error(bidsJson.error || "Failed to fetch bids");
         setBids(bidsJson.data || []);
         setWon(wonJson.data || []);
         setWatchlistCount((watchJson.data || []).length);
-      } catch (err: any) {
-        setError(err.message || "Network error");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Network error");
       } finally {
         setLoading(false);
       }
@@ -48,7 +49,7 @@ export default function BidderReportsPage() {
 
   const activeBids = bids.filter((b) => b.auction?.status === "ACTIVE");
   const activeAuctionIds = new Set(activeBids.map((b) => b.auction?.id));
-  const wonAuctions = won.map((w) => w.auction);
+  const wonAuctions = won.map((w) => w.auction).filter((a): a is Auction => !!a);
 
   const stats = [
     { label: "Total Bids", value: bids.length, icon: Gavel, color: "from-indigo-600 to-sky-500" },

@@ -1,7 +1,7 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/db";
+import { prisma } from "@/lib/prisma"; // កែពី "@/lib/db"
 import { getAuthUser } from "@/lib/auth";
-import { syncAuctionStatuses } from "@/lib/auction";
+import { syncAuctionStatuses, serializeAuction, cleanText, cleanOptionalText } from "@/lib/auction";
 
 export async function GET(request: NextRequest) {
   try {
@@ -30,8 +30,12 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ success: true, data: auctions }, { status: 200 });
-  } catch {
+    return NextResponse.json(
+      { success: true, data: auctions.map(serializeAuction) },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error in GET /api/auctions:", error);
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }
@@ -48,17 +52,19 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    const productTitle = body.productTitle || body.title;
-    const productDescription = body.productDescription || body.description || "";
-    const productImage = body.productImage || body.image || "";
-    const category = body.category || "General";
-    const startPrice = body.startPrice ?? body.startingPrice ?? 0;
+    // Normalize field names + clean values
+    const productTitle = cleanText(body.productTitle ?? body.title ?? "");
+    const productDescription = cleanText(body.productDescription ?? body.description ?? "");
+    const productImage = cleanOptionalText(body.productImage ?? body.image ?? "");
+    const category = cleanText(body.category ?? "", "General");
+    const startPrice = Number(body.startPrice ?? body.startingPrice ?? 0);
     const endTime = body.endTime;
     const startTime = body.startTime || new Date().toISOString();
 
-    if (!productTitle || startPrice === undefined || !endTime) {
+    // Validation
+    if (!productTitle || !Number.isFinite(startPrice) || startPrice < 0 || !endTime) {
       return NextResponse.json(
-        { success: false, error: "productTitle, startPrice, and endTime are required" },
+        { success: false, error: "productTitle, startPrice (>=0), and endTime are required" },
         { status: 400 }
       );
     }
@@ -72,6 +78,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Create Product
     const product = await prisma.product.create({
       data: {
         title: productTitle,
@@ -82,6 +89,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Create Auction
     const now = new Date();
     const auction = await prisma.auction.create({
       data: {
@@ -98,8 +106,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ success: true, data: auction }, { status: 201 });
-  } catch {
+    return NextResponse.json(
+      { success: true, data: serializeAuction(auction) },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Error in POST /api/auctions:", error);
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }

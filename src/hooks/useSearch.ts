@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { searchAuctions } from '@/services/auction.service';
+import type { Auction } from '@/types';
 
 export const useSearch = (initialQuery: string = '') => {
     const [query, setQuery] = useState<string>(initialQuery);
-    const [results, setResults] = useState<any[]>([]);
+    const [results, setResults] = useState<Auction[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -18,8 +19,8 @@ export const useSearch = (initialQuery: string = '') => {
             try {
                 const data = await searchAuctions(query);
                 setResults(data);
-            } catch (err: any) {
-                setError(err.message || 'Search failed.');
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'Search failed.');
             } finally {
                 setLoading(false);
             }

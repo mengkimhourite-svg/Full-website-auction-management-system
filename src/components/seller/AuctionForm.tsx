@@ -3,9 +3,24 @@
 import { useState } from "react";
 import { Save, Loader2 } from "lucide-react";
 
+export interface AuctionFormData {
+  product: { title: string; description: string; image: string };
+  category: string;
+  startPrice: number;
+  endTime: string;
+  title?: string;
+  description?: string;
+  image?: string;
+}
+
 interface AuctionFormProps {
-  initialData?: any;
-  onSubmit: (data: any) => void;
+  initialData?: {
+    product?: { title?: string; description?: string; image?: string | null };
+    category?: string;
+    startPrice?: number;
+    endTime?: string;
+  } | null;
+  onSubmit: (data: AuctionFormData) => void;
   loading?: boolean;
 }
 

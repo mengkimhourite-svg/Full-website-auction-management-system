@@ -2,18 +2,37 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Clock, User, Tag, Loader2, AlertCircle, ImageOff, Heart, CreditCard } from "lucide-react";
 import { getAuctionById } from "@/services/auction.service";
 import { useCountdown } from "@/hooks/useCountdown";
 import BidHistory from "@/components/auction/BidHistory";
 import PlaceBidForm from "@/components/auction/PlaceBidForm";
+import type { Bid, Product, UserSummary, Watchlist } from "@/types";
+
+interface AuctionDetail {
+  id: string;
+  currentPrice: number;
+  startPrice?: number;
+  startTime?: string;
+  endTime?: string;
+  endDate?: string;
+  status?: string;
+  title?: string;
+  description?: string;
+  category?: string;
+  productId?: string;
+  product?: Product;
+  bids?: Bid[];
+  createdAt?: string;
+}
 
 export default function AuctionDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
-  const [auction, setAuction] = useState<any>(null);
+  const [auction, setAuction] = useState<AuctionDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -60,7 +79,7 @@ export default function AuctionDetailPage() {
     fetch("/api/watchlist")
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => {
-        const items: any[] = json?.data || [];
+        const items: Watchlist[] = json?.data || [];
         setWatchlisted(items.some((w) => w.auctionId === id));
       })
       .catch(() => {});
@@ -79,7 +98,7 @@ export default function AuctionDetailPage() {
       if (watchlisted) {
         const res = await fetch("/api/watchlist");
         const json = await res.json();
-        const items: any[] = json?.data || [];
+        const items: Watchlist[] = json?.data || [];
         const entry = items.find((w) => w.auctionId === id);
         if (entry) await fetch(`/api/watchlist/${entry.id}`, { method: "DELETE" });
         setWatchlisted(false);
@@ -95,8 +114,8 @@ export default function AuctionDetailPage() {
         }
         setWatchlisted(true);
       }
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to update watchlist");
     } finally {
       setWatchlistLoading(false);
     }
@@ -144,9 +163,9 @@ export default function AuctionDetailPage() {
     );
   }
 
-  const product = auction.product || {};
+  const product = auction.product || ({} as Product);
   const images = product.image ? [product.image] : [];
-  const seller = auction.product?.seller || {};
+  const seller = auction.product?.seller || ({} as UserSummary);
   const isEnded = auction.status === "ENDED" || auction.status === "SOLD";
 
   return (
@@ -162,12 +181,14 @@ export default function AuctionDetailPage() {
 
         <div className="grid lg:grid-cols-2 gap-10">
           <div className="space-y-4">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-96 flex items-center justify-center">
+            <div className="relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-96 flex items-center justify-center">
               {images.length > 0 ? (
-                <img
+                <Image
                   src={images[selectedImage]}
                   alt={product.title || "Auction image"}
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover"
                 />
               ) : (
                 <div className="flex flex-col items-center gap-2 text-gray-400">
@@ -182,16 +203,18 @@ export default function AuctionDetailPage() {
                   <button
                     key={idx}
                     onClick={() => setSelectedImage(idx)}
-                    className={`w-20 h-20 rounded-xl overflow-hidden border-2 shrink-0 transition-all ${
+                    className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 shrink-0 transition-all ${
                       idx === selectedImage
                         ? "border-indigo-600 shadow-md"
                         : "border-gray-200 hover:border-gray-400"
                     }`}
                   >
-                    <img
+                    <Image
                       src={img}
                       alt={`Thumbnail ${idx + 1}`}
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="80px"
+                      className="object-cover"
                     />
                   </button>
                 ))}

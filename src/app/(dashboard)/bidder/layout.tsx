@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import BidderSidebar from "@/components/bidder/BidderSidebar";
-import { Menu, Bell, LogOut } from "lucide-react";
+import { Menu, Bell, LogOut, Activity } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -24,14 +24,19 @@ export default function BidderLayout({ children }: { children: React.ReactNode }
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-xl hover:bg-gray-100 text-gray-600 lg:hidden transition-all"
+              className="p-2 rounded-xl hover:bg-indigo-50 text-indigo-700 lg:hidden transition-all"
             >
               <Menu size={22} />
             </button>
-            <h2 className="text-lg font-bold text-gray-900 hidden sm:block">Bidder Dashboard</h2>
+            <div className="flex items-center gap-2.5">
+              <span className="w-8 h-8 rounded-lg bg-linear-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md">
+                <Activity size={15} />
+              </span>
+              <h2 className="text-lg font-bold text-gray-900 hidden sm:block">Bidder Dashboard</h2>
+            </div>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/notifications" className="p-2.5 rounded-xl hover:bg-gray-100 text-gray-500 transition-all relative">
+            <Link href="/notifications" className="p-2.5 rounded-xl hover:bg-indigo-50 text-gray-500 hover:text-indigo-700 transition-all relative">
               <Bell size={20} />
             </Link>
             <button

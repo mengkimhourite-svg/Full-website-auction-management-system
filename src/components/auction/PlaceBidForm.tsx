@@ -35,8 +35,8 @@ export default function PlaceBidForm({ auctionId, currentPrice, onBidPlaced }: P
       }
       setSuccess(true);
       onBidPlaced();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to place bid");
     } finally {
       setLoading(false);
     }

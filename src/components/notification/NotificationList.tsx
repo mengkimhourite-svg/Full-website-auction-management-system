@@ -2,9 +2,10 @@
 
 import NotificationItem from "./NotificationItem";
 import { Bell } from "lucide-react";
+import type { Notification } from "@/types";
 
 interface NotificationListProps {
-  notifications: any[];
+  notifications: Notification[];
   onMarkRead: (id: string) => void;
 }
 

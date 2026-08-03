@@ -29,8 +29,8 @@ export default function ContactPage() {
       setEmail("");
       setSubject("");
       setMessage("");
-    } catch (err: any) {
-      setStatus({ type: "error", text: err.message || "Failed to send message" });
+    } catch (err) {
+      setStatus({ type: "error", text: err instanceof Error ? err.message : "Failed to send message" });
     } finally {
       setLoading(false);
     }

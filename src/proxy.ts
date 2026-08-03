@@ -20,6 +20,8 @@ const publicRoutes = [
   "/api/contact",
 ];
 
+const publicPrefixes = ["/auctions/"];
+
 const authPages = ["/login", "/register"];
 const apiPrefix = "/api";
 
@@ -29,7 +31,7 @@ export async function proxy(request: NextRequest) {
 
   const isApiRoute = pathname.startsWith(apiPrefix);
   const isStaticAsset = pathname.startsWith("/_next") || pathname.startsWith("/favicon");
-  const isPublic = publicRoutes.includes(pathname);
+  const isPublic = publicRoutes.includes(pathname) || publicPrefixes.some((p) => pathname.startsWith(p));
   const isStaticFile = /\.(png|svg|jpg|jpeg|webp|gif|ico|avif|css|js|woff2?|ttf|eot|mp4|webm)$/i.test(pathname);
 
   if (isStaticAsset || isStaticFile) return NextResponse.next();

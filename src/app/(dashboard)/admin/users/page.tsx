@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { Users, Search, RefreshCw } from "lucide-react";
 import UserTable from "@/components/admin/UserTable";
+import type { Role, User } from "@/types";
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
@@ -17,8 +18,8 @@ export default function AdminUsersPage() {
       const json = await res.json();
       setUsers(json.data || json.users || json || []);
       setError("");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch users");
     } finally {
       setLoading(false);
     }
@@ -32,8 +33,8 @@ export default function AdminUsersPage() {
         const json = await res.json();
         setUsers(json.data || json.users || json || []);
         setError("");
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch users");
       } finally {
         setLoading(false);
       }
@@ -52,12 +53,12 @@ export default function AdminUsersPage() {
       });
       if (!res.ok) throw new Error(`Failed to ${action} user`);
       fetchUsers();
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : `Failed to ${action} user`);
     }
   };
 
-  const handleUpdate = async (id: string, data: any) => {
+  const handleUpdate = async (id: string, data: { name: string; role: Role }) => {
     try {
       const res = await fetch(`/api/users/${id}/update`, {
         method: "PUT",
@@ -67,12 +68,12 @@ export default function AdminUsersPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to update user");
       fetchUsers();
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to update user");
     }
   };
 
-  const filtered = users.filter((u: any) => {
+  const filtered = users.filter((u: User) => {
     if (!search) return true;
     const q = search.toLowerCase();
     return (

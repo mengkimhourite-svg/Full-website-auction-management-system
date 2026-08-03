@@ -5,13 +5,14 @@ import AuctionForm from "@/components/seller/AuctionForm";
 import { ArrowLeft, Package, AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import type { AuctionFormData } from "@/components/seller/AuctionForm";
 
 export default function CreateAuctionPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: AuctionFormData) => {
     setLoading(true);
     setError("");
     try {

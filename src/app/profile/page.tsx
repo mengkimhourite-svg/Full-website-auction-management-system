@@ -3,13 +3,13 @@
 import { useState, useEffect } from "react";
 import { AlertCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { getCurrentUser } from "@/services/auth.service";
+import { getCurrentUser, type User } from "@/services/auth.service";
 import ProfileCard from "@/components/profile/ProfileCard";
 import ProfileForm from "@/components/profile/ProfileForm";
 
 export default function ProfilePage() {
   const { loading: authLoading, setUser } = useAuth();
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,8 +59,8 @@ export default function ProfilePage() {
       const json = await res.json();
       if (!json.success) throw new Error(json.error || "Failed to change password");
       alert("Password changed successfully");
-    } catch (err: any) {
-      alert(err.message || "Failed to change password");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to change password");
     } finally {
       setSaving(false);
     }

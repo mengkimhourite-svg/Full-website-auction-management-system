@@ -20,6 +20,9 @@
 # production
 /build
 
+# legacy JSON-file data store (superseded by MongoDB)
+/data/
+
 # misc
 .DS_Store
 *.pem

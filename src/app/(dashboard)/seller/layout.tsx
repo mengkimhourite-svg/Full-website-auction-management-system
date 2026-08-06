@@ -16,7 +16,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
   }
 
   return (
-    <div className="dashboard-layout">
+    <div className="dashboard-layout dashboard-dark">
       <SellerSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="dashboard-main">

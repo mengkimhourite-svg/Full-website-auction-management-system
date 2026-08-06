@@ -1,8 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { CreditCard, DollarSign, Calendar, Search } from "lucide-react";
-import PaymentHistory from "@/components/payment/PaymentHistory";
+import { useEffect, useState, useMemo } from "react";
+import { CreditCard, DollarSign, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import PageHeader from "@/components/admin/PageHeader";
+import StatCard from "@/components/admin/StatCard";
+import StatusBadge from "@/components/admin/StatusBadge";
+import SearchInput from "@/components/admin/SearchInput";
+import DataTable from "@/components/admin/DataTable";
+import EmptyState from "@/components/admin/EmptyState";
+import LoadingSpinner from "@/components/admin/LoadingSpinner";
 import type { Payment } from "@/types";
 
 export default function AdminPaymentsPage() {
@@ -13,13 +19,12 @@ export default function AdminPaymentsPage() {
 
   useEffect(() => {
     (async () => {
-      setLoading(true);
-      setError("");
       try {
         const res = await fetch("/api/payments");
         if (!res.ok) throw new Error("Failed to fetch payments");
         const json = await res.json();
         setPayments(json.data || json.payments || json || []);
+        setError("");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch payments");
       } finally {
@@ -28,102 +33,137 @@ export default function AdminPaymentsPage() {
     })();
   }, []);
 
-  const filtered = payments.filter((p: Payment) => {
-    if (!search) return true;
+  const filtered = useMemo(() => {
+    if (!search) return payments;
     const q = search.toLowerCase();
-    return (
-      (p.user?.email || "").toLowerCase().includes(q) ||
-      (p.user?.name || "").toLowerCase().includes(q) ||
-      (p.auction?.product?.title || "").toLowerCase().includes(q)
+    return payments.filter(
+      (p) =>
+        (p.user?.name || "").toLowerCase().includes(q) ||
+        (p.user?.email || "").toLowerCase().includes(q) ||
+        (p.auction?.product?.title || "").toLowerCase().includes(q) ||
+        (p.method || "").toLowerCase().includes(q)
     );
-  });
+  }, [payments, search]);
 
-  const totalRevenue = payments.reduce((sum: number, p: Payment) => sum + (p.amount || 0), 0);
-  const successfulCount = payments.filter((p: Payment) => p.status === "SUCCESS").length;
-  const pendingCount = payments.filter((p: Payment) => p.status === "PENDING").length;
+  const totalRevenue = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+  const successfulPayments = payments.filter((p) => p.status === "SUCCESS");
+  const pendingPayments = payments.filter((p) => p.status === "PENDING");
+  const failedPayments = payments.filter((p) => p.status === "FAILED");
+  const successfulRevenue = successfulPayments.reduce((sum, p) => sum + (p.amount || 0), 0);
+
+  const stats = [
+    { title: "Total Revenue", value: `$${successfulRevenue.toLocaleString()}`, icon: <DollarSign size={22} />, color: "from-emerald-500 to-teal-500" },
+    { title: "Successful", value: successfulPayments.length, icon: <CheckCircle size={22} />, color: "from-sky-500 to-cyan-500" },
+    { title: "Pending", value: pendingPayments.length, icon: <Clock size={22} />, color: "from-amber-500 to-orange-500" },
+    { title: "Failed", value: failedPayments.length, icon: <AlertCircle size={22} />, color: "from-red-500 to-pink-500" },
+  ];
+
+  const getStatusVariant = (status: string): "active" | "pending" | "failed" => {
+    switch (status) {
+      case "SUCCESS":
+        return "active";
+      case "PENDING":
+        return "pending";
+      case "FAILED":
+        return "failed";
+      default:
+        return "pending";
+    }
+  };
+
+  const formatDate = (date: string) =>
+    new Date(date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+
+  const columns = [
+    {
+      key: "user",
+      label: "User",
+      render: (p: Payment) => (
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+            {(p.user?.name || "?").charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-gray-900">{p.user?.name || "Unknown"}</p>
+            <p className="text-xs text-gray-400">{p.user?.email || ""}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "product",
+      label: "Product",
+      render: (p: Payment) => (
+        <span className="text-sm text-gray-700">{p.auction?.product?.title || "Untitled"}</span>
+      ),
+    },
+    {
+      key: "amount",
+      label: "Amount",
+      render: (p: Payment) => (
+        <span className="text-sm font-bold text-gray-900">${(p.amount || 0).toLocaleString()}</span>
+      ),
+    },
+    {
+      key: "method",
+      label: "Method",
+      render: (p: Payment) => (
+        <span className="text-sm text-gray-500 capitalize">{p.method || "—"}</span>
+      ),
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (p: Payment) => (
+        <StatusBadge variant={getStatusVariant(p.status)}>
+          {p.status}
+        </StatusBadge>
+      ),
+    },
+    {
+      key: "date",
+      label: "Date",
+      render: (p: Payment) => (
+        <span className="text-sm text-gray-500">{formatDate(p.createdAt)}</span>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600">
-            <CreditCard size={20} />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Payments</h1>
-            <p className="text-sm text-gray-500">Monitor all payment transactions</p>
-          </div>
-        </div>
-        <div className="relative w-full sm:w-64">
-          <div className="absolute inset-y-0 left-3 flex items-center text-gray-400 pointer-events-none">
-            <Search size={16} />
-          </div>
-          <input
-            type="text"
-            placeholder="Search payments..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all bg-white text-sm"
-          />
-        </div>
-      </div>
+      <PageHeader
+        icon={<CreditCard size={22} />}
+        title="Payments"
+        description="Payment transactions"
+      />
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="stat-card flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center text-green-600 shrink-0">
-            <DollarSign size={20} />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Total Revenue</p>
-            <p className="text-xl font-bold text-gray-900">${totalRevenue.toLocaleString()}</p>
-          </div>
-        </div>
-        <div className="stat-card flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
-            <CreditCard size={20} />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Successful</p>
-            <p className="text-xl font-bold text-gray-900">{successfulCount}</p>
-          </div>
-        </div>
-        <div className="stat-card flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-yellow-100 flex items-center justify-center text-yellow-600 shrink-0">
-            <Calendar size={20} />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Pending</p>
-            <p className="text-xl font-bold text-gray-900">{pendingCount}</p>
-          </div>
-        </div>
-      </div>
-
-      {loading && (
-        <div className="flex flex-col items-center justify-center py-16 gap-3">
-          <div className="loading-spinner" />
-          <p className="text-sm text-gray-500">Loading payments...</p>
-        </div>
-      )}
+      {loading && <LoadingSpinner text="Loading payments..." />}
 
       {error && !loading && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">{error}</div>
       )}
 
-      {!loading && !error && filtered.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 gap-3">
-          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
-            <CreditCard size={28} />
+      {!loading && !error && (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {stats.map((stat) => (
+              <StatCard key={stat.title} {...stat} />
+            ))}
           </div>
-          <p className="text-gray-500 font-medium">
-            {search ? "No payments match your search" : "No payments yet"}
-          </p>
-          <p className="text-sm text-gray-400">
-            {search ? "Try a different search term" : "Payments will appear here once users make purchases"}
-          </p>
-        </div>
-      )}
 
-      {!loading && !error && filtered.length > 0 && <PaymentHistory payments={filtered} />}
+          <SearchInput value={search} onChange={setSearch} placeholder="Search by user, product, or method..." />
+
+          {filtered.length === 0 ? (
+            <EmptyState
+              icon={<CreditCard size={28} />}
+              title="No payments found"
+              description={search ? "No payments match your search" : "Payments will appear here once transactions occur"}
+            />
+          ) : (
+            <DataTable columns={columns} data={filtered} />
+          )}
+        </>
+      )}
     </div>
   );
 }

@@ -165,28 +165,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="py-20 bg-linear-to-r from-slate-900 via-indigo-950 to-slate-900 text-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12 text-center">
-            {[
-              { icon: Gavel, value: "10,000+", label: "Active Auctions", color: "from-indigo-400 to-purple-400" },
-              { icon: Users, value: "50,000+", label: "Registered Users", color: "from-cyan-400 to-blue-400" },
-              { icon: DollarSign, value: "$2M+", label: "Total Sales", color: "from-green-400 to-emerald-400" },
-              { icon: Trophy, value: "98%", label: "Satisfaction", color: "from-yellow-400 to-orange-400" },
-            ].map((stat, i) => (
-              <Reveal key={stat.label} variant="scale" delay={i * 120}>
-                <div className={`w-16 h-16 mx-auto rounded-2xl bg-linear-to-br ${stat.color} bg-opacity-20 flex items-center justify-center mb-5 shadow-lg`}>
-                  <stat.icon size={28} className="text-white" />
-                </div>
-                <p className="text-4xl font-extrabold text-white">{stat.value}</p>
-                <p className="text-white/50 text-sm mt-1.5 font-medium">{stat.label}</p>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* How It Works */}
       <section className="py-20 lg:py-28">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

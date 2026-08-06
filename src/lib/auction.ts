@@ -1,10 +1,55 @@
 import prisma from "@/lib/db";
-import type { Auction, AuctionStatus, Product, User } from "@prisma/client";
-import type { Bid } from "@prisma/client";
 
-type AuctionWithRelations = Auction & {
-  product?: Product & { seller?: Partial<User> | null };
-  bids?: Bid[];
+export type AuctionStatus = "UPCOMING" | "ACTIVE" | "ENDED";
+
+type Role = "ADMIN" | "SELLER" | "BIDDER";
+
+interface UserRecord {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  avatar: string | null;
+  banned: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface ProductRecord {
+  id: string;
+  title: string;
+  description: string;
+  image: string | null;
+  category: string;
+  sellerId: string;
+  seller?: Partial<UserRecord> | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface BidRecord {
+  id: string;
+  amount: number;
+  userId: string;
+  auctionId: string;
+  createdAt: Date;
+}
+
+interface AuctionRecord {
+  id: string;
+  startPrice: number;
+  currentPrice: number;
+  startTime: Date | string;
+  endTime: Date | string;
+  status: AuctionStatus;
+  productId: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
+type AuctionWithRelations = AuctionRecord & {
+  product?: ProductRecord | null;
+  bids?: BidRecord[];
   _count?: { bids: number };
 };
 
@@ -101,7 +146,7 @@ export async function syncAuctionStatuses(): Promise<void> {
   }
 }
 
-export async function syncAuctionById(id: string): Promise<Auction | null> {
+export async function syncAuctionById(id: string): Promise<AuctionRecord | null> {
   await syncAuctionStatuses();
   return prisma.auction.findUnique({ where: { id } });
 }

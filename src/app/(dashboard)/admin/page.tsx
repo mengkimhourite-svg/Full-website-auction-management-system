@@ -4,20 +4,37 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Users,
+  HandMetal,
+  Calendar,
   Gavel,
-  DollarSign,
+  Package,
+  Users,
   Wallet,
-  LayoutDashboard,
-  ArrowRight,
-  PlusCircle,
-  BarChart3,
+  DollarSign,
   CreditCard,
+  Activity,
+  Bell,
   Clock,
-  Loader2,
   AlertCircle,
+  ArrowRight,
 } from "lucide-react";
-import type { Auction, MonthlyReport, User } from "@/types";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import StatCard from "@/components/admin/StatCard";
+import StatusBadge from "@/components/admin/StatusBadge";
+import LoadingSpinner from "@/components/admin/LoadingSpinner";
+import type { Auction, MonthlyReport, User, Payment } from "@/types";
 
 export default function AdminDashboardHomePage() {
   const [loading, setLoading] = useState(true);
@@ -25,23 +42,32 @@ export default function AdminDashboardHomePage() {
   const [report, setReport] = useState<MonthlyReport | null>(null);
   const [auctions, setAuctions] = useState<Auction[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [notificationCount, setNotificationCount] = useState(0);
 
   useEffect(() => {
     (async () => {
       try {
-        const [reportRes, auctionsRes, usersRes] = await Promise.all([
+        const [reportRes, auctionsRes, usersRes, paymentsRes, notifRes] = await Promise.all([
           fetch("/api/reports/monthly"),
           fetch("/api/auctions"),
           fetch("/api/users"),
+          fetch("/api/payments"),
+          fetch("/api/notifications"),
         ]);
-        const [reportJson, auctionsJson, usersJson] = await Promise.all([
+        const [reportJson, auctionsJson, usersJson, paymentsJson, notifJson] = await Promise.all([
           reportRes.json(),
           auctionsRes.json(),
           usersRes.json(),
+          paymentsRes.json(),
+          notifRes.json(),
         ]);
         setReport(reportJson.data || reportJson.report || reportJson);
-        setAuctions((auctionsJson.data || []).slice(0, 5));
-        setUsers((usersJson.data || []).slice(0, 5));
+        setAuctions(auctionsJson.data || []);
+        setUsers(usersJson.data || usersJson || []);
+        setPayments(paymentsJson.data || paymentsJson || []);
+        const notifs = notifJson.data || notifJson || [];
+        setNotificationCount(Array.isArray(notifs) ? notifs.filter((n: { read?: boolean }) => !n.read).length : 0);
         setError("");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load dashboard");
@@ -51,170 +77,203 @@ export default function AdminDashboardHomePage() {
     })();
   }, []);
 
+  const totalAuctions = auctions.length;
+  const uniqueProducts = new Set(auctions.map((a) => a.productId).filter(Boolean)).size;
+  const totalUsers = Array.isArray(users) ? users.length : 0;
+  const totalBids = report?.totalBids || 0;
+  const totalRevenue = report?.totalRevenue || 0;
+  const pendingPayments = Array.isArray(payments) ? payments.filter((p) => p.status === "PENDING").length : 0;
+  const activeAuctions = auctions.filter((a) => a.status === "ACTIVE").length;
+
   const stats = [
-    { title: "Total Users", value: report?.totalUsers?.toLocaleString() || "0", icon: Users, color: "from-indigo-600 to-purple-600" },
-    { title: "Total Auctions", value: report?.totalAuctions?.toLocaleString() || "0", icon: Gavel, color: "from-sky-500 to-cyan-500" },
-    { title: "Total Revenue", value: `$${(report?.totalRevenue || 0).toLocaleString()}`, icon: DollarSign, color: "from-emerald-500 to-teal-500" },
-    { title: "Total Bids", value: report?.totalBids?.toLocaleString() || "0", icon: Wallet, color: "from-amber-500 to-orange-500" },
+    { title: "Total Auctions", value: totalAuctions, icon: <Gavel size={20} />, color: "from-blue-500 to-blue-600", description: "All auctions listed" },
+    { title: "Total Products", value: uniqueProducts, icon: <Package size={20} />, color: "from-emerald-500 to-emerald-600", description: "Products in system" },
+    { title: "Total Users", value: totalUsers, icon: <Users size={20} />, color: "from-purple-500 to-purple-600", description: "Registered users" },
+    { title: "Total Bids", value: totalBids, icon: <Wallet size={20} />, color: "from-orange-500 to-orange-600", description: "Bids placed" },
+    { title: "Revenue", value: `$${totalRevenue.toLocaleString()}`, icon: <DollarSign size={20} />, color: "from-green-500 to-green-600", description: "Total revenue" },
+    { title: "Pending Payments", value: pendingPayments, icon: <CreditCard size={20} />, color: "from-yellow-500 to-yellow-600", description: "Awaiting processing" },
+    { title: "Active Auctions", value: activeAuctions, icon: <Activity size={20} />, color: "from-cyan-500 to-blue-500", description: "Currently running" },
+    { title: "Notifications", value: notificationCount, icon: <Bell size={20} />, color: "from-red-500 to-red-600", description: "Unread notifications" },
   ];
 
-  const quickLinks = [
-    { label: "Create Auction", href: "/admin/create", icon: PlusCircle, color: "from-indigo-600 to-purple-600" },
-    { label: "Manage Users", href: "/admin/users", icon: Users, color: "from-sky-500 to-cyan-500" },
-    { label: "View Payments", href: "/admin/payments", icon: CreditCard, color: "from-emerald-500 to-teal-500" },
-    { label: "Reports", href: "/admin/reports", icon: BarChart3, color: "from-amber-500 to-orange-500" },
-  ];
+  const revenueData = (report?.monthlyRevenue || report?.revenueByMonth || []).map((item) => ({
+    name: item.month || item.month || "",
+    revenue: item.amount || item.revenue || 0,
+  }));
+
+  const auctionData = (report?.monthlyAuctions || report?.auctionsByMonth || []).map((item) => ({
+    name: item.month || item.month || "",
+    auctions: item.count || item.auctions || 0,
+  }));
+
+  const recentAuctions = auctions.slice(0, 5);
+
+  const today = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  if (loading) {
+    return <LoadingSpinner text="Loading dashboard..." />;
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-4">
+        <AlertCircle size={40} className="text-red-400" />
+        <p className="text-sm font-medium text-red-500">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-5 py-2.5 text-sm font-semibold text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 transition-all"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
-      <div className="flex items-center gap-3">
-        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md">
-          <LayoutDashboard size={22} />
-        </div>
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-xl font-extrabold text-gray-900">Admin Dashboard</h1>
-          <p className="text-sm text-gray-500">Monitor users, auctions, and platform activity</p>
+          <div className="flex items-center gap-3">
+            <HandMetal size={28} className="text-blue-600" />
+            <h1 className="text-2xl font-extrabold text-gray-900">Welcome Back, Admin 👋</h1>
+          </div>
+          <p className="text-sm text-gray-500 mt-1 ml-10">Monitor your auction business in real time.</p>
+        </div>
+        <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-gray-200 shadow-sm">
+          <Calendar size={16} className="text-blue-600" />
+          <span className="text-sm font-medium text-gray-700">{today}</span>
         </div>
       </div>
 
-      {loading && (
-        <div className="flex flex-col items-center justify-center py-20 gap-3">
-          <Loader2 size={32} className="animate-spin text-indigo-500" />
-          <p className="text-sm text-gray-500">Loading dashboard...</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {stats.map((stat) => (
+          <StatCard
+            key={stat.title}
+            title={stat.title}
+            value={stat.value}
+            description={stat.description}
+            icon={stat.icon}
+            color={stat.color}
+          />
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+          <h3 className="text-sm font-bold text-gray-900 mb-4">Revenue Overview</h3>
+          {revenueData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={280}>
+              <AreaChart data={revenueData}>
+                <defs>
+                  <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="#94a3b8" />
+                <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" />
+                <Tooltip
+                  contentStyle={{ borderRadius: "12px", border: "1px solid #e2e8f0", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)" }}
+                />
+                <Area type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={2} fill="url(#revenueGrad)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-[280px] text-gray-400 text-sm">No revenue data yet</div>
+          )}
         </div>
-      )}
 
-      {error && !loading && (
-        <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <AlertCircle size={40} className="text-red-400" />
-          <p className="text-sm font-medium text-red-500">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-5 py-2.5 text-sm font-semibold text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-all"
-          >
-            Retry
-          </button>
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+          <h3 className="text-sm font-bold text-gray-900 mb-4">Auction Activity</h3>
+          {auctionData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={auctionData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="#94a3b8" />
+                <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" />
+                <Tooltip
+                  contentStyle={{ borderRadius: "12px", border: "1px solid #e2e8f0", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)" }}
+                />
+                <Bar dataKey="auctions" fill="#3b82f6" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-[280px] text-gray-400 text-sm">No auction data yet</div>
+          )}
         </div>
-      )}
+      </div>
 
-      {!loading && !error && (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {stats.map((stat) => {
-              const Icon = stat.icon;
-              return (
-                <div key={stat.title} className="stat-card flex items-center gap-5">
-                  <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-md`}>
-                    <Icon size={22} className="text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 font-medium">{stat.title}</p>
-                    <p className="text-2xl font-extrabold text-gray-900 mt-0.5">{stat.value}</p>
-                  </div>
-                </div>
-              );
-            })}
+      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div className="flex items-center gap-2">
+            <Gavel size={16} className="text-blue-600" />
+            <h3 className="text-sm font-bold text-gray-900">Recent Auctions</h3>
           </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {quickLinks.map((link) => {
-              const Icon = link.icon;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="group bg-white rounded-2xl border border-gray-100 p-5 flex items-center gap-4 hover:shadow-lg hover:-translate-y-0.5 transition-all"
-                >
-                  <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${link.color} flex items-center justify-center shadow-md group-hover:scale-110 transition-transform`}>
-                    <Icon size={20} className="text-white" />
-                  </div>
-                  <span className="text-sm font-semibold text-gray-700 group-hover:text-indigo-600 transition-colors">
-                    {link.label}
-                  </span>
-                  <ArrowRight size={16} className="ml-auto text-gray-300 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all" />
-                </Link>
-              );
-            })}
+          <Link href="/admin/auctions" className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1">
+            View All <ArrowRight size={14} />
+          </Link>
+        </div>
+        {recentAuctions.length === 0 ? (
+          <p className="text-sm text-gray-400 text-center py-10">No auctions yet</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Seller</th>
+                  <th>Current Bid</th>
+                  <th>Status</th>
+                  <th>End Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentAuctions.map((a) => (
+                  <tr key={a.id}>
+                    <td>
+                      <div className="flex items-center gap-3">
+                        {a.product?.image ? (
+                          <Image
+                            src={a.product.image}
+                            alt={a.product.title || "Auction"}
+                            width={40}
+                            height={40}
+                            className="w-10 h-10 rounded-lg object-cover bg-gray-100"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
+                            <Package size={16} />
+                          </div>
+                        )}
+                        <span className="font-medium text-gray-900">{a.product?.title || "Untitled"}</span>
+                      </div>
+                    </td>
+                    <td className="text-gray-500 text-sm">{a.product?.seller?.name || "Unknown"}</td>
+                    <td className="font-semibold text-gray-900">${(a.currentPrice || 0).toLocaleString()}</td>
+                    <td>
+                      <StatusBadge variant={a.status?.toLowerCase() as "active" | "ended" | "pending" || "active"}>
+                        {a.status || "Unknown"}
+                      </StatusBadge>
+                    </td>
+                    <td className="text-gray-500 text-sm">
+                      <div className="flex items-center gap-1">
+                        <Clock size={12} />
+                        {a.endTime ? new Date(a.endTime).toLocaleDateString() : "N/A"}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  <Gavel size={16} className="text-indigo-600" />
-                  <h3 className="text-sm font-bold text-gray-900">Recent Auctions</h3>
-                </div>
-                <Link href="/admin/auctions" className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
-                  View All
-                </Link>
-              </div>
-              {auctions.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-10">No auctions yet</p>
-              ) : (
-                <ul className="divide-y divide-gray-50">
-                  {auctions.map((a) => (
-                    <li key={a.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition-colors">
-                      {a.product?.image ? (
-                        <Image
-                          src={a.product.image}
-                          alt={a.product.title || "Auction"}
-                          width={44}
-                          height={44}
-                          className="w-11 h-11 rounded-xl object-cover bg-gray-100"
-                        />
-                      ) : (
-                        <div className="w-11 h-11 rounded-xl bg-gray-100" />
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-900 truncate">{a.product?.title || "Untitled"}</p>
-                        <p className="text-xs text-gray-400 capitalize">{a.status?.toLowerCase()}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-bold text-gray-900">${(a.currentPrice || 0).toLocaleString()}</p>
-                        <p className="text-xs text-gray-400 flex items-center gap-1 justify-end">
-                          <Clock size={11} /> {a._count?.bids || 0} bids
-                        </p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  <Users size={16} className="text-indigo-600" />
-                  <h3 className="text-sm font-bold text-gray-900">Recent Users</h3>
-                </div>
-                <Link href="/admin/users" className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
-                  View All
-                </Link>
-              </div>
-              {users.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-10">No users yet</p>
-              ) : (
-                <ul className="divide-y divide-gray-50">
-                  {users.map((u) => (
-                    <li key={u.id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-gray-50 transition-colors">
-                      <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                        {(u.name || "?").charAt(0).toUpperCase()}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-900 truncate">{u.name}</p>
-                        <p className="text-xs text-gray-400 truncate">{u.email}</p>
-                      </div>
-                      <span className={`badge ${u.banned ? "badge-danger" : u.role === "ADMIN" ? "badge-gold" : u.role === "SELLER" ? "badge-info" : "badge-neutral"}`}>
-                        {u.banned ? "Banned" : u.role}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-        </>
-      )}
+        )}
+      </div>
     </div>
   );
 }

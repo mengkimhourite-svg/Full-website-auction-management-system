@@ -9,7 +9,7 @@ export default function DashboardStats({ stats }: DashboardStatsProps) {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {stats.map((stat) => (
         <div key={stat.title} className="stat-card flex items-center gap-5">
-          <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg shadow-${stat.color}/20`}>
+          <div className={`w-12 h-12 rounded-2xl bg-linear-to-br ${stat.color} flex items-center justify-center shadow-lg`}>
             <stat.icon size={22} className="text-white" />
           </div>
           <div>

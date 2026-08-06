@@ -38,7 +38,7 @@ const sections = [
 export default function TermsPage() {
   return (
     <div className="min-h-screen bg-white">
-      <section className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white py-20">
+      <section className="bg-linear-to-br from-slate-900 via-indigo-950 to-slate-900 text-white py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <span className="eyebrow eyebrow-dark mb-5">
             <Sparkles size={14} className="text-yellow-400" /> Legal
@@ -53,7 +53,7 @@ export default function TermsPage() {
       <section className="py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 mb-10">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-md">
+            <div className="w-11 h-11 rounded-xl bg-linear-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-md">
               <Scale size={22} className="text-white" />
             </div>
             <p className="text-sm text-gray-500">Last updated: July 2026</p>

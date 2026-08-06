@@ -33,12 +33,12 @@ export default function Footer() {
                 height={44}
                 className="w-11 h-11 object-contain rounded-xl shadow-lg shadow-indigo-500/20"
               />
-              <span className="text-xl font-extrabold bg-gradient-to-r from-purple-200 to-white/80 bg-clip-text text-transparent">
+              <span className="text-xl font-extrabold bg-linear-to-r from-purple-200 to-white/80 bg-clip-text text-transparent">
                 AuctionPro
               </span>
             </div>
             <p className="text-slate-400 text-sm leading-relaxed max-w-md">
-              The premium online auction platform connecting buyers and sellers worldwide. 
+              The premium online auction platform connecting buyers and sellers worldwide.
               Discover unique items, place secure bids, and win amazing treasures.
             </p>
             <div className="flex gap-3 mt-8">

@@ -17,10 +17,22 @@ const publicRoutes = [
   "/shipping",
   "/api/auth/login",
   "/api/auth/register",
+  "/api/auth/logout",
   "/api/contact",
+  "/api/health",
+  "/api/auctions",
 ];
 
 const publicPrefixes = ["/auctions/"];
+
+const roleRoutes: Record<string, string[]> = {
+  "/admin": ["ADMIN"],
+  "/seller": ["SELLER", "ADMIN"],
+  "/bidder": ["BIDDER", "ADMIN"],
+  "/profile": ["ADMIN", "SELLER", "BIDDER"],
+  "/notifications": ["ADMIN", "SELLER", "BIDDER"],
+  "/checkout": ["ADMIN", "SELLER", "BIDDER"],
+};
 
 const authPages = ["/login", "/register"];
 const apiPrefix = "/api";
@@ -60,17 +72,23 @@ export async function proxy(request: NextRequest) {
   }
 
   if (!payload) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
-  if (pathname.startsWith("/admin") && payload.role !== "ADMIN") {
-    return NextResponse.redirect(new URL("/bidder/reports", request.url));
-  }
-  if (pathname.startsWith("/seller") && payload.role !== "SELLER") {
-    return NextResponse.redirect(new URL("/bidder/reports", request.url));
-  }
-  if (pathname.startsWith("/bidder") && payload.role !== "BIDDER") {
-    return NextResponse.redirect(new URL("/", request.url));
+  for (const [route, allowedRoles] of Object.entries(roleRoutes)) {
+    if (pathname === route || pathname.startsWith(route + "/")) {
+      if (!allowedRoles.includes(payload.role)) {
+        const redirectTarget =
+          payload.role === "ADMIN"
+            ? "/admin"
+            : payload.role === "SELLER"
+              ? "/seller/auctions"
+              : "/";
+        return NextResponse.redirect(new URL(redirectTarget, request.url));
+      }
+    }
   }
 
   return NextResponse.next();

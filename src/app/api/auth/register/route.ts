@@ -1,17 +1,30 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { hashPassword, createToken, setAuthCookie } from "@/lib/auth";
+import { registerSchema } from "@/lib/validation";
+import { rateLimit, getRateLimitHeaders } from "@/lib/rateLimit";
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, password, role } = await request.json();
-
-    if (!name || !email || !password) {
+    const rl = rateLimit("register", { windowMs: 300000, maxRequests: 5 });
+    if (!rl.allowed) {
       return NextResponse.json(
-        { success: false, error: "Name, email, and password are required" },
+        { success: false, error: "Too many registration attempts. Please try again later." },
+        { status: 429, headers: getRateLimitHeaders(rl) }
+      );
+    }
+
+    const body = await request.json();
+    const parsed = registerSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { success: false, error: parsed.error.errors[0].message },
         { status: 400 }
       );
     }
+
+    const { name, email, password, role } = parsed.data;
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {

@@ -2,12 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getAuthUser } from "@/lib/auth";
 import { computeStatus } from "@/lib/auction";
+import { bidSchema } from "@/lib/validation";
+import { rateLimit, getRateLimitHeaders } from "@/lib/rateLimit";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const rl = rateLimit("place-bid", { windowMs: 30000, maxRequests: 20 });
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { success: false, error: "Too many bid attempts. Please slow down." },
+        { status: 429, headers: getRateLimitHeaders(rl) }
+      );
+    }
+
     const user = await getAuthUser();
     if (!user) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
@@ -20,11 +30,17 @@ export async function POST(
     }
 
     const { id } = await params;
-    const { amount } = await request.json();
+    const body = await request.json();
+    const parsed = bidSchema.safeParse(body);
 
-    if (!amount || amount <= 0) {
-      return NextResponse.json({ success: false, error: "Invalid bid amount" }, { status: 400 });
+    if (!parsed.success) {
+      return NextResponse.json(
+        { success: false, error: parsed.error.errors[0].message },
+        { status: 400 }
+      );
     }
+
+    const { amount } = parsed.data;
 
     const auction = await prisma.auction.findUnique({
       where: { id },
@@ -36,7 +52,10 @@ export async function POST(
     }
 
     if (auction.product.sellerId === user.id) {
-      return NextResponse.json({ success: false, error: "You cannot bid on your own auction" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "You cannot bid on your own auction" },
+        { status: 400 }
+      );
     }
 
     const effectiveStatus = computeStatus(auction);
@@ -46,7 +65,10 @@ export async function POST(
         data: { status: effectiveStatus },
       });
       return NextResponse.json(
-        { success: false, error: effectiveStatus === "UPCOMING" ? "Auction has not started yet" : "Auction has ended" },
+        {
+          success: false,
+          error: effectiveStatus === "UPCOMING" ? "Auction has not started yet" : "Auction has ended",
+        },
         { status: 400 }
       );
     }

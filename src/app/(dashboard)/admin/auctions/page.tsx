@@ -230,7 +230,7 @@ export default function AdminAuctionsPage() {
             </button>
             <button
               onClick={() => router.push("/admin/create")}
-              className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl hover:shadow-lg hover:-translate-y-0.5 transition-all"
+              className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-linear-gradient-to-r from-indigo-600 to-purple-600 rounded-xl hover:shadow-lg hover:-translate-y-0.5 transition-all"
             >
               <Plus size={16} />
               Create Auction

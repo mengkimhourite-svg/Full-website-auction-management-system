@@ -16,9 +16,7 @@
     "@prisma/client": "^6.19.3",
     "axios": "^1.11.0",
     "bcryptjs": "^3.0.2",
-    "bootstrap": "^5.3.8",
     "jose": "^6.2.5",
-    "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.468.0",
     "mongodb": "^7.5.0",
     "next": "^16.2.11",
@@ -30,7 +28,6 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
     "@types/bcryptjs": "^2.4.6",
-    "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^24.0.0",
     "@types/react": "^19.1.0",
     "eslint": "^9.39.5",

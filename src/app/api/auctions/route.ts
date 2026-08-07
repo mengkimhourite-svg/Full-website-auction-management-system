@@ -1,7 +1,9 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma"; // កែពី "@/lib/db"
+import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth";
 import { syncAuctionStatuses, serializeAuction, cleanText, cleanOptionalText } from "@/lib/auction";
+import { auctionSchema } from "@/lib/validation";
+import { rateLimit, getRateLimitHeaders } from "@/lib/rateLimit";
 
 export async function GET(request: NextRequest) {
   try {
@@ -42,6 +44,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const rl = rateLimit("create-auction", { windowMs: 60000, maxRequests: 10 });
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { success: false, error: "Too many requests. Please try again later." },
+        { status: 429, headers: getRateLimitHeaders(rl) }
+      );
+    }
+
     const user = await getAuthUser();
     if (!user) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
@@ -51,25 +61,26 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    const parsed = auctionSchema.safeParse({
+      productTitle: body.productTitle ?? body.title ?? "",
+      productDescription: body.productDescription ?? body.description ?? "",
+      productImage: body.productImage ?? body.image ?? undefined,
+      category: body.category ?? "General",
+      startPrice: Number(body.startPrice ?? body.startingPrice ?? 0),
+      startTime: body.startTime || new Date().toISOString(),
+      endTime: body.endTime,
+    });
 
-    // Normalize field names + clean values
-    const productTitle = cleanText(body.productTitle ?? body.title ?? "");
-    const productDescription = cleanText(body.productDescription ?? body.description ?? "");
-    const productImage = cleanOptionalText(body.productImage ?? body.image ?? "");
-    const category = cleanText(body.category ?? "", "General");
-    const startPrice = Number(body.startPrice ?? body.startingPrice ?? 0);
-    const endTime = body.endTime;
-    const startTime = body.startTime || new Date().toISOString();
-
-    // Validation
-    if (!productTitle || !Number.isFinite(startPrice) || startPrice < 0 || !endTime) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { success: false, error: "productTitle, startPrice (>=0), and endTime are required" },
+        { success: false, error: parsed.error.errors[0].message },
         { status: 400 }
       );
     }
 
-    const start = new Date(startTime);
+    const { productTitle, productDescription, productImage, category, startPrice, endTime, startTime } = parsed.data;
+
+    const start = new Date(startTime!);
     const end = new Date(endTime);
     if (end <= start) {
       return NextResponse.json(
@@ -78,18 +89,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create Product
     const product = await prisma.product.create({
       data: {
         title: productTitle,
-        description: productDescription,
-        image: productImage,
-        category,
+        description: productDescription || "",
+        image: productImage || null,
+        category: category || "General",
         sellerId: user.id,
       },
     });
 
-    // Create Auction
     const now = new Date();
     const auction = await prisma.auction.create({
       data: {

@@ -2,6 +2,8 @@
 import prisma from "@/lib/db";
 import { getAuthUser } from "@/lib/auth";
 import { syncAuctionStatuses } from "@/lib/auction";
+import { paymentSchema } from "@/lib/validation";
+import { rateLimit, getRateLimitHeaders } from "@/lib/rateLimit";
 
 export async function GET() {
   try {
@@ -16,41 +18,33 @@ export async function GET() {
     const payments = await prisma.payment.findMany({
       include: {
         user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
-          },
+          select: { id: true, name: true, email: true, role: true },
         },
         auction: {
           include: {
-            product: {
-              select: {
-                id: true,
-                title: true,
-              },
-            },
+            product: { select: { id: true, title: true } },
           },
         },
       },
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(
-      { success: true, data: payments },
-      { status: 200 }
-    );
+    return NextResponse.json({ success: true, data: payments }, { status: 200 });
   } catch {
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
+    const rl = rateLimit("payment", { windowMs: 60000, maxRequests: 5 });
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { success: false, error: "Too many payment attempts. Please try again later." },
+        { status: 429, headers: getRateLimitHeaders(rl) }
+      );
+    }
+
     const actor = await getAuthUser();
     if (!actor) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
@@ -59,14 +53,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Account suspended" }, { status: 403 });
     }
 
-    const { auctionId, method } = await request.json();
+    const body = await request.json();
+    const parsed = paymentSchema.safeParse(body);
 
-    if (!auctionId) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { success: false, error: "auctionId is required" },
+        { success: false, error: parsed.error.errors[0].message },
         { status: 400 }
       );
     }
+
+    const { auctionId, method } = parsed.data;
 
     await syncAuctionStatuses();
 
@@ -75,10 +72,7 @@ export async function POST(request: NextRequest) {
       include: { product: true },
     });
     if (!auction) {
-      return NextResponse.json(
-        { success: false, error: "Auction not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: "Auction not found" }, { status: 404 });
     }
 
     if (auction.status !== "ENDED") {
@@ -121,13 +115,9 @@ export async function POST(request: NextRequest) {
           method: method || "card",
         },
         include: {
-          user: {
-            select: { id: true, name: true, email: true },
-          },
+          user: { select: { id: true, name: true, email: true } },
           auction: {
-            include: {
-              product: { select: { id: true, title: true } },
-            },
+            include: { product: { select: { id: true, title: true } } },
           },
         },
       });
@@ -155,14 +145,8 @@ export async function POST(request: NextRequest) {
       return created;
     });
 
-    return NextResponse.json(
-      { success: true, data: payment },
-      { status: 201 }
-    );
+    return NextResponse.json({ success: true, data: payment }, { status: 201 });
   } catch {
-    return NextResponse.json(
-      { success: false, error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }

@@ -15,9 +15,19 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const scope = searchParams.get("scope") || "mine";
 
+    const isAdmin = user.role === "ADMIN";
+    const where: Record<string, unknown> = {};
+
+    if (scope === "all" && isAdmin) {
+      // Admin sees all bids
+    } else {
+      where.userId = user.id;
+    }
+
     const bids = await prisma.bid.findMany({
-      where: { userId: user.id },
+      where,
       include: {
+        user: { select: { id: true, name: true, email: true, role: true, avatar: true } },
         auction: {
           include: {
             product: {
@@ -25,7 +35,7 @@ export async function GET(request: NextRequest) {
                 seller: { select: { id: true, name: true } },
               },
             },
-            payments: {
+            payments: isAdmin ? {} : {
               where: { userId: user.id },
               select: { id: true, status: true },
             },
@@ -50,7 +60,9 @@ export async function GET(request: NextRequest) {
         ...bid,
         auction: {
           ...auction,
-          paymentStatus: auction.payments[0]?.status || "PENDING",
+          paymentStatus: Array.isArray(auction.payments) && auction.payments.length > 0
+            ? auction.payments[0]?.status || "PENDING"
+            : "PENDING",
         },
       }));
       return NextResponse.json({ success: true, data: withPayment }, { status: 200 });

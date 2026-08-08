@@ -52,16 +52,16 @@ export default function BidderReportsPage() {
   const wonAuctions = won.map((w) => w.auction).filter((a): a is Auction => !!a);
 
   const stats = [
-    { label: "Total Bids", value: bids.length, icon: Gavel, color: "from-indigo-600 to-sky-500" },
-    { label: "Active Auctions", value: activeAuctionIds.size, icon: Clock, color: "from-emerald-500 to-teal-500" },
-    { label: "Won Auctions", value: wonAuctions.length, icon: Trophy, color: "from-amber-500 to-orange-500" },
-    { label: "Watchlist", value: watchlistCount, icon: Eye, color: "from-purple-500 to-pink-500" },
+    { label: "Total Bids", value: bids.length, icon: Gavel, color: "from-indigo-500 to-indigo-600" },
+    { label: "Active Auctions", value: activeAuctionIds.size, icon: Clock, color: "from-emerald-500 to-emerald-600" },
+    { label: "Won Auctions", value: wonAuctions.length, icon: Trophy, color: "from-amber-500 to-amber-600" },
+    { label: "Watchlist", value: watchlistCount, icon: Eye, color: "from-violet-500 to-violet-600" },
   ];
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-        <Loader2 size={32} className="animate-spin mb-3" />
+      <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+        <Loader2 size={28} className="animate-spin mb-2" />
         <p className="text-sm">Loading dashboard...</p>
       </div>
     );
@@ -69,12 +69,12 @@ export default function BidderReportsPage() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <AlertCircle size={32} className="text-red-400 mb-3" />
+      <div className="flex flex-col items-center justify-center py-16">
+        <AlertCircle size={28} className="text-red-400 mb-2" />
         <p className="text-sm font-medium text-red-500">{error}</p>
         <button
           onClick={() => window.location.reload()}
-          className="mt-4 px-5 py-2.5 text-sm font-semibold text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-all"
+          className="mt-3 px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
         >
           Retry
         </button>
@@ -83,15 +83,10 @@ export default function BidderReportsPage() {
   }
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-md">
-          <TrendingUp size={20} />
-        </div>
-        <div>
-          <h1 className="text-xl font-extrabold text-gray-900">Bidder Dashboard</h1>
-          <p className="text-sm text-gray-500">Overview of your bidding activity</p>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-lg font-bold text-gray-900">Bidder Dashboard</h1>
+        <p className="text-sm text-gray-500 mt-0.5">Overview of your bidding activity</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -100,14 +95,12 @@ export default function BidderReportsPage() {
           return (
             <div key={stat.label} className="stat-card">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-gray-500">{stat.label}</span>
-                <div
-                  className={`w-9 h-9 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center text-white shadow-sm`}
-                >
-                  <Icon size={16} />
+                <span className="text-xs font-medium text-gray-500">{stat.label}</span>
+                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center text-white`}>
+                  <Icon size={14} />
                 </div>
               </div>
-              <p className="text-2xl font-extrabold text-gray-900 mt-3">{stat.value}</p>
+              <p className="text-xl font-bold text-gray-900 mt-2">{stat.value}</p>
             </div>
           );
         })}
@@ -115,12 +108,12 @@ export default function BidderReportsPage() {
 
       {activeBids.length > 0 ? (
         <section>
-          <div className="flex items-center gap-2 mb-4">
-            <Clock size={18} className="text-indigo-600" />
-            <h2 className="text-lg font-bold text-gray-900">Active Bids</h2>
+          <div className="flex items-center gap-2 mb-3">
+            <Clock size={16} className="text-indigo-600" />
+            <h2 className="text-sm font-semibold text-gray-900">Active Bids</h2>
             <span className="badge badge-info">{activeBids.length}</span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {activeBids.map((bid) => (
               <ActiveBidCard key={bid.id} bid={bid} />
             ))}
@@ -128,17 +121,17 @@ export default function BidderReportsPage() {
         </section>
       ) : (
         <section>
-          <div className="flex items-center gap-2 mb-4">
-            <Clock size={18} className="text-indigo-600" />
-            <h2 className="text-lg font-bold text-gray-900">Active Bids</h2>
+          <div className="flex items-center gap-2 mb-3">
+            <Clock size={16} className="text-indigo-600" />
+            <h2 className="text-sm font-semibold text-gray-900">Active Bids</h2>
           </div>
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center text-gray-400">
-            <Gavel size={36} className="mx-auto mb-3 opacity-40" />
+          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
+            <Gavel size={32} className="mx-auto mb-2 text-gray-300" />
             <p className="text-sm font-medium text-gray-500">No active bids yet</p>
-            <p className="text-xs text-gray-400 mt-1">Browse auctions and place your first bid.</p>
+            <p className="text-xs text-gray-400 mt-0.5">Browse auctions and place your first bid.</p>
             <Link
               href="/auctions"
-              className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-sky-500 rounded-xl hover:shadow-lg transition-all"
+              className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors"
             >
               Browse Auctions
             </Link>
@@ -148,12 +141,12 @@ export default function BidderReportsPage() {
 
       {wonAuctions.length > 0 ? (
         <section>
-          <div className="flex items-center gap-2 mb-4">
-            <Trophy size={18} className="text-amber-500" />
-            <h2 className="text-lg font-bold text-gray-900">Won Auctions</h2>
+          <div className="flex items-center gap-2 mb-3">
+            <Trophy size={16} className="text-amber-500" />
+            <h2 className="text-sm font-semibold text-gray-900">Won Auctions</h2>
             <span className="badge badge-success">{wonAuctions.length}</span>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2.5">
             {wonAuctions.map((auction) => (
               <WinningAuctionCard key={auction.id} auction={auction} />
             ))}
@@ -162,14 +155,14 @@ export default function BidderReportsPage() {
       ) : (
         !loading && (
           <section>
-            <div className="flex items-center gap-2 mb-4">
-              <Trophy size={18} className="text-amber-500" />
-              <h2 className="text-lg font-bold text-gray-900">Won Auctions</h2>
+            <div className="flex items-center gap-2 mb-3">
+              <Trophy size={16} className="text-amber-500" />
+              <h2 className="text-sm font-semibold text-gray-900">Won Auctions</h2>
             </div>
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center text-gray-400">
-              <Trophy size={36} className="mx-auto mb-3 opacity-40" />
+            <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
+              <Trophy size={32} className="mx-auto mb-2 text-gray-300" />
               <p className="text-sm font-medium text-gray-500">No auctions won yet</p>
-              <p className="text-xs text-gray-400 mt-1">Keep bidding — your next win is just around the corner.</p>
+              <p className="text-xs text-gray-400 mt-0.5">Keep bidding — your next win is just around the corner.</p>
             </div>
           </section>
         )

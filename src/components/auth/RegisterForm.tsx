@@ -4,9 +4,11 @@ import { useState } from "react";
 import { User, Mail, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function RegisterForm() {
   const router = useRouter();
+  const { setUser } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,6 +31,9 @@ export default function RegisterForm() {
         setError(data.error || "Registration failed");
         return;
       }
+      if (data.data) {
+        setUser(data.data);
+      }
       router.push("/");
     } catch {
       setError("Network error. Please try again.");
@@ -48,64 +53,71 @@ export default function RegisterForm() {
         )}
 
         <div className="auth-input-group">
-          <label>Full Name</label>
+          <label htmlFor="reg-name">Full Name</label>
           <div className="auth-input-box">
             <input
+              id="reg-name"
               type="text"
-              placeholder="Your full name"
+              placeholder="Enter your full name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
             />
             <span className="auth-input-icon">
-              <User size={18} />
+              <User size={16} />
             </span>
           </div>
         </div>
 
         <div className="auth-input-group">
-          <label>Email Address</label>
+          <label htmlFor="reg-email">Email Address</label>
           <div className="auth-input-box">
             <input
+              id="reg-email"
               type="email"
-              placeholder="example@gmail.com"
+              placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
             <span className="auth-input-icon">
-              <Mail size={18} />
+              <Mail size={16} />
             </span>
           </div>
         </div>
 
         <div className="auth-input-group">
-          <label>Password</label>
+          <label htmlFor="reg-password">Password</label>
           <div className="auth-input-box">
             <input
+              id="reg-password"
               type={showPassword ? "text" : "password"}
-              placeholder="Create a password"
+              placeholder="Create a password (min. 6 characters)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              minLength={6}
             />
             <span
               className="auth-input-icon"
               onClick={() => setShowPassword(!showPassword)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && setShowPassword(!showPassword)}
             >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </span>
           </div>
         </div>
 
         <button type="submit" className="auth-btn" disabled={loading}>
-          {loading ? <Loader2 size={18} className="animate-spin mx-auto" /> : "Create Account"}
+          {loading ? <Loader2 size={16} className="animate-spin mx-auto" /> : "Create Account"}
         </button>
       </form>
 
       <p className="auth-footer-text">
         Already have an account?{" "}
-        <Link href="/login">Login</Link>
+        <Link href="/login">Sign in</Link>
       </p>
     </>
   );

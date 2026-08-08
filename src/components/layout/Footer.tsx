@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Mail, Phone, MapPin, Clock, Facebook, Instagram, Twitter, Youtube, ArrowUpRight } from "lucide-react";
+import { Mail, Phone, MapPin, Clock, Facebook, Instagram, Twitter, Youtube } from "lucide-react";
 
 const footerLinks = {
   platform: [
@@ -22,26 +22,26 @@ const footerLinks = {
 export default function Footer() {
   return (
     <footer className="bg-slate-900 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 lg:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8">
           <div className="lg:col-span-2">
-            <div className="flex items-center gap-3 mb-5">
+            <div className="flex items-center gap-2.5 mb-4">
               <Image
                 src="/logo.png"
                 alt="AuctionPro logo"
-                width={44}
-                height={44}
-                className="w-11 h-11 object-contain rounded-xl shadow-lg shadow-indigo-500/20"
+                width={32}
+                height={32}
+                className="w-8 h-8 object-contain rounded-lg"
               />
-              <span className="text-xl font-extrabold bg-linear-to-r from-purple-200 to-white/80 bg-clip-text text-transparent">
+              <span className="text-lg font-bold text-white">
                 AuctionPro
               </span>
             </div>
-            <p className="text-slate-400 text-sm leading-relaxed max-w-md">
+            <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
               The premium online auction platform connecting buyers and sellers worldwide.
               Discover unique items, place secure bids, and win amazing treasures.
             </p>
-            <div className="flex gap-3 mt-8">
+            <div className="flex gap-2 mt-6">
               {[
                 { icon: Facebook, href: "#", name: "Facebook" },
                 { icon: Twitter, href: "#", name: "Twitter" },
@@ -49,24 +49,23 @@ export default function Footer() {
                 { icon: Youtube, href: "#", name: "Youtube" },
               ].map(({ icon: Icon, href, name }) => (
                 <a key={name} href={href}
-                  className="w-10 h-10 bg-slate-800 hover:bg-purple-600 rounded-xl flex items-center justify-center text-slate-400 hover:text-white transition-all duration-300"
+                  className="w-9 h-9 bg-slate-800 hover:bg-slate-700 rounded-lg flex items-center justify-center text-slate-400 hover:text-white transition-colors"
                 >
-                  <Icon size={16} />
+                  <Icon size={15} />
                 </a>
               ))}
             </div>
           </div>
 
           <div>
-            <h5 className="text-white font-semibold mb-5 text-sm tracking-wider uppercase">Platform</h5>
-            <ul className="space-y-3.5">
+            <h5 className="text-white font-semibold mb-4 text-xs tracking-wider uppercase">Platform</h5>
+            <ul className="space-y-2.5">
               {footerLinks.platform.map((link) => (
                 <li key={link.label}>
                   <Link href={link.href}
-                    className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-purple-400 transition-colors group"
+                    className="text-sm text-slate-400 hover:text-white transition-colors"
                   >
                     {link.label}
-                    <ArrowUpRight size={12} className="opacity-0 -translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all" />
                   </Link>
                 </li>
               ))}
@@ -74,15 +73,14 @@ export default function Footer() {
           </div>
 
           <div>
-            <h5 className="text-white font-semibold mb-5 text-sm tracking-wider uppercase">Support</h5>
-            <ul className="space-y-3.5">
+            <h5 className="text-white font-semibold mb-4 text-xs tracking-wider uppercase">Support</h5>
+            <ul className="space-y-2.5">
               {footerLinks.support.map((link) => (
                 <li key={link.label}>
                   <Link href={link.href}
-                    className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-purple-400 transition-colors group"
+                    className="text-sm text-slate-400 hover:text-white transition-colors"
                   >
                     {link.label}
-                    <ArrowUpRight size={12} className="opacity-0 -translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all" />
                   </Link>
                 </li>
               ))}
@@ -90,22 +88,22 @@ export default function Footer() {
           </div>
 
           <div>
-            <h5 className="text-white font-semibold mb-5 text-sm tracking-wider uppercase">Contact</h5>
-            <ul className="space-y-4 text-sm">
-              <li className="flex items-start gap-3">
-                <MapPin size={16} className="mt-0.5 text-purple-400 shrink-0" />
+            <h5 className="text-white font-semibold mb-4 text-xs tracking-wider uppercase">Contact</h5>
+            <ul className="space-y-3 text-sm">
+              <li className="flex items-start gap-2.5">
+                <MapPin size={14} className="mt-0.5 text-slate-500 shrink-0" />
                 <span className="text-slate-400">123 Merchant St, London, UK</span>
               </li>
-              <li className="flex items-center gap-3">
-                <Mail size={16} className="text-purple-400 shrink-0" />
-                <a href="mailto:info@auctionpro.com" className="text-slate-400 hover:text-purple-400 transition-colors">info@auctionpro.com</a>
+              <li className="flex items-center gap-2.5">
+                <Mail size={14} className="text-slate-500 shrink-0" />
+                <a href="mailto:info@auctionpro.com" className="text-slate-400 hover:text-white transition-colors">info@auctionpro.com</a>
               </li>
-              <li className="flex items-center gap-3">
-                <Phone size={16} className="text-purple-400 shrink-0" />
+              <li className="flex items-center gap-2.5">
+                <Phone size={14} className="text-slate-500 shrink-0" />
                 <span className="text-slate-400">+44 20 7123 4567</span>
               </li>
-              <li className="flex items-center gap-3">
-                <Clock size={16} className="text-purple-400 shrink-0" />
+              <li className="flex items-center gap-2.5">
+                <Clock size={14} className="text-slate-500 shrink-0" />
                 <span className="text-slate-400">24/7 Live Support</span>
               </li>
             </ul>
@@ -113,13 +111,13 @@ export default function Footer() {
         </div>
       </div>
       <div className="border-t border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-slate-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-xs text-slate-500">
             &copy; {new Date().getFullYear()} AuctionPro. All rights reserved.
           </p>
-          <div className="flex items-center gap-6 text-sm text-slate-500">
-            <Link href="/privacy" className="hover:text-purple-400 transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-purple-400 transition-colors">Terms of Service</Link>
+          <div className="flex items-center gap-5 text-xs text-slate-500">
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
           </div>
         </div>
       </div>

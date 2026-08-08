@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  serverExternalPackages: ["mongodb"],
+  poweredByHeader: false,
+  compress: true,
 };
 
 export default nextConfig;

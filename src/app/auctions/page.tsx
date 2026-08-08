@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, SlidersHorizontal, AlertCircle, Sparkles } from "lucide-react";
+import { Search, SlidersHorizontal, AlertCircle } from "lucide-react";
 import AuctionGrid from "@/components/auction/AuctionGrid";
 import FilterPanel from "@/components/search/FilterPanel";
 import SortDropdown from "@/components/search/SortDropdown";
-import Reveal from "@/components/animations/Reveal";
 import type { Auction } from "@/types";
 
 const categories = ["Watches", "Jewelry", "Art", "Cars", "Wine", "Antiques", "Collectibles", "Electronics"];
@@ -80,50 +79,41 @@ export default function AuctionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white pt-24">
+    <div className="min-h-screen bg-gray-50 pt-20">
       {/* Hero Banner */}
-      <section className="bg-linear-to-br from-slate-900 via-indigo-950 to-slate-900 text-white py-20">
+      <section className="bg-slate-900 text-white py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <Reveal variant="scale" className="mb-5">
-            <span className="eyebrow eyebrow-dark">
-              <Sparkles size={14} className="text-yellow-400" /> Browse Auctions
-            </span>
-          </Reveal>
-          <Reveal delay={120}>
-            <h1 className="text-4xl lg:text-6xl font-extrabold tracking-tight">Discover &amp; Bid</h1>
-          </Reveal>
-          <Reveal delay={240}>
-            <p className="text-white/60 mt-4 text-lg max-w-2xl mx-auto">
-              Find exclusive items from premium sellers around the world
-            </p>
-          </Reveal>
+          <h1 className="text-3xl lg:text-5xl font-bold tracking-tight">Discover &amp; Bid</h1>
+          <p className="text-white/50 mt-3 text-base max-w-xl mx-auto">
+            Find exclusive items from premium sellers around the world
+          </p>
         </div>
       </section>
 
       {/* Search & Filters */}
-      <section className="border-b border-gray-100 bg-white sticky top-18 z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+      <section className="border-b border-gray-200 bg-white sticky top-16 z-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <div className="flex-1 relative">
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search auctions..."
-                className="w-full pl-11 pr-4 py-3 border-2 border-gray-100 rounded-xl outline-none text-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 transition-all bg-gray-50 focus:bg-white"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg outline-none text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-50 transition-all bg-white"
               />
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <SortDropdown options={sortOptions} onSort={setSortBy} />
               <button onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center gap-2 px-4 py-3 rounded-xl border-2 text-sm font-semibold transition-all ${showFilters ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-gray-100 text-gray-600 hover:border-gray-300'}`}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors ${showFilters ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600 hover:border-gray-300 bg-white'}`}
               >
-                <SlidersHorizontal size={16} /> Filters
+                <SlidersHorizontal size={15} /> Filters
               </button>
             </div>
           </div>
           {showFilters && (
-            <div className="mt-4 animate-fade-down">
+            <div className="mt-3 animate-fade-down">
               <FilterPanel categories={categories} onFilter={(f) => setSelectedCategories(f.categories || [])} />
             </div>
           )}
@@ -131,17 +121,17 @@ export default function AuctionsPage() {
       </section>
 
       {/* Results */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
             <div className="loading-spinner" />
             <p className="text-gray-500 text-sm">Loading auctions...</p>
           </div>
         ) : error ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <AlertCircle size={48} className="text-gray-300" />
-            <p className="text-gray-500">{error}</p>
-            <button onClick={() => window.location.reload()} className="btn-primary">Try Again</button>
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <AlertCircle size={40} className="text-gray-300" />
+            <p className="text-gray-500 text-sm">{error}</p>
+            <button onClick={() => window.location.reload()} className="btn-primary text-sm">Try Again</button>
           </div>
         ) : (
           <AuctionGrid auctions={filtered} loading={false} />

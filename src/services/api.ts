@@ -11,6 +11,13 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401 && typeof window !== "undefined") {
+      // Clear any stale client state on auth failure
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch {
+        // ignore
+      }
       window.location.href = "/login";
     }
     return Promise.reject(error);

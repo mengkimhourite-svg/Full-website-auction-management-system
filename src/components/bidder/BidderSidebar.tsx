@@ -23,32 +23,28 @@ export default function BidderSidebar({ open, onClose }: BidderSidebarProps) {
     <>
       {open && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={onClose} />}
       <aside className={`dashboard-sidebar ${open ? "open" : ""}`}>
-        <div className="flex items-center justify-between p-5 border-b border-white/10">
+        <div className="flex items-center justify-between px-4 py-4 border-b border-white/5">
           <Link href="/" className="flex items-center gap-2.5 no-underline">
-            <Image
-              src="/logo.png"
-              alt="AuctionPro logo"
-              width={36}
-              height={36}
-              className="w-9 h-9 object-contain rounded-xl shadow-md ring-1 ring-white/10"
-            />
-            <span className="text-base font-extrabold bg-linear-to-r from-purple-300 to-purple-200 bg-clip-text text-transparent">Bidder</span>
+            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-600 shrink-0">
+              <Image src="/logo.png" alt="AuctionPro" width={24} height={24} className="w-6 h-6 object-contain" />
+            </span>
+            <span className="text-base font-bold text-white">Bidder</span>
           </Link>
-          <button onClick={onClose} className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:bg-white/10 transition-colors">
-            <X size={18} />
+          <button onClick={onClose} className="lg:hidden p-1.5 rounded-md text-slate-400 hover:bg-white/10 transition-colors">
+            <X size={16} />
           </button>
         </div>
 
-        <div className="px-3 py-4">
-          <p className="sidebar-section-label mb-3">Bidder Panel</p>
-          <nav className="space-y-1.5">
+        <div className="px-3 py-3">
+          <p className="sidebar-section-label mb-2">Bidder Panel</p>
+          <nav className="space-y-0.5">
             {links.map(({ label, href, icon: Icon }) => {
               const isActive = pathname === href || pathname.startsWith(href + "/");
               return (
                 <Link key={href} href={href} onClick={onClose}
                   className={`sidebar-link ${isActive ? "sidebar-link-active" : ""}`}
                 >
-                  <Icon size={18} className={isActive ? "text-purple-300" : ""} />
+                  <Icon size={17} className={isActive ? "text-indigo-400" : ""} />
                   {label}
                 </Link>
               );
@@ -56,9 +52,9 @@ export default function BidderSidebar({ open, onClose }: BidderSidebarProps) {
           </nav>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-3 border-t border-white/10">
-          <Link href="/" className="sidebar-link text-slate-300/70">
-            <LogOut size={18} className="text-slate-400" />
+        <div className="absolute bottom-0 left-0 right-0 px-3 py-3 border-t border-white/5">
+          <Link href="/" className="sidebar-link text-slate-400">
+            <LogOut size={17} />
             Back to Website
           </Link>
         </div>

@@ -34,3 +34,31 @@ export async function PUT(
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const notification = await prisma.notification.findUnique({ where: { id } });
+    if (!notification) {
+      return NextResponse.json({ success: false, error: "Notification not found" }, { status: 404 });
+    }
+
+    if (notification.userId !== currentUser.id && currentUser.role !== "ADMIN") {
+      return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+    }
+
+    await prisma.notification.delete({ where: { id } });
+
+    return NextResponse.json({ success: true, data: { message: "Notification deleted" } }, { status: 200 });
+  } catch {
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
+  }
+}

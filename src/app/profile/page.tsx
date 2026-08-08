@@ -99,9 +99,9 @@ export default function ProfilePage() {
   if (error && !currentUser) {
     return (
       <div className="loading-page">
-        <AlertCircle size={40} className="text-red-400" />
-        <h2 className="text-xl font-bold text-gray-900">Error</h2>
-        <p className="text-gray-500">{error}</p>
+        <AlertCircle size={36} className="text-red-400" />
+        <h2 className="text-lg font-semibold text-gray-900">Error</h2>
+        <p className="text-gray-500 text-sm">{error}</p>
       </div>
     );
   }
@@ -109,21 +109,21 @@ export default function ProfilePage() {
   if (!currentUser) {
     return (
       <div className="loading-page">
-        <AlertCircle size={40} className="text-gray-300" />
-        <h2 className="text-xl font-bold text-gray-900">Not Logged In</h2>
-        <p className="text-gray-500">Please login to view your profile.</p>
+        <AlertCircle size={36} className="text-gray-300" />
+        <h2 className="text-lg font-semibold text-gray-900">Not Logged In</h2>
+        <p className="text-gray-500 text-sm">Please login to view your profile.</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-24">
+    <div className="min-h-screen bg-gray-50 py-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-6">
-          <h1 className="text-2xl font-extrabold text-gray-900">My Profile</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage your account settings and preferences</p>
+        <div className="mb-5">
+          <h1 className="text-xl font-bold text-gray-900">My Profile</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Manage your account settings and preferences</p>
         </div>
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-3 gap-6">
           <div><ProfileCard user={currentUser} /></div>
           <div className="md:col-span-2">
             <ProfileForm

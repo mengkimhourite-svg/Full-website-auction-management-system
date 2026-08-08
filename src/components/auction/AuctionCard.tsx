@@ -17,38 +17,38 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
 
   return (
     <Link href={`/auctions/${auction.id}`} className="block no-underline">
-      <div className="card-premium group">
-        <div className="relative h-52 overflow-hidden">
+      <div className="card group">
+        <div className="relative h-48 overflow-hidden">
           {product?.image ? (
-            <Image src={product.image} alt={product.title || "Auction item"} fill sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw" className="object-cover group-hover:scale-110 transition-all duration-700 ease-out" />
+            <Image src={product.image} alt={product.title || "Auction item"} fill sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw" className="object-cover group-hover:scale-[1.03] transition-transform duration-500" />
           ) : (
-            <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400"><ImageOff size={32} /></div>
+            <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-300"><ImageOff size={28} /></div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
           <div className="absolute top-3 left-3">
             <span className={`badge ${isEnded ? "badge-danger" : status === "ACTIVE" ? "badge-success" : "badge-warning"}`}>
               {isEnded ? "Ended" : status}
             </span>
           </div>
-          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm">
-            <Clock size={12} className="text-purple-600" />
+          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm rounded-md px-2.5 py-1 text-xs font-medium text-gray-700">
+            <Clock size={11} />
             <CountdownTimer endTime={auction.endTime} />
           </div>
         </div>
-        <div className="p-5">
-          <h3 className="font-bold text-gray-900 group-hover:text-indigo-700 transition-colors leading-tight">{product?.title || "Untitled"}</h3>
-          <div className="flex items-center justify-between mt-3">
+        <div className="p-4">
+          <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors leading-tight text-sm">{product?.title || "Untitled"}</h3>
+          <div className="flex items-center justify-between mt-2.5">
             <div>
-              <p className="text-xs text-gray-500 font-medium">Current Bid</p>
-              <p className="text-xl font-extrabold text-gray-900 mt-0.5">${(auction.currentPrice || 0).toLocaleString()}</p>
+              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Current Bid</p>
+              <p className="text-lg font-bold text-gray-900 mt-0.5">${(auction.currentPrice || 0).toLocaleString()}</p>
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-gray-500">
-              <Eye size={13} />
+            <div className="flex items-center gap-1 text-xs text-gray-500">
+              <Eye size={12} />
               {auction._count?.bids || auction.bids?.length || 0} bids
             </div>
           </div>
-          <div className="mt-4 w-full flex items-center justify-center gap-2 bg-linear-to-r from-purple-500 to-purple-600 text-white py-2.5 rounded-full font-semibold text-sm hover:from-purple-600 hover:to-purple-700 hover:shadow-lg hover:shadow-purple-100 transition-all group/btn">
-            <TrendingUp size={15} className="group-hover/btn:translate-x-0.5 transition-transform" />
+          <div className="mt-3 w-full flex items-center justify-center gap-1.5 bg-indigo-600 text-white py-2 rounded-lg font-medium text-sm hover:bg-indigo-700 transition-colors">
+            <TrendingUp size={14} />
             {isEnded ? "View Details" : "Place Bid"}
           </div>
         </div>

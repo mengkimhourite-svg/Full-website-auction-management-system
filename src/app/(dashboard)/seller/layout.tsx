@@ -21,30 +21,30 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
 
       <div className="dashboard-main">
         <header className="dashboard-header">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-xl hover:bg-indigo-50 text-indigo-700 lg:hidden transition-all"
+              className="p-2 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white lg:hidden transition-colors"
             >
-              <Menu size={22} />
+              <Menu size={20} />
             </button>
-            <div className="flex items-center gap-2.5">
-              <span className="w-8 h-8 rounded-lg bg-linear-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md">
-                <Gavel size={15} />
+            <div className="flex items-center gap-2">
+              <span className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
+                <Gavel size={14} />
               </span>
-              <h2 className="text-lg font-bold text-gray-900 hidden sm:block">Seller Dashboard</h2>
+              <h2 className="text-sm font-semibold text-gray-900 hidden sm:block">Seller Dashboard</h2>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/notifications" className="p-2.5 rounded-xl hover:bg-indigo-50 text-gray-500 hover:text-indigo-700 transition-all relative">
-              <Bell size={20} />
+          <div className="flex items-center gap-2">
+            <Link href="/notifications" className="p-2 rounded-lg hover:bg-white/10 text-gray-500 hover:text-indigo-600 transition-colors relative">
+              <Bell size={19} />
             </Link>
             <button
               onClick={handleLogout}
               title="Logout"
-              className="p-2.5 rounded-xl hover:bg-red-50 text-gray-500 hover:text-red-600 transition-all"
+              className="p-2 rounded-lg hover:bg-white/10 text-gray-500 hover:text-red-600 transition-colors"
             >
-              <LogOut size={20} />
+              <LogOut size={19} />
             </button>
           </div>
         </header>

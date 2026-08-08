@@ -3,7 +3,7 @@ import prisma from "@/lib/db";
 import { getAuthUser } from "@/lib/auth";
 import { syncAuctionStatuses } from "@/lib/auction";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const user = await getAuthUser();
     if (!user) {
@@ -12,9 +12,19 @@ export async function GET() {
 
     await syncAuctionStatuses();
 
+    const { searchParams } = new URL(request.url);
+    const scope = searchParams.get("scope") || "mine";
+    const isAdmin = user.role === "ADMIN";
+
+    const where: Record<string, unknown> = {};
+    if (scope !== "all" || !isAdmin) {
+      where.userId = user.id;
+    }
+
     const watchlist = await prisma.watchlist.findMany({
-      where: { userId: user.id },
+      where,
       include: {
+        user: { select: { id: true, name: true, email: true } },
         auction: {
           include: {
             product: {

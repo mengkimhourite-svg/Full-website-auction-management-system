@@ -41,9 +41,10 @@ export default function LoginForm() {
         )}
 
         <div className="auth-input-group">
-          <label>Email Address</label>
+          <label htmlFor="login-email">Email Address</label>
           <div className="auth-input-box">
             <input
+              id="login-email"
               type="email"
               placeholder="Enter your email"
               value={email}
@@ -51,15 +52,16 @@ export default function LoginForm() {
               required
             />
             <span className="auth-input-icon">
-              <Mail size={18} />
+              <Mail size={16} />
             </span>
           </div>
         </div>
 
         <div className="auth-input-group">
-          <label>Password</label>
+          <label htmlFor="login-password">Password</label>
           <div className="auth-input-box">
             <input
+              id="login-password"
               type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
               value={password}
@@ -69,8 +71,11 @@ export default function LoginForm() {
             <span
               className="auth-input-icon"
               onClick={() => setShowPassword(!showPassword)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && setShowPassword(!showPassword)}
             >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </span>
           </div>
         </div>
@@ -88,13 +93,13 @@ export default function LoginForm() {
         </div>
 
         <button type="submit" className="auth-btn" disabled={loading}>
-          {loading ? <Loader2 size={18} className="animate-spin mx-auto" /> : "Login"}
+          {loading ? <Loader2 size={16} className="animate-spin mx-auto" /> : "Sign In"}
         </button>
       </form>
 
       <p className="auth-footer-text">
         Don&apos;t have an account?{" "}
-        <Link href="/register">Create Account</Link>
+        <Link href="/register">Create one</Link>
       </p>
     </>
   );

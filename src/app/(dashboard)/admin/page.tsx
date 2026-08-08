@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  HandMetal,
   Calendar,
   Gavel,
   Package,
@@ -19,12 +18,10 @@ import {
   ArrowRight,
 } from "lucide-react";
 import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
   AreaChart,
   Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -86,23 +83,23 @@ export default function AdminDashboardHomePage() {
   const activeAuctions = auctions.filter((a) => a.status === "ACTIVE").length;
 
   const stats = [
-    { title: "Total Auctions", value: totalAuctions, icon: <Gavel size={20} />, color: "from-blue-500 to-blue-600", description: "All auctions listed" },
-    { title: "Total Products", value: uniqueProducts, icon: <Package size={20} />, color: "from-emerald-500 to-emerald-600", description: "Products in system" },
-    { title: "Total Users", value: totalUsers, icon: <Users size={20} />, color: "from-purple-500 to-purple-600", description: "Registered users" },
-    { title: "Total Bids", value: totalBids, icon: <Wallet size={20} />, color: "from-orange-500 to-orange-600", description: "Bids placed" },
-    { title: "Revenue", value: `$${totalRevenue.toLocaleString()}`, icon: <DollarSign size={20} />, color: "from-green-500 to-green-600", description: "Total revenue" },
-    { title: "Pending Payments", value: pendingPayments, icon: <CreditCard size={20} />, color: "from-yellow-500 to-yellow-600", description: "Awaiting processing" },
-    { title: "Active Auctions", value: activeAuctions, icon: <Activity size={20} />, color: "from-cyan-500 to-blue-500", description: "Currently running" },
-    { title: "Notifications", value: notificationCount, icon: <Bell size={20} />, color: "from-red-500 to-red-600", description: "Unread notifications" },
+    { title: "Total Auctions", value: totalAuctions, icon: <Gavel size={18} />, color: "from-blue-500 to-blue-600", description: "All auctions listed" },
+    { title: "Total Products", value: uniqueProducts, icon: <Package size={18} />, color: "from-emerald-500 to-emerald-600", description: "Products in system" },
+    { title: "Total Users", value: totalUsers, icon: <Users size={18} />, color: "from-violet-500 to-violet-600", description: "Registered users" },
+    { title: "Total Bids", value: totalBids, icon: <Wallet size={18} />, color: "from-amber-500 to-amber-600", description: "Bids placed" },
+    { title: "Revenue", value: `$${totalRevenue.toLocaleString()}`, icon: <DollarSign size={18} />, color: "from-green-500 to-green-600", description: "Total revenue" },
+    { title: "Pending Payments", value: pendingPayments, icon: <CreditCard size={18} />, color: "from-orange-500 to-orange-600", description: "Awaiting processing" },
+    { title: "Active Auctions", value: activeAuctions, icon: <Activity size={18} />, color: "from-cyan-500 to-cyan-600", description: "Currently running" },
+    { title: "Notifications", value: notificationCount, icon: <Bell size={18} />, color: "from-rose-500 to-rose-600", description: "Unread notifications" },
   ];
 
   const revenueData = (report?.monthlyRevenue || report?.revenueByMonth || []).map((item) => ({
-    name: item.month || item.month || "",
+    name: item.month || "",
     revenue: item.amount || item.revenue || 0,
   }));
 
   const auctionData = (report?.monthlyAuctions || report?.auctionsByMonth || []).map((item) => ({
-    name: item.month || item.month || "",
+    name: item.month || "",
     auctions: item.count || item.auctions || 0,
   }));
 
@@ -122,11 +119,11 @@ export default function AdminDashboardHomePage() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <AlertCircle size={40} className="text-red-400" />
+        <AlertCircle size={36} className="text-red-400" />
         <p className="text-sm font-medium text-red-500">{error}</p>
         <button
           onClick={() => window.location.reload()}
-          className="px-5 py-2.5 text-sm font-semibold text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 transition-all"
+          className="px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
         >
           Retry
         </button>
@@ -135,22 +132,19 @@ export default function AdminDashboardHomePage() {
   }
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <div className="flex items-center gap-3">
-            <HandMetal size={28} className="text-blue-600" />
-            <h1 className="text-2xl font-extrabold text-gray-900">Welcome Back, Admin 👋</h1>
-          </div>
-          <p className="text-sm text-gray-500 mt-1 ml-10">Monitor your auction business in real time.</p>
+          <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Monitor your auction business in real time</p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-gray-200 shadow-sm">
-          <Calendar size={16} className="text-blue-600" />
-          <span className="text-sm font-medium text-gray-700">{today}</span>
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-gray-200">
+          <Calendar size={14} className="text-gray-400" />
+          <span className="text-xs font-medium text-gray-600">{today}</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => (
           <StatCard
             key={stat.title}
@@ -163,60 +157,60 @@ export default function AdminDashboardHomePage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-sm font-bold text-gray-900 mb-4">Revenue Overview</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">Revenue Overview</h3>
           {revenueData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={280}>
+            <ResponsiveContainer width="100%" height={260}>
               <AreaChart data={revenueData}>
                 <defs>
                   <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="#94a3b8" />
-                <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="#9ca3af" />
+                <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" />
                 <Tooltip
-                  contentStyle={{ borderRadius: "12px", border: "1px solid #e2e8f0", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)" }}
+                  contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "12px" }}
                 />
-                <Area type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={2} fill="url(#revenueGrad)" />
+                <Area type="monotone" dataKey="revenue" stroke="#4f46e5" strokeWidth={2} fill="url(#revenueGrad)" />
               </AreaChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-[280px] text-gray-400 text-sm">No revenue data yet</div>
+            <div className="flex items-center justify-center h-[260px] text-gray-400 text-sm">No revenue data yet</div>
           )}
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-sm font-bold text-gray-900 mb-4">Auction Activity</h3>
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">Auction Activity</h3>
           {auctionData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={280}>
+            <ResponsiveContainer width="100%" height={260}>
               <BarChart data={auctionData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} stroke="#94a3b8" />
-                <YAxis tick={{ fontSize: 12 }} stroke="#94a3b8" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="#9ca3af" />
+                <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" />
                 <Tooltip
-                  contentStyle={{ borderRadius: "12px", border: "1px solid #e2e8f0", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)" }}
+                  contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "12px" }}
                 />
-                <Bar dataKey="auctions" fill="#3b82f6" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="auctions" fill="#4f46e5" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-[280px] text-gray-400 text-sm">No auction data yet</div>
+            <div className="flex items-center justify-center h-[260px] text-gray-400 text-sm">No auction data yet</div>
           )}
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
           <div className="flex items-center gap-2">
-            <Gavel size={16} className="text-blue-600" />
-            <h3 className="text-sm font-bold text-gray-900">Recent Auctions</h3>
+            <Gavel size={15} className="text-gray-400" />
+            <h3 className="text-sm font-semibold text-gray-900">Recent Auctions</h3>
           </div>
-          <Link href="/admin/auctions" className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1">
-            View All <ArrowRight size={14} />
+          <Link href="/admin/auctions" className="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1">
+            View All <ArrowRight size={12} />
           </Link>
         </div>
         {recentAuctions.length === 0 ? (
@@ -242,20 +236,20 @@ export default function AdminDashboardHomePage() {
                           <Image
                             src={a.product.image}
                             alt={a.product.title || "Auction"}
-                            width={40}
-                            height={40}
-                            className="w-10 h-10 rounded-lg object-cover bg-gray-100"
+                            width={36}
+                            height={36}
+                            className="w-9 h-9 rounded-lg object-cover bg-gray-100"
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
-                            <Package size={16} />
+                          <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
+                            <Package size={14} />
                           </div>
                         )}
-                        <span className="font-medium text-gray-900">{a.product?.title || "Untitled"}</span>
+                        <span className="font-medium text-gray-900 text-sm">{a.product?.title || "Untitled"}</span>
                       </div>
                     </td>
                     <td className="text-gray-500 text-sm">{a.product?.seller?.name || "Unknown"}</td>
-                    <td className="font-semibold text-gray-900">${(a.currentPrice || 0).toLocaleString()}</td>
+                    <td className="font-semibold text-gray-900 text-sm">${(a.currentPrice || 0).toLocaleString()}</td>
                     <td>
                       <StatusBadge variant={a.status?.toLowerCase() as "active" | "ended" | "pending" || "active"}>
                         {a.status || "Unknown"}

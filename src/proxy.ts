@@ -15,15 +15,22 @@ const publicRoutes = [
   "/privacy",
   "/terms",
   "/shipping",
-  "/api/auth/login",
-  "/api/auth/register",
-  "/api/auth/logout",
-  "/api/contact",
-  "/api/health",
-  "/api/auctions",
 ];
 
 const publicPrefixes = ["/auctions/"];
+
+const publicApiRoutes = [
+  "/api/auth/login",
+  "/api/auth/register",
+  "/api/auth/logout",
+  "/api/auth/me",
+  "/api/auth/forgot-password",
+  "/api/auth/reset-password",
+  "/api/contact",
+  "/api/health",
+  "/api/auctions",
+  "/api/auctions/search",
+];
 
 const roleRoutes: Record<string, string[]> = {
   "/admin": ["ADMIN"],
@@ -35,15 +42,13 @@ const roleRoutes: Record<string, string[]> = {
 };
 
 const authPages = ["/login", "/register"];
-const apiPrefix = "/api";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("token")?.value;
 
-  const isApiRoute = pathname.startsWith(apiPrefix);
+  const isApiRoute = pathname.startsWith("/api");
   const isStaticAsset = pathname.startsWith("/_next") || pathname.startsWith("/favicon");
-  const isPublic = publicRoutes.includes(pathname) || publicPrefixes.some((p) => pathname.startsWith(p));
   const isStaticFile = /\.(png|svg|jpg|jpeg|webp|gif|ico|avif|css|js|woff2?|ttf|eot|mp4|webm)$/i.test(pathname);
 
   if (isStaticAsset || isStaticFile) return NextResponse.next();
@@ -56,16 +61,23 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  if (isApiRoute) return NextResponse.next();
+  if (isApiRoute) {
+    if (publicApiRoutes.includes(pathname) || publicApiRoutes.some((r) => pathname.startsWith(r + "/"))) {
+      return NextResponse.next();
+    }
+    if (!payload) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    }
+    return NextResponse.next();
+  }
+
+  const isPublic = publicRoutes.includes(pathname) || publicPrefixes.some((p) => pathname.startsWith(p));
 
   if (isPublic) {
     if (payload && authPages.includes(pathname)) {
       const target =
-        payload.role === "ADMIN"
-          ? "/admin"
-          : payload.role === "SELLER"
-            ? "/seller/auctions"
-            : "/";
+        payload.role === "ADMIN" ? "/admin" :
+        payload.role === "SELLER" ? "/seller/auctions" : "/";
       return NextResponse.redirect(new URL(target, request.url));
     }
     return NextResponse.next();
@@ -81,11 +93,8 @@ export async function proxy(request: NextRequest) {
     if (pathname === route || pathname.startsWith(route + "/")) {
       if (!allowedRoles.includes(payload.role)) {
         const redirectTarget =
-          payload.role === "ADMIN"
-            ? "/admin"
-            : payload.role === "SELLER"
-              ? "/seller/auctions"
-              : "/";
+          payload.role === "ADMIN" ? "/admin" :
+          payload.role === "SELLER" ? "/seller/auctions" : "/";
         return NextResponse.redirect(new URL(redirectTarget, request.url));
       }
     }

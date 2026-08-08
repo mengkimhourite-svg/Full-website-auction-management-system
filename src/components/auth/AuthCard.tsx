@@ -11,13 +11,10 @@ export default function AuthCard({
 }) {
   return (
     <div className="auth-page">
-      <div className="auth-grid-overlay" />
-      <div className="auth-orb auth-orb-1" />
-      <div className="auth-orb auth-orb-2" />
       <div className="auth-card">
         <div className="auth-header">
           <div className="auth-logo">
-            <Image src="/logo.png" alt="AuctionPro logo" width={56} height={56} className="w-14 h-14 object-contain" />
+            <Image src="/logo.png" alt="AuctionPro logo" width={48} height={48} className="w-12 h-12 object-contain" />
           </div>
           <h1>{title}</h1>
           {subtitle && <p>{subtitle}</p>}

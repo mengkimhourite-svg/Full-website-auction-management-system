@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Bell, ChevronDown, LayoutDashboard, LogIn, LogOut, Menu, User as UserIcon, UserPlus, X } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import type { User } from "@/types";
+import { useAuth } from "@/hooks/useAuth";
 
 const navLinks = [
   { label: "Home", href: "/" },
@@ -18,8 +18,8 @@ const navLinks = [
 const transparentRoutes = ["/"];
 
 export default function Navbar() {
+  const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
@@ -29,17 +29,10 @@ export default function Navbar() {
   const isTransparent = transparentRoutes.includes(pathname) && !scrolled;
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 60);
+    const handleScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
-    fetch("/api/auth/me")
-      .then((r) => r.json())
-      .then((d) => setUser(d.success ? d.data : d.user || null))
-      .catch(() => { });
   }, []);
 
   useEffect(() => {
@@ -51,9 +44,9 @@ export default function Navbar() {
   }, []);
 
   async function handleLogout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    setUser(null);
+    await logout();
     setUserMenuOpen(false);
+    setMobileOpen(false);
     router.push("/");
   }
 
@@ -66,27 +59,27 @@ export default function Navbar() {
   }
 
   const linkClass = (active: boolean) =>
-    `nav-link text-sm font-medium transition-colors ${isTransparent ? (active ? "text-white font-semibold" : "text-white/90 hover:text-white") : active ? "text-indigo-700" : "text-gray-600 hover:text-indigo-700"}`;
+    `nav-link text-sm font-medium transition-colors ${isTransparent ? (active ? "text-white font-semibold" : "text-white/80 hover:text-white") : active ? "text-indigo-600" : "text-gray-600 hover:text-gray-900"}`;
 
   return (
-    <nav className={`navbar ${isTransparent ? "navbar-transparent" : "navbar-scrolled"} animate-fade-down`}>
+    <nav className={`navbar ${isTransparent ? "navbar-transparent" : "navbar-scrolled"}`}>
       <div className="navbar-inner">
         <div className="flex items-center gap-10">
-          <Link href="/" className="flex items-center gap-2.5 no-underline group">
+          <Link href="/" className="flex items-center gap-2 no-underline group">
             <Image
               src="/logo.png"
               alt="AuctionPro logo"
-              width={40}
-              height={40}
-              className="w-10 h-10 object-contain rounded-xl shadow-lg ring-1 ring-black/5 group-hover:scale-105 transition-transform"
+              width={32}
+              height={32}
+              className="w-8 h-8 object-contain rounded-lg"
             />
-            <span className={`text-xl font-extrabold tracking-tight hidden lg:inline ${isTransparent ? "text-white" : "bg-linear-to-r from-indigo-700 via-indigo-600 to-purple-600 bg-clip-text text-transparent"}`}>
+            <span className={`text-lg font-bold tracking-tight hidden lg:inline ${isTransparent ? "text-white" : "text-gray-900"}`}>
               AuctionPro
             </span>
           </Link>
         </div>
 
-        <div className="hidden md:flex flex-1 items-center justify-center gap-4 lg:gap-8 px-2 lg:px-4">
+        <div className="hidden md:flex flex-1 items-center justify-center gap-5 px-2 lg:px-4">
           {navLinks.map(({ label, href }) => (
             <Link
               key={href}
@@ -98,23 +91,23 @@ export default function Navbar() {
           ))}
         </div>
 
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-2">
           {user ? (
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-colors ${isTransparent ? "bg-white/15 text-white hover:bg-white/25" : "bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${isTransparent ? "bg-white/10 text-white hover:bg-white/15" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
               >
-                <UserIcon size={16} />
-                <span className="text-sm font-semibold">{user.name}</span>
-                <ChevronDown size={14} className={`transition-transform ${userMenuOpen ? "rotate-180" : ""}`} />
+                <UserIcon size={15} />
+                <span className="text-sm font-medium">{user.name}</span>
+                <ChevronDown size={13} className={`transition-transform ${userMenuOpen ? "rotate-180" : ""}`} />
               </button>
 
               {userMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 animate-fade-down">
-                  <div className="px-4 py-3 border-b border-gray-100">
-                    <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+                <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-50">
+                  <div className="px-3.5 py-2.5 border-b border-gray-100">
+                    <p className="text-sm font-medium text-gray-900">{user.name}</p>
                     <p className="text-xs text-gray-500 capitalize">{user.role?.toLowerCase()}</p>
                   </div>
                   {[
@@ -126,17 +119,17 @@ export default function Navbar() {
                       key={label}
                       href={href}
                       onClick={() => setUserMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors"
+                      className="flex items-center gap-2.5 px-3.5 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                     >
-                      <Icon size={16} /> {label}
+                      <Icon size={15} /> {label}
                     </Link>
                   ))}
                   <hr className="my-1 border-gray-100" />
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    className="flex items-center gap-2.5 w-full px-3.5 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                   >
-                    <LogOut size={16} /> Logout
+                    <LogOut size={15} /> Logout
                   </button>
                 </div>
               )}
@@ -146,18 +139,21 @@ export default function Navbar() {
               <Link
                 href="/login"
                 aria-label="Login"
-                className={`flex items-center justify-center gap-2 px-3 lg:px-5 py-2.5 text-sm font-semibold rounded-xl border-2 transition-colors ${isTransparent ? "border-white/30 text-white hover:bg-white/10" : "border-indigo-600 text-indigo-700 hover:bg-indigo-50"
+                className={`flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${isTransparent ? "text-white hover:bg-white/10" : "text-gray-700 hover:bg-gray-100"
                   }`}
               >
-                <LogIn size={16} />
+                <LogIn size={15} />
                 <span className="hidden lg:inline">Login</span>
               </Link>
               <Link
                 href="/register"
                 aria-label="Register"
-                className="flex items-center justify-center gap-2 px-3 lg:px-5 py-2.5 text-sm font-semibold text-white rounded-xl bg-linear-to-r from-indigo-700 to-indigo-600 shadow-lg shadow-indigo-900/20 hover:shadow-xl transition-all hover:-translate-y-0.5"
+                className={`flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${isTransparent
+                    ? "bg-white text-gray-900 hover:bg-white/90"
+                    : "bg-indigo-600 text-white hover:bg-indigo-700"
+                  }`}
               >
-                <UserPlus size={16} />
+                <UserPlus size={15} />
                 <span className="hidden lg:inline">Register</span>
               </Link>
             </>
@@ -166,21 +162,21 @@ export default function Navbar() {
 
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className={`md:hidden p-2.5 rounded-xl transition-colors ${isTransparent ? "text-white hover:bg-white/10" : "text-gray-600 hover:bg-gray-100"}`}
+          className={`md:hidden p-2 rounded-lg transition-colors ${isTransparent ? "text-white hover:bg-white/10" : "text-gray-600 hover:bg-gray-100"}`}
         >
-          {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
       {mobileOpen && (
-        <div className="md:hidden bg-white border-t border-gray-100 px-4 pb-5 animate-fade-down shadow-xl">
-          <div className="flex flex-col gap-1.5 pt-4">
+        <div className="md:hidden bg-white border-t border-gray-100 px-4 pb-4 shadow-lg">
+          <div className="flex flex-col gap-1 pt-3">
             {navLinks.map(({ label, href }) => (
               <Link
                 key={href}
                 href={href}
                 onClick={() => setMobileOpen(false)}
-                className={`px-4 py-3 rounded-xl text-sm font-medium transition-colors ${pathname === href ? "text-indigo-700 bg-indigo-50" : "text-gray-700 hover:bg-indigo-50 hover:text-indigo-700"}`}
+                className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${pathname === href ? "text-indigo-600 bg-indigo-50" : "text-gray-700 hover:bg-gray-50"}`}
               >
                 {label}
               </Link>
@@ -188,29 +184,29 @@ export default function Navbar() {
             <hr className="my-2 border-gray-100" />
             {user ? (
               <>
-                <div className="px-4 py-2">
-                  <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+                <div className="px-3 py-2">
+                  <p className="text-sm font-medium text-gray-900">{user.name}</p>
                   <p className="text-xs text-gray-500 capitalize">{user.role?.toLowerCase()}</p>
                 </div>
                 <Link
                   href={getDashboardLink()}
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                 >
-                  <LayoutDashboard size={16} /> Dashboard
+                  <LayoutDashboard size={15} /> Dashboard
                 </Link>
                 <Link
                   href="/profile"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                 >
-                  <UserIcon size={16} /> Profile
+                  <UserIcon size={15} /> Profile
                 </Link>
                 <button
                   onClick={() => { handleLogout(); setMobileOpen(false); }}
-                  className="flex items-center gap-2.5 w-full px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                  className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
                 >
-                  <LogOut size={16} /> Logout
+                  <LogOut size={15} /> Logout
                 </button>
               </>
             ) : (
@@ -218,16 +214,16 @@ export default function Navbar() {
                 <Link
                   href="/login"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition-colors"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 transition-colors"
                 >
-                  <LogIn size={16} /> Login
+                  <LogIn size={15} /> Login
                 </Link>
                 <Link
                   href="/register"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold text-white bg-linear-to-r from-indigo-700 to-indigo-600 transition-colors"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
                 >
-                  <UserPlus size={16} /> Register
+                  <UserPlus size={15} /> Register
                 </Link>
               </>
             )}

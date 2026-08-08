@@ -157,7 +157,6 @@ export async function PUT(
   }
 }
 
-// នេះជាកូដ DELETE ថ្មីដែលអ្នកបានផ្ញើមក ត្រូវបានដាក់បញ្ចូលនៅទីនេះ
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -182,7 +181,7 @@ export async function DELETE(
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 
-    // ប្រើ Transaction ដើម្បីលុបទាំងអស់គ្នាជាមួយគ្នា
+    // Use transaction to delete auction and related data atomically
     await prisma.$transaction([
       prisma.bid.deleteMany({ where: { auctionId: id } }),
       prisma.payment.deleteMany({ where: { auctionId: id } }),

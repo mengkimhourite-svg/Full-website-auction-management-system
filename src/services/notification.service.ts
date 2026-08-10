@@ -1,14 +1,10 @@
-import axiosInstance from './api';
+import axiosInstance from "./api";
+import type { Notification } from "@/types";
 
-export interface Notification {
-  id: string;
-  message: string;
-  read: boolean;
-  createdAt: string;
-}
+export type { Notification };
 
 export const getNotifications = async (): Promise<Notification[]> => {
-  const res = await axiosInstance.get('/api/notifications');
+  const res = await axiosInstance.get("/api/notifications");
   return res.data.data;
 };
 
@@ -17,5 +13,9 @@ export const markAsRead = async (id: string): Promise<void> => {
 };
 
 export const markAllAsRead = async (): Promise<void> => {
-  await axiosInstance.put('/api/notifications/mark-all-read');
+  await axiosInstance.put("/api/notifications/mark-all-read");
+};
+
+export const deleteNotification = async (id: string): Promise<void> => {
+  await axiosInstance.delete(`/api/notifications/${id}`);
 };

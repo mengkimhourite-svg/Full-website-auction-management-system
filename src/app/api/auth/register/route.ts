@@ -44,6 +44,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    await prisma.notification.create({
+      data: {
+        userId: user.id,
+        message: `Welcome to AuctionPro, ${user.name}! Your account has been created successfully.`,
+      },
+    });
+
     const token = await createToken({
       id: user.id,
       email: user.email,

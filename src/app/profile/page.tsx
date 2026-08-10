@@ -1,32 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { AlertCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { getCurrentUser, type User } from "@/services/auth.service";
 import ProfileCard from "@/components/profile/ProfileCard";
 import ProfileForm from "@/components/profile/ProfileForm";
 
 export default function ProfilePage() {
-  const { loading: authLoading, setUser } = useAuth();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [fetchLoading, setFetchLoading] = useState(true);
+  const { user: currentUser, loading: authLoading, setUser } = useAuth();
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const data = await getCurrentUser();
-        setCurrentUser(data);
-      } catch {
-        setError("Failed to load profile");
-      } finally {
-        setFetchLoading(false);
-      }
-    };
-    if (!authLoading) fetchUser();
-  }, [authLoading]);
 
   const handleSaveAccount = async (data: { name: string; email: string }) => {
     if (!currentUser?.id) return;
@@ -36,11 +18,11 @@ export default function ProfilePage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: "include",
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to update");
-      setCurrentUser(json.data || json);
-      if (setUser) setUser(json.data || json);
+      setUser(json.data || json);
     } catch {
       alert("Failed to update profile");
     } finally {
@@ -55,6 +37,7 @@ export default function ProfilePage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: "include",
       });
       const json = await res.json();
       if (!json.success) throw new Error(json.error || "Failed to change password");
@@ -75,11 +58,11 @@ export default function ProfilePage() {
       const res = await fetch("/api/auth/avatar", {
         method: "POST",
         body: formData,
+        credentials: "include",
       });
       const json = await res.json();
       if (!json.success) throw new Error("Failed to upload");
-      setCurrentUser(json.data || json);
-      if (setUser) setUser(json.data || json);
+      setUser(json.data || json);
     } catch {
       alert("Failed to upload avatar");
     } finally {
@@ -87,21 +70,11 @@ export default function ProfilePage() {
     }
   };
 
-  if (authLoading || fetchLoading) {
+  if (authLoading) {
     return (
       <div className="loading-page">
         <div className="loading-spinner" />
         <p className="text-gray-500 text-sm">Loading profile...</p>
-      </div>
-    );
-  }
-
-  if (error && !currentUser) {
-    return (
-      <div className="loading-page">
-        <AlertCircle size={36} className="text-red-400" />
-        <h2 className="text-lg font-semibold text-gray-900">Error</h2>
-        <p className="text-gray-500 text-sm">{error}</p>
       </div>
     );
   }

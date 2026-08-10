@@ -1,13 +1,7 @@
-import axiosInstance from './api';
-import type { Role } from '@/types';
+import axiosInstance from "./api";
+import type { User, Role } from "@/types";
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  createdAt: string;
-}
+export type { User };
 
 export interface UpdateUserInput {
   name?: string;
@@ -18,7 +12,7 @@ export interface UpdateUserInput {
 }
 
 export const getUsers = async (): Promise<User[]> => {
-  const res = await axiosInstance.get('/api/users');
+  const res = await axiosInstance.get("/api/users");
   return res.data.data;
 };
 

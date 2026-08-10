@@ -28,4 +28,4 @@ export default function NotificationList({ notifications, onMarkRead }: Notifica
       </div>
     </div>
   );
-}
+} 

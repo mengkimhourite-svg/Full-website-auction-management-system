@@ -46,11 +46,11 @@ export default function AdminDashboardHomePage() {
     (async () => {
       try {
         const [reportRes, auctionsRes, usersRes, paymentsRes, notifRes] = await Promise.all([
-          fetch("/api/reports/monthly"),
-          fetch("/api/auctions"),
-          fetch("/api/users"),
-          fetch("/api/payments"),
-          fetch("/api/notifications"),
+          fetch("/api/reports/monthly", { credentials: "include" }),
+          fetch("/api/auctions", { credentials: "include" }),
+          fetch("/api/users", { credentials: "include" }),
+          fetch("/api/payments", { credentials: "include" }),
+          fetch("/api/notifications", { credentials: "include" }),
         ]);
         const [reportJson, auctionsJson, usersJson, paymentsJson, notifJson] = await Promise.all([
           reportRes.json(),

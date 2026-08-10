@@ -26,6 +26,7 @@ const heroSlides = [
     title: "Classic &\nLuxury Cars",
     subtitle: "Vintage automobiles and supercars at unbeatable prices.",
   },
+
 ];
 
 export default function Hero() {

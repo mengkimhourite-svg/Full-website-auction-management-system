@@ -32,23 +32,31 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
 
   useEffect(() => {
-    fetch("/api/auth/me")
+    fetch("/api/auth/me", { credentials: "include" })
       .then((res) => res.json())
       .then((json) => setCurrentUser(json.data || json.user || json))
       .catch(() => {});
   }, []);
 
   useEffect(() => {
-    fetch("/api/notifications")
-      .then((res) => res.json())
-      .then((json) => {
+    if (!currentUser) return;
+
+    const fetchNotifications = async () => {
+      try {
+        const res = await fetch("/api/notifications", { credentials: "include" });
+        if (!res.ok) return;
+        const json = await res.json();
         const notifs = json.data || json || [];
         if (Array.isArray(notifs)) {
           setNotificationCount(notifs.filter((n: { read?: boolean }) => !n.read).length);
         }
-      })
-      .catch(() => {});
-  }, []);
+      } catch {}
+    };
+
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, [currentUser]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -61,7 +69,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, []);
 
   async function handleLogout() {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
     router.push("/login");
   }
 

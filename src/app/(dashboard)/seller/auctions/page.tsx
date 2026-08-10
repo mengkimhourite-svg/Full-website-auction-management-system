@@ -2,9 +2,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { Plus, Gavel, ImageOff } from "lucide-react";
-import AuctionActions from "@/components/AuctionActions";
+import AuctionActions from "@/components/auction/AuctionActions";
 import { getAuthUser } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/db";
 import { serializeAuction } from "@/lib/auction";
 
 export const dynamic = "force-dynamic";

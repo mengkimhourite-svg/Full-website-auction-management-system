@@ -1,12 +1,7 @@
-import axiosInstance from './api';
+import axiosInstance from "./api";
+import type { Bid } from "@/types";
 
-export interface Bid {
-  id: string;
-  amount: number;
-  createdAt: string;
-  userId: string;
-  auctionId: string;
-}
+export type { Bid };
 
 export const placeBid = async (auctionId: string, amount: number): Promise<Bid> => {
   const res = await axiosInstance.post(`/api/auctions/${auctionId}/bids`, { amount });

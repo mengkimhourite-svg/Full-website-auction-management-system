@@ -1,11 +1,11 @@
 import { UserPlus, Search, Zap, Shield, Award, CheckCircle, Sparkles, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import Reveal from "@/components/animations/Reveal";
+import Reveal from "@/components/common/Reveal";
 
 export default function HowItWorksPage() {
   return (
     <div className="min-h-screen bg-white pt-24">
-      <section className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white py-20">
+      <section className="bg-linear-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <Reveal variant="scale" className="mb-5">
             <span className="eyebrow eyebrow-dark">
@@ -33,7 +33,7 @@ export default function HowItWorksPage() {
             ].map((item, i) => (
               <div key={item.step} className={`flex flex-col ${i % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"} items-center gap-10 lg:gap-16`}>
                 <Reveal variant={i % 2 === 0 ? "left" : "right"} className="flex-1 w-full">
-                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-5 shadow-xl`}>
+                  <div className={`w-16 h-16 rounded-2xl bg-linear-gradient-to-br ${item.color} flex items-center justify-center mb-5 shadow-xl`}>
                     <item.icon size={30} className="text-white" />
                   </div>
                   <div className="text-6xl font-black text-gray-100 mb-2">{item.step}</div>
@@ -71,7 +71,7 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      <section className="py-20 bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-800 text-white">
+      <section className="py-20 bg-linear-gradient-to-r from-indigo-600 via-indigo-700 to-purple-800 text-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <Reveal>
             <h2 className="text-3xl lg:text-4xl font-extrabold tracking-tight">Ready to Start?</h2>

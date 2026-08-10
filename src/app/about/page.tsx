@@ -1,6 +1,6 @@
 import { Shield, Award, Users, Globe, Heart, Sparkles } from "lucide-react";
 import Link from "next/link";
-import Reveal from "@/components/animations/Reveal";
+import Reveal from "@/components/common/Reveal";
 
 export default function AboutPage() {
   return (

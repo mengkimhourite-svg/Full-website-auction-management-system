@@ -69,7 +69,7 @@ export default function AdminProductsPage() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/auctions");
+      const res = await fetch("/api/auctions", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch products");
       const json = await res.json();
       const auctions: Auction[] = json.data || [];
@@ -116,7 +116,7 @@ export default function AdminProductsPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`/api/auctions/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/auctions/${id}`, { method: "DELETE", credentials: "include" });
       if (!res.ok) throw new Error("Failed to delete product");
       fetchProducts();
     } catch (err) {

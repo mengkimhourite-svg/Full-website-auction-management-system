@@ -37,7 +37,7 @@ export default function AuctionsPage() {
         const params = new URLSearchParams(window.location.search);
         const category = params.get("category");
         if (category) setSelectedCategories([category]);
-        const res = await fetch("/api/auctions");
+        const res = await fetch("/api/auctions", { credentials: "include" });
         const data = await res.json();
         setAuctions(data?.data || data?.auctions || data || []);
       } catch {

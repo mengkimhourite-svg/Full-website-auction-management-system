@@ -245,5 +245,4 @@ async function main() {
   console.log("  Seller: seller@gmail.com / 123456");
   console.log("  Bidder: bidder@gmail.com / 123456");
 }
-
 main().catch((e) => { console.error(e); process.exit(1); });

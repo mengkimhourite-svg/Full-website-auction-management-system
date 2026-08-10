@@ -29,6 +29,7 @@ export default function CreateAuctionPage() {
           startTime: new Date().toISOString(),
           endTime: new Date(data.endTime).toISOString(),
         }),
+        credentials: "include",
       });
       const json = await res.json();
       if (json.success) {

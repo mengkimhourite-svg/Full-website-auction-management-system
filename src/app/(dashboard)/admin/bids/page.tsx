@@ -20,7 +20,7 @@ export default function AdminBidsPage() {
   const fetchBids = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/bids?scope=all");
+      const res = await fetch("/api/bids?scope=all", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch bids");
       const json = await res.json();
       setBids(json.data || json.bids || json || []);

@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { Bell, CheckCheck, AlertCircle } from "lucide-react";
-import { getNotifications, markAsRead, markAllAsRead, Notification } from "@/services/notification.service";
+import { getNotifications, markAsRead, markAllAsRead } from "@/services/notification.service";
+import type { Notification } from "@/types";
 import NotificationList from "@/components/notification/NotificationList";
 
 export default function NotificationsPage() {
@@ -35,6 +36,18 @@ export default function NotificationsPage() {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    if (loading) return;
+    const interval = setInterval(async () => {
+      try {
+        const data = await getNotifications();
+        setNotifications(data);
+        setError(null);
+      } catch {}
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [loading]);
 
   const handleMarkRead = async (id: string) => {
     try {

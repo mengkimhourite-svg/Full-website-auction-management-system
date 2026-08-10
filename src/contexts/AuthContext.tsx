@@ -2,16 +2,9 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import { loginUser, logoutUser, getCurrentUser } from "@/services/auth.service";
+import type { User } from "@/types";
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  avatar?: string | null;
-  banned?: boolean;
-  createdAt?: string;
-}
+export type { User };
 
 interface AuthContextType {
   user: User | null;

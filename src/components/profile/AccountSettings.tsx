@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Save, Loader2 } from "lucide-react";
 
 interface AccountSettingsProps {
@@ -10,8 +10,13 @@ interface AccountSettingsProps {
 }
 
 export default function AccountSettings({ initialData, onSave, loading }: AccountSettingsProps) {
-  const [name, setName] = useState(initialData.name);
-  const [email, setEmail] = useState(initialData.email);
+  const [name, setName] = useState(initialData.name ?? "");
+  const [email, setEmail] = useState(initialData.email ?? "");
+
+  useEffect(() => {
+    setName(initialData.name ?? "");
+    setEmail(initialData.email ?? "");
+  }, [initialData.name, initialData.email]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +62,7 @@ export default function AccountSettings({ initialData, onSave, loading }: Accoun
       <button
         type="submit"
         disabled={loading}
-        className="flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-sky-500 text-white px-6 py-3 rounded-xl font-semibold text-sm hover:shadow-lg hover:shadow-indigo-200 transition-all disabled:opacity-60"
+        className="flex items-center justify-center gap-2 bg-linear-gradient-to-r from-indigo-600 to-sky-500 text-white px-6 py-3 rounded-xl font-semibold text-sm hover:shadow-lg hover:shadow-indigo-200 transition-all disabled:opacity-60"
       >
         {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
         {loading ? "Saving..." : "Save Changes"}

@@ -41,7 +41,7 @@ export default function AdminReportsPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("/api/reports/monthly");
+        const res = await fetch("/api/reports/monthly", { credentials: "include" });
         if (!res.ok) throw new Error("Failed to fetch reports");
         const json = await res.json();
         setReport(json.data || json.report || json);

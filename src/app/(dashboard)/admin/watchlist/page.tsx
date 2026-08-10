@@ -19,7 +19,7 @@ export default function AdminWatchlistPage() {
   const fetchWatchlist = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/watchlist?scope=all");
+      const res = await fetch("/api/watchlist?scope=all", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch watchlist");
       const json = await res.json();
       setWatchlist(json.data || json.watchlist || json || []);

@@ -36,7 +36,7 @@ export default function CheckoutPage() {
           setError("No auction selected");
           return;
         }
-        const res = await fetch(`/api/auctions/${id}`);
+        const res = await fetch(`/api/auctions/${id}`, { credentials: "include" });
         if (!res.ok) throw new Error("Not found");
         const json = await res.json();
         setAuction(json.data || json);
@@ -58,6 +58,7 @@ export default function CheckoutPage() {
           userId: user?.id,
           ...paymentData,
         }),
+        credentials: "include",
       });
 
       if (!res.ok) {

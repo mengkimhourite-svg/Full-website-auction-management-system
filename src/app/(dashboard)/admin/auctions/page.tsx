@@ -38,7 +38,7 @@ export default function AdminAuctionsPage() {
   const fetchAuctions = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/auctions");
+      const res = await fetch("/api/auctions", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch auctions");
       const json = await res.json();
       setAuctions(json.data || json.auctions || json || []);
@@ -109,6 +109,7 @@ export default function AdminAuctionsPage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "ACTIVE" }),
+        credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to approve auction");
       fetchAuctions();
@@ -119,7 +120,7 @@ export default function AdminAuctionsPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`/api/auctions/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/auctions/${id}`, { method: "DELETE", credentials: "include" });
       if (!res.ok) throw new Error("Failed to delete auction");
       fetchAuctions();
     } catch (err) {

@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import Hero from "@/components/home/Hero";
-import WatchCard from "@/components/home/WatchCard";
+import Hero from "@/components/common/Hero";
+import WatchCard from "@/components/common/WatchCard";
 import { ArrowRight, Shield, Zap, Trophy, CheckCircle, Star, Award, Gem, Palette, Car, Watch, Wine, Users } from "lucide-react";
-import Reveal from "@/components/animations/Reveal";
+import Reveal from "@/components/common/Reveal";
 import type { Auction } from "@/types";
 
 const testimonials = [
@@ -48,7 +48,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/auctions")
+    fetch("/api/auctions", { credentials: "include" })
       .then((r) => r.json())
       .then((data) => {
         const items: Auction[] = (Array.isArray(data) ? data : data?.data || []).slice(0, 6);
@@ -205,12 +205,12 @@ export default function Home() {
                 <div className="card p-6 h-full">
                   <div className="flex items-center gap-0.5 mb-3">
                     {Array.from({ length: 5 }).map((_, si) => (
-                      <Star key={si} size={13} className="fill-amber-400 text-amber-400" />
+                      <Star key={si} size={13} className="" />
                     ))}
                   </div>
                   <p className="text-gray-600 text-sm leading-relaxed mb-5">&ldquo;{t.text}&rdquo;</p>
                   <div className="flex items-center gap-3">
-                    <Image src={t.avatar} alt={t.name} width={36} height={36} className="w-9 h-9 rounded-full object-cover" />
+                    {/* <Image src={t.avatar} alt={t.name} width={36} height={36} className="w-9 h-9 rounded-full object-cover" /> */}
                     <div>
                       <p className="text-sm font-semibold text-gray-900">{t.name}</p>
                       <p className="text-xs text-gray-500">{t.role}</p>
@@ -228,7 +228,7 @@ export default function Home() {
         <Reveal className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <CheckCircle size={18} className="text-indigo-400" />
-            <span className="text-white/60 font-medium text-sm">Trusted by 50,000+ users worldwide</span>
+            <span className="text-white/60 font-medium text-sm">Trusted by users worldwide</span>
           </div>
           <h2 className="text-3xl lg:text-5xl font-bold tracking-tight">Ready to Start Bidding?</h2>
           <p className="text-white/50 mt-3 max-w-xl mx-auto text-base">Join thousands of buyers and sellers on the most trusted auction platform.</p>

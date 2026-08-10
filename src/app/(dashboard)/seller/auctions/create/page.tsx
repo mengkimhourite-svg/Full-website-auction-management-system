@@ -72,6 +72,7 @@ export default function CreateAuctionPage() {
           startPrice: Number(form.startPrice),
           endTime: new Date(form.endTime).toISOString(),
         }),
+        credentials: "include",
       });
 
       if (res.status === 401 || res.status === 403) {

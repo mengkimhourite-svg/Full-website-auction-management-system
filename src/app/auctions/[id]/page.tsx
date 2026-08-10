@@ -76,7 +76,7 @@ export default function AuctionDetailPage() {
 
   useEffect(() => {
     if (!id) return;
-    fetch("/api/watchlist")
+    fetch("/api/watchlist", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => {
         const items: Watchlist[] = json?.data || [];
@@ -89,24 +89,25 @@ export default function AuctionDetailPage() {
     if (watchlistLoading) return;
     setWatchlistLoading(true);
     try {
-      const meRes = await fetch("/api/auth/me");
+      const meRes = await fetch("/api/auth/me", { credentials: "include" });
       const me = await meRes.json();
       if (!me?.data) {
         router.push("/login");
         return;
       }
       if (watchlisted) {
-        const res = await fetch("/api/watchlist");
+        const res = await fetch("/api/watchlist", { credentials: "include" });
         const json = await res.json();
         const items: Watchlist[] = json?.data || [];
         const entry = items.find((w) => w.auctionId === id);
-        if (entry) await fetch(`/api/watchlist/${entry.id}`, { method: "DELETE" });
+        if (entry) await fetch(`/api/watchlist/${entry.id}`, { method: "DELETE", credentials: "include" });
         setWatchlisted(false);
       } else {
         const res = await fetch("/api/watchlist", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ auctionId: id }),
+          credentials: "include",
         });
         if (!res.ok) {
           const json = await res.json().catch(() => ({}));

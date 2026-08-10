@@ -20,7 +20,7 @@ export default function AdminPaymentsPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("/api/payments");
+        const res = await fetch("/api/payments", { credentials: "include" });
         if (!res.ok) throw new Error("Failed to fetch payments");
         const json = await res.json();
         setPayments(json.data || json.payments || json || []);

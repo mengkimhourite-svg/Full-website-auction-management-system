@@ -30,7 +30,7 @@ export default function AdminNotificationsPage() {
   const fetchNotifications = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/notifications");
+      const res = await fetch("/api/notifications", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch notifications");
       const json = await res.json();
       setNotifications(json.data || json.notifications || json || []);
@@ -68,6 +68,7 @@ export default function AdminNotificationsPage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ read: true }),
+        credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to mark as read");
       setNotifications((prev) =>
@@ -80,7 +81,7 @@ export default function AdminNotificationsPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`/api/notifications/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/notifications/${id}`, { method: "DELETE", credentials: "include" });
       if (!res.ok) throw new Error("Failed to delete notification");
       setNotifications((prev) => prev.filter((n) => n.id !== id));
     } catch (err) {

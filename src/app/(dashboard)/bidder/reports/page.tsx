@@ -26,9 +26,9 @@ export default function BidderReportsPage() {
     (async () => {
       try {
         const [bidsRes, wonRes, watchRes] = await Promise.all([
-          fetch("/api/bids?scope=mine"),
-          fetch("/api/bids?scope=won"),
-          fetch("/api/watchlist"),
+          fetch("/api/bids?scope=mine", { credentials: "include" }),
+          fetch("/api/bids?scope=won", { credentials: "include" }),
+          fetch("/api/watchlist", { credentials: "include" }),
         ]);
         const [bidsJson, wonJson, watchJson] = await Promise.all([
           bidsRes.json() as Promise<ApiResponse<Bid[]>>,

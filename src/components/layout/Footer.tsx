@@ -112,13 +112,14 @@ export default function Footer() {
       </div>
       <div className="border-t border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-xs text-slate-500">
+          {/* <p className="text-xs text-slate-500">
             &copy; {new Date().getFullYear()} AuctionPro. All rights reserved.
-          </p>
-          <div className="flex items-center gap-5 text-xs text-slate-500">
+          </p> */}
+          {/* <div className="flex items-center gap-5 text-xs text-slate-500">
             <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
-          </div>
+          </div> */}
+
         </div>
       </div>
     </footer>

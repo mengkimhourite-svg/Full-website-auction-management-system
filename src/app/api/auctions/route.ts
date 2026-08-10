@@ -1,7 +1,7 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/db";
 import { getAuthUser } from "@/lib/auth";
-import { syncAuctionStatuses, serializeAuction, cleanText, cleanOptionalText } from "@/lib/auction";
+import { syncAuctionStatuses, serializeAuction } from "@/lib/auction";
 import { auctionSchema } from "@/lib/validation";
 import { rateLimit, getRateLimitHeaders } from "@/lib/rateLimit";
 

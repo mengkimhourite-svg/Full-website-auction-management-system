@@ -1,41 +1,11 @@
 import prisma from "@/lib/db";
+import type { AuctionStatus } from "@/types";
+import { formatDateOnly } from "@/lib/utils";
 
-export type AuctionStatus = "UPCOMING" | "ACTIVE" | "ENDED";
+export type { AuctionStatus };
+export { cleanText, cleanOptionalText, formatDateOnly } from "@/lib/utils";
 
-type Role = "ADMIN" | "SELLER" | "BIDDER";
-
-interface UserRecord {
-  id: string;
-  name: string;
-  email: string;
-  role: Role;
-  avatar: string | null;
-  banned: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-interface ProductRecord {
-  id: string;
-  title: string;
-  description: string;
-  image: string | null;
-  category: string;
-  sellerId: string;
-  seller?: Partial<UserRecord> | null;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-interface BidRecord {
-  id: string;
-  amount: number;
-  userId: string;
-  auctionId: string;
-  createdAt: Date;
-}
-
-interface AuctionRecord {
+type AuctionRecord = {
   id: string;
   startPrice: number;
   currentPrice: number;
@@ -45,11 +15,19 @@ interface AuctionRecord {
   productId: string;
   createdAt: Date | string;
   updatedAt: Date | string;
-}
+};
 
 type AuctionWithRelations = AuctionRecord & {
-  product?: ProductRecord | null;
-  bids?: BidRecord[];
+  product?: {
+    id: string;
+    title: string;
+    description: string;
+    image: string | null;
+    category: string;
+    sellerId: string;
+    seller?: { id: string; name: string; email: string; role: string; avatar: string | null } | null;
+  } | null;
+  bids?: { id: string; amount: number; userId: string; auctionId: string; createdAt: Date }[];
   _count?: { bids: number };
 };
 
@@ -62,28 +40,6 @@ export function computeStatus(auction: {
   if (now >= auction.endTime) return "ENDED";
   if (auction.status === "UPCOMING" && now >= auction.startTime) return "ACTIVE";
   return auction.status;
-}
-
-export function cleanText(value: unknown, fallback = ""): string {
-  if (typeof value !== "string") return fallback;
-  const trimmed = value.trim();
-  return trimmed || fallback;
-}
-
-export function cleanOptionalText(value: unknown): string | null {
-  if (typeof value !== "string") return null;
-  const trimmed = value.trim();
-  return trimmed || null;
-}
-
-export function formatDateOnly(value: Date | string | null | undefined): string {
-  if (!value) return "";
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
 }
 
 export function serializeAuction(auction: AuctionWithRelations) {

@@ -32,7 +32,7 @@ export default function AdminUsersPage() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/users");
+      const res = await fetch("/api/users", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch users");
       const json = await res.json();
       setUsers(json.data || json.users || json || []);
@@ -76,6 +76,7 @@ export default function AdminUsersPage() {
       const res = await fetch(`/api/users/${id}/ban`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to update user");
       fetchUsers();
@@ -91,6 +92,7 @@ export default function AdminUsersPage() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: user?.name || "", role }),
+        credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to update role");
       fetchUsers();

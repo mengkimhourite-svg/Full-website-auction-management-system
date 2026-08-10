@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import BidderSidebar from "@/components/bidder/BidderSidebar";
 import { Menu, Bell, LogOut, Activity } from "lucide-react";
 import Link from "next/link";
@@ -8,10 +8,29 @@ import { useRouter } from "next/navigation";
 
 export default function BidderLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
   const router = useRouter();
 
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const res = await fetch("/api/notifications", { credentials: "include" });
+      if (!res.ok) return;
+      const json = await res.json();
+      const notifs = json.data || json || [];
+      if (Array.isArray(notifs)) {
+        setNotificationCount(notifs.filter((n: { read?: boolean }) => !n.read).length);
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
+
   async function handleLogout() {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
     router.push("/login");
   }
 
@@ -36,8 +55,13 @@ export default function BidderLayout({ children }: { children: React.ReactNode }
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/notifications" className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-indigo-600 transition-colors relative">
+            <Link href="/notifications" className="relative p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-indigo-600 transition-colors">
               <Bell size={19} />
+              {notificationCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
+                  {notificationCount > 99 ? "99+" : notificationCount}
+                </span>
+              )}
             </Link>
             <button
               onClick={handleLogout}

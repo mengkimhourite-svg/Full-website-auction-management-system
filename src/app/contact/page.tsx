@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Mail, Phone, MapPin, MessageSquare, Loader2, CheckCircle, AlertCircle } from "lucide-react";
-import Reveal from "@/components/animations/Reveal";
+import Reveal from "@/components/common/Reveal";
 
 export default function ContactPage() {
   const [name, setName] = useState("");
@@ -21,6 +21,7 @@ export default function ContactPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, subject, message }),
+        credentials: "include",
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to send message");
@@ -38,7 +39,7 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-white pt-24">
-      <section className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white py-20">
+      <section className="bg-linear-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <Reveal variant="scale" className="mb-5">
             <span className="eyebrow eyebrow-dark">
@@ -61,12 +62,12 @@ export default function ContactPage() {
           <div className="grid md:grid-cols-3 gap-8 mb-12">
             {[
               { icon: Mail, title: "Email", text: "support@auctionpro.com", color: "from-indigo-500 to-purple-500" },
-              { icon: Phone, title: "Phone", text: "+1 (555) 123-4567", color: "from-cyan-500 to-blue-500" },
-              { icon: MapPin, title: "Location", text: "San Francisco, CA", color: "from-amber-500 to-yellow-500" },
+              { icon: Phone, title: "Phone", text: "+ 885 099 5555 778", color: "from-cyan-500 to-blue-500" },
+              { icon: MapPin, title: "Location", text: "Cambodia", color: "from-amber-500 to-yellow-500" },
             ].map((item, i) => (
               <Reveal key={item.title} variant="scale" delay={i * 150}>
                 <div className="bg-white rounded-2xl border border-gray-100 p-6 text-center card-premium">
-                  <div className={`w-12 h-12 mx-auto rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-4`}>
+                  <div className={`w-12 h-12 mx-auto rounded-xl bg-linear-gradient-to-br ${item.color} flex items-center justify-center mb-4`}>
                     <item.icon size={22} className="text-white" />
                   </div>
                   <h3 className="text-sm font-bold text-gray-900 mb-1">{item.title}</h3>
@@ -140,7 +141,7 @@ export default function ContactPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold text-sm hover:from-indigo-700 hover:to-purple-700 hover:shadow-lg transition-all disabled:opacity-60"
+                className="inline-flex items-center gap-2 bg-linear-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold text-sm hover:from-indigo-700 hover:to-purple-700 hover:shadow-lg transition-all disabled:opacity-60"
               >
                 {loading ? <Loader2 size={16} className="animate-spin" /> : null}
                 Send Message

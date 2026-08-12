@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save, Loader2, AlertCircle, CheckCircle } from "lucide-react";
+import SellerImageUpload from "@/components/seller/SellerImageUpload";
 import type { Auction } from "@/types";
 
 interface FormState {
@@ -254,14 +255,10 @@ export default function EditAuctionPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Image URL (optional)</label>
-            <input
-              type="url"
-              name="productImage"
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Product Image (optional)</label>
+            <SellerImageUpload
               value={form.productImage}
-              onChange={handleChange}
-              placeholder="https://example.com/image.jpg"
-              className={inputClass(false)}
+              onChange={(dataUrl) => setForm((prev) => ({ ...prev, productImage: dataUrl }))}
             />
           </div>
 

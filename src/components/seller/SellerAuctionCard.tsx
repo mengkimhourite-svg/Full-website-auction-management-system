@@ -30,7 +30,7 @@ export default function SellerAuctionCard({ auction, onEdit, onDelete }: SellerA
             <ImageOff size={28} />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/25 to-transparent" />
         <div className="absolute top-3 left-3">
           <span
             className={`badge ${
@@ -63,14 +63,14 @@ export default function SellerAuctionCard({ auction, onEdit, onDelete }: SellerA
             onClick={() => onEdit(auction.id)}
             className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-colors"
           >
-            <Edit size={13} />
+            <Edit size={10} />
             Edit
           </button>
           <button
             onClick={() => onDelete(auction.id)}
             className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-xl hover:bg-red-100 transition-colors"
           >
-            <Trash2 size={13} />
+            <Trash2 size={10} />
             Delete
           </button>
         </div>

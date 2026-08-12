@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import Hero from "@/components/common/Hero";
 import WatchCard from "@/components/common/WatchCard";
-import { ArrowRight, Shield, Zap, Trophy, CheckCircle, Star, Award, Gem, Palette, Car, Watch, Wine, Users } from "lucide-react";
+import { ArrowRight, Shield, Zap, Trophy, CheckCircle, Star, Award, Gem, Palette, Car, Watch, Wine, Users, Mail, Phone, MapPin, MessageSquare } from "lucide-react";
 import Reveal from "@/components/common/Reveal";
 import type { Auction } from "@/types";
 
@@ -16,12 +15,12 @@ const testimonials = [
 ];
 
 const categories = [
-  { name: "Watches", icon: Watch, count: "2,400+ lots", color: "bg-blue-600" },
-  { name: "Jewelry", icon: Gem, count: "3,100+ lots", color: "bg-pink-600" },
-  { name: "Art", icon: Palette, count: "1,800+ lots", color: "bg-violet-600" },
-  { name: "Cars", icon: Car, count: "900+ lots", color: "bg-orange-600" },
-  { name: "Wine", icon: Wine, count: "1,200+ lots", color: "bg-emerald-600" },
-  { name: "Collectibles", icon: Award, count: "4,500+ lots", color: "bg-amber-600" },
+  { name: "Watches", icon: Watch, count: "", color: "bg-blue-600" },
+  { name: "Jewelry", icon: Gem, count: "", color: "bg-pink-600" },
+  { name: "Art", icon: Palette, count: "", color: "bg-violet-600" },
+  { name: "Cars", icon: Car, count: "", color: "bg-orange-600" },
+  { name: "Wine", icon: Wine, count: "", color: "bg-emerald-600" },
+  { name: "Collectibles", icon: Award, count: "", color: "bg-amber-600" },
 ];
 
 const staticAuctions = [
@@ -72,12 +71,12 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
           <div className="flex flex-wrap items-center justify-center gap-6 lg:gap-12 text-sm text-gray-500">
             {[
-              { icon: Shield, text: "Secure Escrow Payments", color: "text-indigo-600" },
-              { icon: Award, text: "Authenticity Guaranteed", color: "text-gray-700" },
-              { icon: Zap, text: "Real-time Bidding", color: "text-indigo-600" },
-              { icon: Trophy, text: "50,000+ Trusted Users", color: "text-gray-700" },
+              { icon: Shield, text: "", color: "text-indigo-600" },
+              { icon: Award, text: "", color: "text-gray-700" },
+              { icon: Zap, text: "", color: "text-indigo-600" },
+              { icon: Trophy, text: "", color: "text-gray-700" },
             ].map((item, i) => (
-              <Reveal key={item.text} variant="scale" delay={i * 80}>
+              <Reveal key={i} variant="scale" delay={i * 80}>
                 <div className="flex items-center gap-2"><item.icon size={15} className={item.color} /> {item.text}</div>
               </Reveal>
             ))}
@@ -162,31 +161,79 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-16 lg:py-20 bg-gray-50">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <Reveal className="text-center mb-10">
-            <span className="eyebrow mb-4">Simple Process</span>
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 tracking-tight mt-3">How It Works</h2>
-            <p className="text-gray-500 mt-3 max-w-xl mx-auto text-base">Get started in three simple steps</p>
-          </Reveal>
-          <div className="grid md:grid-cols-3 gap-6 lg:gap-10 mt-10">
-            {[
-              { step: "01", title: "Create Account", text: "Sign up for free and set up your profile. Join thousands of active bidders.", icon: Users, color: "bg-indigo-600" },
-              { step: "02", title: "Place Your Bid", text: "Browse live auctions and place your best offer in real-time with confidence.", icon: Zap, color: "bg-indigo-600" },
-              { step: "03", title: "Win & Collect", text: "Win the auction, complete secure payment, and receive your item worldwide.", icon: Trophy, color: "bg-indigo-600" },
-            ].map((item, i) => (
-              <Reveal key={item.title} variant="scale" delay={i * 100}>
-                <div className="card p-7 text-center h-full">
-                  <div className={`w-14 h-14 mx-auto rounded-2xl ${item.color} flex items-center justify-center mb-4`}>
-                    <item.icon size={26} className="text-white" />
-                  </div>
-                  <div className="text-3xl font-bold text-gray-200 mb-3">{item.step}</div>
-                  <h3 className="text-lg font-semibold text-gray-900">{item.title}</h3>
-                  <p className="text-gray-500 mt-2 text-sm leading-relaxed">{item.text}</p>
+      {/* How It Works — Hero */}
+      <section className="relative bg-gray-50 text-gray-900 overflow-hidden border-y border-gray-100">
+        <div className="absolute -top-32 -right-32 w-120 h-120 bg-indigo-100/60 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-32 -left-32 w-100 h-100 bg-indigo-50/60 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
+          <div className="grid lg:grid-cols-5 gap-12 lg:gap-16 items-center">
+            <div className="lg:col-span-3">
+              <Reveal variant="scale" className="mb-6">
+                <span className="inline-flex items-center gap-2 px-3 py-1 text-[11px] font-semibold tracking-[0.15em] uppercase text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-md">
+                  <span className="w-1 h-1 rounded-full bg-indigo-500" /> How It Works
+                </span>
+              </Reveal>
+              <Reveal delay={100}>
+                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-900 leading-[1.1]">
+                  Start Bidding in <br className="hidden sm:block" />
+                  <span className="text-indigo-600">3 Simple Steps</span>
+                </h2>
+              </Reveal>
+              <Reveal delay={200}>
+                <p className="text-gray-500 mt-5 text-base lg:text-lg max-w-lg leading-relaxed">
+                  Getting started with AuctionPro is quick and easy. Join thousands of active bidders.
+                </p>
+              </Reveal>
+              <Reveal delay={300}>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Link
+                    href="/register"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-md font-semibold text-sm hover:bg-indigo-700 transition-colors"
+                  >
+                    Get Started <ArrowRight size={15} />
+                  </Link>
+                  <Link
+                    href="/auctions"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-md font-semibold text-sm hover:border-indigo-300 hover:text-indigo-600 transition-colors"
+                  >
+                    Browse Auctions
+                  </Link>
                 </div>
               </Reveal>
-            ))}
+              <Reveal delay={380}>
+                <div className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-3 text-sm text-gray-500">
+                  <span className="flex items-center gap-2"><Trophy size={14} className="text-indigo-500" /> 50,000+ users</span>
+                  <span className="flex items-center gap-2"><Shield size={14} className="text-indigo-500" /> Secure escrow</span>
+                  <span className="flex items-center gap-2"><Zap size={14} className="text-indigo-500" /> Real-time bids</span>
+                </div>
+              </Reveal>
+            </div>
+
+            <Reveal variant="right" delay={200} className="lg:col-span-2">
+              <div className="space-y-3">
+                {[
+                  { step: "01", title: "Create Account", text: "Sign up free and set up your profile.", icon: Users },
+                  { step: "02", title: "Place Your Bid", text: "Browse live auctions and place your offer.", icon: Zap },
+                  { step: "03", title: "Win & Collect", text: "Complete secure payment and receive your item.", icon: Trophy },
+                ].map((item) => (
+                  <div
+                    key={item.title}
+                    className="flex items-center gap-4 bg-white border border-gray-200 rounded-lg px-5 py-4 shadow-sm shadow-indigo-100/50"
+                  >
+                    <div className="w-10 h-10 shrink-0 rounded-md bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+                      <item.icon size={18} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-sm font-semibold text-gray-900">{item.title}</p>
+                        <span className="text-[11px] font-bold tracking-wider text-indigo-500/70">{item.step}</span>
+                      </div>
+                      <p className="text-[13px] text-gray-500 mt-0.5">{item.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -219,6 +266,66 @@ export default function Home() {
                 </div>
               </Reveal>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Hero */}
+      <section className="relative py-16 lg:py-24 bg-slate-900 text-white overflow-hidden">
+        <div className="absolute -top-32 -left-32 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            <Reveal variant="left">
+              <span className="eyebrow eyebrow-dark mb-5">
+                <MessageSquare size={14} className="text-amber-400" /> Contact Us
+              </span>
+              <h2 className="text-3xl lg:text-5xl font-bold tracking-tight">
+                &apos;<span className="bg-linear-to-r from-amber-300 via-amber-400 to-amber-300 bg-clip-text text-transparent">We're Here to Help U</span>
+              </h2>
+              <p className="text-white/60 mt-4 text-base lg:text-lg max-w-lg leading-relaxed">
+                Have questions about bidding, selling, or payments? Our team is ready to assist you every step of the way.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  href="/contact"
+                  className="group inline-flex items-center gap-2 px-6 py-3 bg-linear-to-r from-amber-500 to-amber-600 text-white rounded-xl font-semibold text-sm hover:from-amber-400 hover:to-amber-500 transition-all shadow-lg shadow-amber-500/20"
+                >
+                  <MessageSquare size={16} /> Contact Us <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+                <Link
+                  href="/faq"
+                  className="inline-flex items-center gap-2 px-5 py-3 bg-white/5 text-white border border-white/15 rounded-xl font-semibold text-sm hover:bg-white/10 transition-all backdrop-blur-sm"
+                >
+                  Read FAQ
+                </Link>
+              </div>
+            </Reveal>
+
+            <Reveal variant="right" delay={120}>
+              <div className="grid sm:grid-cols-1 gap-4">
+                {[
+                  { icon: Mail, title: "Email Us", text: "support@auctionpro.com", color: "from-sky-500 to-blue-500" },
+                  { icon: Phone, title: "Call Us", text: "+ 885 099 5555 778", color: "from-emerald-500 to-teal-500" },
+                  { icon: MapPin, title: "Visit Us", text: "Cambodia", color: "from-amber-500 to-orange-500" },
+                ].map((item, i) => (
+                  <Reveal key={item.title} variant="scale" delay={200 + i * 150}>
+                    <Link
+                      href="/contact"
+                      className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl p-5 hover:bg-white/10 hover:border-white/20 transition-all backdrop-blur-sm"
+                    >
+                      <div className={`w-12 h-12 shrink-0 rounded-xl bg-linear-gradient-to-br ${item.color} flex items-center justify-center shadow-lg`}>
+                        <item.icon size={22} className="text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-white">{item.title}</p>
+                        <p className="text-sm text-white/60 mt-0.5">{item.text}</p>
+                      </div>
+                    </Link>
+                  </Reveal>
+                ))}
+              </div>
+            </Reveal>
           </div>
         </div>
       </section>

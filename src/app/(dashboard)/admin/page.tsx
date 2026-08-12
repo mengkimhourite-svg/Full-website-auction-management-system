@@ -179,7 +179,7 @@ export default function AdminDashboardHomePage() {
               </AreaChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-[260px] text-gray-400 text-sm">No revenue data yet</div>
+            <div className="flex items-center justify-center h-65 text-gray-400 text-sm">No revenue data yet</div>
           )}
         </div>
 
@@ -198,7 +198,7 @@ export default function AdminDashboardHomePage() {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-[260px] text-gray-400 text-sm">No auction data yet</div>
+            <div className="flex items-center justify-center h-65 text-gray-400 text-sm">No auction data yet</div>
           )}
         </div>
       </div>

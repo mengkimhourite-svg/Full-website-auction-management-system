@@ -39,21 +39,68 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-white pt-24">
-      <section className="bg-linear-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white py-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <Reveal variant="scale" className="mb-5">
-            <span className="eyebrow eyebrow-dark">
-              <MessageSquare size={14} className="text-yellow-400" /> Get in Touch
-            </span>
-          </Reveal>
-          <Reveal delay={120}>
-            <h1 className="text-4xl lg:text-6xl font-extrabold tracking-tight text-white">Contact Us</h1>
-          </Reveal>
-          <Reveal delay={240}>
-            <p className="text-white/60 mt-4 text-lg max-w-2xl mx-auto">
-              Have questions? We would love to hear from you.
-            </p>
-          </Reveal>
+      <section className="relative bg-linear-to-br from-slate-900 via-slate-900 to-indigo-950 text-white overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(99,102,241,0.15),transparent_50%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDQwIDQwIj48cGF0aCBkPSJNMCAwaDQwdjQwSDB6IiBmaWxsPSJub25lIi8+PHBhdGggZD0iTTQwIDFIMTF2M0gwc200LTIuNi0yLjYtMi45IiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wNCkiLz48L3N2Zz4=')] pointer-events-none" />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
+          <div className="grid lg:grid-cols-5 gap-12 lg:gap-16 items-center">
+            <div className="lg:col-span-3">
+              <Reveal variant="scale" className="mb-6">
+                <span className="inline-flex items-center gap-2 px-3 py-1 text-[11px] font-semibold tracking-[0.15em] uppercase text-indigo-300 bg-indigo-500/10 border border-indigo-400/20 rounded-md">
+                  <MessageSquare size={13} className="text-indigo-300" /> Get in Touch
+                </span>
+              </Reveal>
+              <Reveal delay={100}>
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1]">
+                   <span className="text-indigo-400">Contact Us</span>
+                </h1>
+              </Reveal>
+              <Reveal delay={200}>
+                <p className="text-white/60 mt-5 text-base lg:text-lg max-w-lg leading-relaxed">
+                  Have questions about bidding, selling, or payments? Our team typically responds within 24 hours.
+                </p>
+              </Reveal>
+              <Reveal delay={300}>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <a
+                    href="#send-message"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-slate-900 rounded-md font-semibold text-sm hover:bg-indigo-50 transition-colors"
+                  >
+                    <MessageSquare size={16} /> Send a Message
+                  </a>
+                  <a
+                    href="mailto:support@auctionpro.com"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white/5 text-white border border-white/15 rounded-md font-semibold text-sm hover:bg-white/10 transition-colors"
+                  >
+                    <Mail size={16} /> mkimhoursupport@auctionpro.com
+                  </a>
+                </div>
+              </Reveal>
+            </div>
+
+            <Reveal variant="right" delay={200} className="lg:col-span-2">
+              <div className="space-y-3">
+                {[
+                  { icon: Mail, label: "Email", value: "mkimhoursupport@auctionpro.com" },
+                  { icon: Phone, label: "Phone", value: "885: 099 5555 778" },
+                  { icon: MapPin, label: "Location", value: "Cambodia" },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    className="flex items-center gap-4 bg-white/4 border border-white/10 rounded-lg px-5 py-4 backdrop-blur-sm"
+                  >
+                    <div className="w-10 h-10 shrink-0 rounded-md bg-indigo-500/15 border border-indigo-400/20 flex items-center justify-center text-indigo-300">
+                      <item.icon size={18} />
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-semibold tracking-wider uppercase text-white/40">{item.label}</p>
+                      <p className="text-sm font-medium text-white mt-0.5">{item.value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Reveal>
+          </div>
         </div>
       </section>
 
@@ -78,7 +125,7 @@ export default function ContactPage() {
           </div>
 
           <Reveal delay={150}>
-            <div className="bg-white rounded-2xl border border-gray-100 p-8 card-premium">
+            <div id="send-message" className="bg-white rounded-2xl border border-gray-100 p-8 card-premium">
             <h2 className="text-xl font-bold text-gray-900 mb-6">Send a Message</h2>
             {status && (
               <div

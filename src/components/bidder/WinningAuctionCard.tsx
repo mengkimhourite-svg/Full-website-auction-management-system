@@ -1,69 +1,181 @@
 "use client";
 
-import { CheckCircle, CreditCard, ImageOff } from "lucide-react";
+import {
+  CheckCircle,
+  CreditCard,
+  ImageOff,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Auction, Product } from "@/types";
 
-type WonAuction = Auction & { paymentStatus?: string };
+type WonAuction = Auction & {
+  paymentStatus?: string;
+};
 
 interface WinningAuctionCardProps {
   auction: WonAuction;
 }
 
-export default function WinningAuctionCard({ auction }: WinningAuctionCardProps) {
+export default function WinningAuctionCard({
+  auction,
+}: WinningAuctionCardProps) {
   const product = auction.product || ({} as Product);
   const paymentStatus = auction.paymentStatus || "PENDING";
 
   return (
-    <div className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all">
-      <div className="flex items-center gap-4 p-4">
-        <Link href={`/auctions/${auction.id}`} className="relative w-20 h-20 rounded-xl overflow-hidden shrink-0 no-underline">
+    <div className="group overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:border-blue-200 hover:shadow-md">
+
+      {/* =========================================================
+          MAIN CARD
+      ========================================================= */}
+
+      <div className="flex items-center gap-4 p-4 sm:p-5">
+
+        {/* =======================================================
+            PRODUCT IMAGE
+        ======================================================= */}
+
+        <Link
+          href={`/auctions/${auction.id}`}
+          className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md border border-slate-200 bg-slate-100"
+        >
           {product.image ? (
-            <Image src={product.image} alt={product.title} fill sizes="80px" className="object-cover" />
+            <Image
+              src={product.image}
+              alt={product.title || "Auction product"}
+              fill
+              sizes="80px"
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
+            />
           ) : (
-            <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
+            <div className="flex h-full w-full items-center justify-center text-slate-400">
               <ImageOff size={20} />
             </div>
           )}
         </Link>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <CheckCircle size={14} className="text-green-500" />
-            <span className="badge badge-success">Won</span>
+
+        {/* =======================================================
+            PRODUCT INFORMATION
+        ======================================================= */}
+
+        <div className="min-w-0 flex-1">
+
+          {/* Won Badge */}
+
+          <div className="mb-1.5 flex items-center gap-2">
+
+            <CheckCircle
+              size={15}
+              className="text-emerald-500"
+            />
+
+            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
+              Won
+            </span>
+
           </div>
-          <Link href={`/auctions/${auction.id}`} className="no-underline">
-            <h3 className="text-sm font-bold text-gray-900 truncate hover:text-indigo-600 transition-colors">
+
+          {/* Product Title */}
+
+          <Link
+            href={`/auctions/${auction.id}`}
+            className="no-underline"
+          >
+            <h3 className="truncate text-sm font-bold text-slate-950 transition-colors hover:text-blue-600">
               {product.title || "Untitled Auction"}
             </h3>
           </Link>
-          <p className="text-lg font-bold text-indigo-600 mt-1">
-            ${(auction.currentPrice || 0).toLocaleString()}
+
+          {/* Price */}
+
+          <p className="mt-1.5 text-lg font-extrabold text-blue-600">
+            $
+            {(auction.currentPrice || 0).toLocaleString()}
           </p>
+
+          <p className="mt-0.5 text-[11px] text-slate-400">
+            Winning bid
+          </p>
+
         </div>
-        <div className="text-right">
+
+        {/* =======================================================
+            PAYMENT INFORMATION
+        ======================================================= */}
+
+        <div className="shrink-0 text-right">
+
+          {/* Payment Status */}
+
           <span
-            className={`badge text-xs ${
-              paymentStatus === "SUCCESS"
-                ? "badge-success"
-                : paymentStatus === "FAILED"
-                ? "badge-danger"
-                : "badge-warning"
-            }`}
+            className={`
+              inline-flex
+              items-center
+              gap-1.5
+              rounded-full
+              border
+              px-2.5
+              py-1
+              text-[10px]
+              font-bold
+              uppercase
+              tracking-wide
+              ${
+                paymentStatus === "SUCCESS"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : paymentStatus === "FAILED"
+                  ? "border-red-200 bg-red-50 text-red-700"
+                  : "border-amber-200 bg-amber-50 text-amber-700"
+              }
+            `}
           >
-            {paymentStatus === "SUCCESS" ? "Paid" : paymentStatus === "FAILED" ? "Failed" : "Pending"}
+
+            <span
+              className={`
+                h-1.5
+                w-1.5
+                rounded-full
+                ${
+                  paymentStatus === "SUCCESS"
+                    ? "bg-emerald-500"
+                    : paymentStatus === "FAILED"
+                    ? "bg-red-500"
+                    : "bg-amber-500"
+                }
+              `}
+            />
+
+            {paymentStatus === "SUCCESS"
+              ? "Paid"
+              : paymentStatus === "FAILED"
+              ? "Failed"
+              : "Pending"}
+
           </span>
+
+          {/* Pay Now */}
+
           {paymentStatus !== "SUCCESS" && (
             <Link
               href={`/checkout?auctionId=${auction.id}`}
-              className="mt-2 flex items-center gap-1 text-xs text-indigo-600 font-semibold hover:text-indigo-800 transition-colors no-underline"
+              className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700 transition-all hover:border-blue-300 hover:bg-blue-100"
             >
               <CreditCard size={12} />
               Pay Now
             </Link>
           )}
+
         </div>
+
       </div>
+
+      {/* =========================================================
+          BOTTOM ACCENT
+      ========================================================= */}
+
+      <div className="h-0.5 w-full bg-blue-600 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+
     </div>
   );
 }

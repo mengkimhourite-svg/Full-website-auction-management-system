@@ -58,13 +58,13 @@ export default function AdminSidebar({ open, onClose }: AdminSidebarProps) {
           transition: "width 0.25s ease, transform 0.25s ease",
         }}
       >
-        <div className="flex items-center justify-between px-4 py-4 border-b border-white/5">
+        <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100">
           <Link href="/" className="flex items-center gap-2.5 no-underline overflow-hidden">
-            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-600 shrink-0">
+            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-600 shrink-0">
               <Image src="/logo.png" alt="AuctionPro" width={24} height={24} className="w-6 h-6 object-contain" />
             </span>
             {!collapsed && (
-              <span className="text-base font-bold text-white whitespace-nowrap">
+              <span className="sidebar-brand text-base font-bold text-white whitespace-nowrap">
                 AuctionPro
               </span>
             )}
@@ -72,7 +72,7 @@ export default function AdminSidebar({ open, onClose }: AdminSidebarProps) {
           <div className="flex items-center gap-1">
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
+              className="hidden lg:flex p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-blue-600 transition-colors"
               title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               <ChevronLeft
@@ -83,7 +83,7 @@ export default function AdminSidebar({ open, onClose }: AdminSidebarProps) {
             </button>
             <button
               onClick={onClose}
-              className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
+              className="lg:hidden p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-blue-600 transition-colors"
             >
               <X size={16} />
             </button>
@@ -107,7 +107,7 @@ export default function AdminSidebar({ open, onClose }: AdminSidebarProps) {
                   className={`sidebar-link ${isActive ? "sidebar-link-active" : ""} ${collapsed ? "justify-center px-0" : ""}`}
                   title={collapsed ? label : undefined}
                 >
-                  <Icon size={17} className={`shrink-0 ${isActive ? "text-indigo-400" : ""}`} />
+                  <Icon size={17} className={`shrink-0 ${isActive ? "text-blue-600" : ""}`} />
                   {!collapsed && <span>{label}</span>}
                 </Link>
               );
@@ -115,10 +115,10 @@ export default function AdminSidebar({ open, onClose }: AdminSidebarProps) {
           </nav>
         </div>
 
-        <div className="px-3 py-3 border-t border-white/5">
+        <div className="px-3 py-3 border-t border-gray-100">
           <Link
             href="/"
-            className={`sidebar-link text-slate-400 hover:text-red-400 ${collapsed ? "justify-center px-0" : ""}`}
+            className={`sidebar-link text-gray-400 hover:text-red-500 ${collapsed ? "justify-center px-0" : ""}`}
             title={collapsed ? "Logout" : undefined}
           >
             <LogOut size={17} className="shrink-0" />

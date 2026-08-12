@@ -63,7 +63,7 @@ export default function ConfirmDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onCancel} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 animate-scale-in">
+      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 animate-scale-in">
         <button
           onClick={onCancel}
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
@@ -71,7 +71,7 @@ export default function ConfirmDialog({
           <X size={20} />
         </button>
         <div className="flex flex-col items-center text-center">
-          <div className={`w-14 h-14 rounded-2xl ${config.iconBg} ${config.iconText} flex items-center justify-center mb-4`}>
+          <div className={`w-14 h-14 rounded-xl ${config.iconBg} ${config.iconText} flex items-center justify-center mb-4`}>
             {config.icon}
           </div>
           <h3 className="text-lg font-bold text-gray-900">{title}</h3>

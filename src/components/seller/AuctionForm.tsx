@@ -43,7 +43,7 @@ export default function AuctionForm({ initialData, onSubmit, loading }: AuctionF
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+    <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
       <h3 className="text-base font-bold text-gray-900">
         {initialData ? "Edit Auction" : "Create New Auction"}
       </h3>
@@ -55,7 +55,7 @@ export default function AuctionForm({ initialData, onSubmit, loading }: AuctionF
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
-          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+          className="input"
         />
       </div>
 
@@ -66,7 +66,7 @@ export default function AuctionForm({ initialData, onSubmit, loading }: AuctionF
           onChange={(e) => setDescription(e.target.value)}
           rows={3}
           required
-          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all resize-none"
+          className="textarea"
         />
       </div>
 
@@ -77,7 +77,7 @@ export default function AuctionForm({ initialData, onSubmit, loading }: AuctionF
           value={image}
           onChange={(e) => setImage(e.target.value)}
           placeholder="https://example.com/image.jpg"
-          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+          className="input"
         />
       </div>
 
@@ -89,7 +89,7 @@ export default function AuctionForm({ initialData, onSubmit, loading }: AuctionF
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             placeholder="e.g. Electronics"
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+            className="input"
           />
         </div>
         <div>
@@ -100,7 +100,7 @@ export default function AuctionForm({ initialData, onSubmit, loading }: AuctionF
             onChange={(e) => setStartPrice(e.target.value)}
             required
             min={1}
-            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+            className="input"
           />
         </div>
       </div>
@@ -112,14 +112,14 @@ export default function AuctionForm({ initialData, onSubmit, loading }: AuctionF
           value={endTime}
           onChange={(e) => setEndTime(e.target.value)}
           required
-          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+          className="input"
         />
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-sky-500 text-white py-3 rounded-xl font-semibold text-sm hover:shadow-lg hover:shadow-indigo-200 transition-all disabled:opacity-60"
+        className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white py-3 rounded-xl font-semibold text-sm hover:bg-indigo-700 transition-colors disabled:opacity-60"
       >
         {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
         {loading ? "Saving..." : initialData ? "Update Auction" : "Create Auction"}

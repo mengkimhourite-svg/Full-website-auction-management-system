@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, SlidersHorizontal, AlertCircle } from "lucide-react";
+import { Search, SlidersHorizontal, AlertCircle, Gavel, Sparkles, TrendingUp } from "lucide-react";
 import AuctionGrid from "@/components/auction/AuctionGrid";
 import FilterPanel from "@/components/search/FilterPanel";
 import SortDropdown from "@/components/search/SortDropdown";
@@ -81,12 +81,36 @@ export default function AuctionsPage() {
   return (
     <div className="min-h-screen bg-gray-50 pt-20">
       {/* Hero Banner */}
-      <section className="bg-slate-900 text-white py-16">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-3xl lg:text-5xl font-bold tracking-tight">Discover &amp; Bid</h1>
-          <p className="text-white/50 mt-3 text-base max-w-xl mx-auto">
-            Find exclusive items from premium sellers around the world
-          </p>
+      <section className="relative bg-linear-to-br from-[#0a0e1a] via-[#111827] to-[#1a1040] overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.07]">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-400 rounded-full blur-[120px]" />
+          <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-violet-500 rounded-full blur-[100px]" />
+        </div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+          <div className="text-center max-w-3xl mx-auto">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-400/20 mb-6">
+              <Gavel size={13} className="text-indigo-400" />
+              <span className="text-indigo-300 text-xs font-semibold tracking-wide uppercase">Live Auctions</span>
+            </div>
+            <h1 className="text-4xl lg:text-5xl font-bold tracking-tight">
+              <span className="text-white">Discover &amp; </span>
+              <span className="bg-linear-to-r from-indigo-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">Bid</span>
+            </h1>
+            <p className="text-white/50 mt-4 text-base lg:text-lg max-w-xl mx-auto leading-relaxed">
+              Find exclusive items from premium sellers around the world
+            </p>
+            <div className="flex items-center justify-center gap-6 mt-8 text-sm">
+              <div className="flex items-center gap-2 text-white/40">
+                <Sparkles size={14} className="text-indigo-400" />
+                <span>{auctions.length} Active Lots</span>
+              </div>
+              <div className="w-1 h-1 rounded-full bg-white/20" />
+              <div className="flex items-center gap-2 text-white/40">
+                <TrendingUp size={14} className="text-indigo-400" />
+                <span>Real-time Bidding</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -100,13 +124,13 @@ export default function AuctionsPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search auctions..."
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg outline-none text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-50 transition-all bg-white"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl outline-none text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all bg-white"
               />
             </div>
             <div className="flex items-center gap-2">
               <SortDropdown options={sortOptions} onSort={setSortBy} />
               <button onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors ${showFilters ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600 hover:border-gray-300 bg-white'}`}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors ${showFilters ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-gray-200 text-gray-600 hover:border-gray-300 bg-white'}`}
               >
                 <SlidersHorizontal size={15} /> Filters
               </button>

@@ -43,19 +43,19 @@ export default function BidderLayout({ children }: { children: React.ReactNode }
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700 lg:hidden transition-colors"
+              className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 hover:text-gray-700 lg:hidden transition-colors"
             >
               <Menu size={20} />
             </button>
             <div className="flex items-center gap-2">
-              <span className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
+              <span className="w-7 h-7 rounded-xl bg-indigo-600 flex items-center justify-center text-white">
                 <Activity size={14} />
               </span>
               <h2 className="text-sm font-semibold text-gray-900 hidden sm:block">Bidder Dashboard</h2>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/notifications" className="relative p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-indigo-600 transition-colors">
+            <Link href="/notifications" className="relative p-2 rounded-xl hover:bg-gray-100 text-gray-500 hover:text-indigo-600 transition-colors">
               <Bell size={19} />
               {notificationCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
@@ -66,7 +66,7 @@ export default function BidderLayout({ children }: { children: React.ReactNode }
             <button
               onClick={handleLogout}
               title="Logout"
-              className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-red-600 transition-colors"
+              className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 hover:text-red-600 transition-colors"
             >
               <LogOut size={19} />
             </button>

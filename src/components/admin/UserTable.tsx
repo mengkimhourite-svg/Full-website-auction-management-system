@@ -43,8 +43,9 @@ export default function UserTable({ users, onBan, onUpdate }: UserTableProps) {
   };
 
   return (
-    <div className="overflow-x-auto">
-      <table className="data-table">
+    <div className="table-container">
+      <div className="overflow-x-auto">
+        <table className="data-table">
         <thead>
           <tr>
             <th>Name</th>
@@ -74,7 +75,7 @@ export default function UserTable({ users, onBan, onUpdate }: UserTableProps) {
                         type="text"
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
-                        className="px-2 py-1 border border-gray-200 rounded-lg text-sm outline-none focus:border-indigo-500"
+                        className="px-2 py-1 border border-gray-200 rounded-xl text-sm outline-none focus:border-indigo-500"
                       />
                     ) : (
                       <span className="font-medium text-gray-900">{user.name}</span>
@@ -87,7 +88,7 @@ export default function UserTable({ users, onBan, onUpdate }: UserTableProps) {
                     <select
                       value={editRole}
                       onChange={(e) => setEditRole(e.target.value as Role)}
-                      className="px-2 py-1 border border-gray-200 rounded-lg text-sm outline-none focus:border-indigo-500"
+                      className="px-2 py-1 border border-gray-200 rounded-xl text-sm outline-none focus:border-indigo-500"
                     >
                       {roles.map((r) => (
                         <option key={r} value={r}>
@@ -111,14 +112,14 @@ export default function UserTable({ users, onBan, onUpdate }: UserTableProps) {
                       <>
                         <button
                           onClick={() => saveEdit(user)}
-                          className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-green-700 bg-green-50 rounded-lg hover:bg-green-100 transition-all"
+                          className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-green-700 bg-green-50 rounded-xl hover:bg-green-100 transition-all"
                         >
                           <Check size={14} />
                           Save
                         </button>
                         <button
                           onClick={cancelEdit}
-                          className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all"
+                          className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all"
                         >
                           <X size={14} />
                           Cancel
@@ -128,14 +129,14 @@ export default function UserTable({ users, onBan, onUpdate }: UserTableProps) {
                       <>
                         <button
                           onClick={() => startEdit(user)}
-                          className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-all"
+                          className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-all"
                         >
                           <Edit size={14} />
                           Edit
                         </button>
                         <button
                           onClick={() => onBan(user.id)}
-                          className={`flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                          className={`flex items-center gap-1 px-3 py-1.5 text-xs font-semibold rounded-xl transition-all ${
                             user.banned
                               ? "text-green-700 bg-green-50 hover:bg-green-100"
                               : "text-red-700 bg-red-50 hover:bg-red-100"
@@ -152,7 +153,8 @@ export default function UserTable({ users, onBan, onUpdate }: UserTableProps) {
             );
           })}
         </tbody>
-      </table>
+        </table>
+      </div>
     </div>
   );
 }

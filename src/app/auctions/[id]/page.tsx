@@ -139,7 +139,7 @@ export default function AuctionDetailPage() {
         <p className="text-gray-500 text-sm">{error}</p>
         <button
           onClick={refreshAuction}
-          className="px-5 py-2 bg-indigo-600 text-white rounded-lg font-medium text-sm hover:bg-indigo-700 transition-colors"
+          className="px-5 py-2 bg-indigo-600 text-white rounded-xl font-medium text-sm hover:bg-indigo-700 transition-colors"
         >
           Try Again
         </button>
@@ -155,7 +155,7 @@ export default function AuctionDetailPage() {
         <p className="text-gray-500 text-sm">The auction you are looking for does not exist or has been removed.</p>
         <Link
           href="/auctions"
-          className="inline-flex items-center gap-2 px-5 py-2 bg-indigo-600 text-white rounded-lg font-medium text-sm hover:bg-indigo-700 transition-colors"
+          className="inline-flex items-center gap-2 px-5 py-2 bg-indigo-600 text-white rounded-xl font-medium text-sm hover:bg-indigo-700 transition-colors"
         >
           <ArrowLeft size={15} />
           Back to Auctions
@@ -182,7 +182,7 @@ export default function AuctionDetailPage() {
 
         <div className="grid lg:grid-cols-2 gap-8">
           <div className="space-y-3">
-            <div className="relative bg-white rounded-xl border border-gray-200 overflow-hidden h-80 lg:h-96 flex items-center justify-center">
+            <div className="relative bg-white rounded-2xl border border-gray-200 overflow-hidden h-80 lg:h-96 flex items-center justify-center">
               {images.length > 0 ? (
                 <Image
                   src={images[selectedImage]}
@@ -208,15 +208,8 @@ export default function AuctionDetailPage() {
                       idx === selectedImage
                         ? "border-indigo-500"
                         : "border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <Image
-                      src={img}
-                      alt={`Thumbnail ${idx + 1}`}
-                      fill
-                      sizes="64px"
-                      className="object-cover"
-                    />
+                    }`} >
+                    <Image src={img} alt={`Thumbnail ${idx + 1}`} fill sizes="64px" className="object-cover"/>
                   </button>
                 ))}
               </div>
@@ -249,7 +242,7 @@ export default function AuctionDetailPage() {
                 <button
                   onClick={toggleWatchlist}
                   disabled={watchlistLoading}
-                  className={`flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-lg border transition-colors ${
+                  className={`flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-xl border transition-colors ${
                     watchlisted
                       ? "border-red-200 bg-red-50 text-red-600"
                       : "border-gray-200 bg-white text-gray-600 hover:border-red-300 hover:text-red-500"
@@ -265,7 +258,7 @@ export default function AuctionDetailPage() {
                 {isEnded && (
                   <button
                     onClick={() => router.push(`/checkout?auctionId=${auction.id}`)}
-                    className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-white rounded-lg bg-emerald-600 hover:bg-emerald-700 transition-colors"
+                    className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium text-white rounded-xl bg-emerald-600 hover:bg-emerald-700 transition-colors"
                   >
                     <CreditCard size={14} />
                     Pay Now
@@ -277,7 +270,7 @@ export default function AuctionDetailPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-3 bg-white rounded-xl border border-gray-200 p-3.5">
+            <div className="flex items-center gap-3 bg-white rounded-2xl border border-gray-200 p-3.5">
               <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
                 <User size={16} />
               </div>
@@ -289,7 +282,7 @@ export default function AuctionDetailPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
+            <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs text-gray-400 font-medium">Current Bid</p>
@@ -305,7 +298,7 @@ export default function AuctionDetailPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2.5 p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-2.5 p-3 bg-gray-50 rounded-xl">
                 <Clock size={16} className="text-indigo-600" />
                 <div>
                   <p className="text-[11px] text-gray-400 font-medium">Time Remaining</p>
@@ -324,7 +317,7 @@ export default function AuctionDetailPage() {
               />
             )}
 
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <div className="bg-white rounded-2xl border border-gray-200 p-5">
               <h3 className="text-sm font-semibold text-gray-900 mb-3">
                 Bid History ({auction.bids?.length || 0})
               </h3>

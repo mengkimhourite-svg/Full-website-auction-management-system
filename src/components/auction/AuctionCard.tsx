@@ -24,13 +24,13 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
           ) : (
             <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-300"><ImageOff size={28} /></div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/30 via-transparent to-transparent" />
           <div className="absolute top-3 left-3">
             <span className={`badge ${isEnded ? "badge-danger" : status === "ACTIVE" ? "badge-success" : "badge-warning"}`}>
               {isEnded ? "Ended" : status}
             </span>
           </div>
-          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm rounded-md px-2.5 py-1 text-xs font-medium text-gray-700">
+          <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-white/95 backdrop-blur-sm rounded-lg px-2.5 py-1 text-xs font-medium text-gray-700">
             <Clock size={11} />
             <CountdownTimer endTime={auction.endTime} />
           </div>
@@ -47,7 +47,7 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
               {auction._count?.bids || auction.bids?.length || 0} bids
             </div>
           </div>
-          <div className="mt-3 w-full flex items-center justify-center gap-1.5 bg-indigo-600 text-white py-2 rounded-lg font-medium text-sm hover:bg-indigo-700 transition-colors">
+          <div className="mt-3 btn-bid">
             <TrendingUp size={14} />
             {isEnded ? "View Details" : "Place Bid"}
           </div>

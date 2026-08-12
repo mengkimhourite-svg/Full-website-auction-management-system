@@ -72,7 +72,7 @@ export default function AdminSidebar({ open, onClose }: AdminSidebarProps) {
           <div className="flex items-center gap-1">
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="hidden lg:flex p-1.5 rounded-md text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
+              className="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
               title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               <ChevronLeft
@@ -83,7 +83,7 @@ export default function AdminSidebar({ open, onClose }: AdminSidebarProps) {
             </button>
             <button
               onClick={onClose}
-              className="lg:hidden p-1.5 rounded-md text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
+              className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
             >
               <X size={16} />
             </button>

@@ -14,7 +14,7 @@ export default function WatchlistCard({ auction, onRemove }: WatchlistCardProps)
   const product = auction.product || ({} as Product);
 
   return (
-    <div className="bg-white rounded-2xl shadow-md overflow-hidden group hover:shadow-xl transition-all duration-300">
+    <div className="card overflow-hidden group">
       <div className="relative h-48 overflow-hidden">
         {product.image ? (
           <Image
@@ -29,14 +29,14 @@ export default function WatchlistCard({ auction, onRemove }: WatchlistCardProps)
             <ImageOff size={32} />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/40 to-transparent" />
         <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-1.5 text-xs font-semibold text-gray-700">
-          <Clock size={14} className="text-indigo-600" />
+          <Clock size={14} className="text-indigo-500" />
           <CountdownTimer endTime={auction.endTime} />
         </div>
         <button
           onClick={(e) => { e.preventDefault(); onRemove(auction.id); }}
-          className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-lg text-red-500 hover:bg-red-50 transition-all"
+          className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-xl text-red-500 hover:bg-red-50 transition-all"
         >
           <Trash2 size={16} />
         </button>
@@ -56,11 +56,9 @@ export default function WatchlistCard({ auction, onRemove }: WatchlistCardProps)
             {auction._count?.bids || auction.bids?.length || 0} bids
           </div>
         </div>
-        <button
-          onClick={(e) => { e.preventDefault(); window.location.href = `/auctions/${auction.id}`; }}
-          className="mt-4 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-sky-500 text-white py-2.5 rounded-xl font-semibold text-sm hover:shadow-lg hover:shadow-indigo-200 transition-all"
-        >
-          <TrendingUp size={16} />
+        <button onClick={(e) => { e.preventDefault(); window.location.href = `/auctions/${auction.id}`; }}
+          className="mt-4 w-full flex items-center justify-center gap-2 bg-indigo-600 text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-indigo-700 transition-colors">
+          <TrendingUp size={10} />
           Place Bid
         </button>
       </div>

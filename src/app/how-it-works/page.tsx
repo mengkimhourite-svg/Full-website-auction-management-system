@@ -13,7 +13,7 @@ export default function HowItWorksPage() {
             </span>
           </Reveal>
           <Reveal delay={120}>
-            <h1 className="text-4xl lg:text-6xl font-extrabold tracking-tight">Start Bidding in 3 Simple Steps</h1>
+            <h1 className="text-4xl lg:text-6xl font-extrabold tracking-tight text-white">Start Bidding in 3 Simple Steps</h1>
           </Reveal>
           <Reveal delay={240}>
             <p className="text-white/60 mt-4 text-lg max-w-2xl mx-auto">

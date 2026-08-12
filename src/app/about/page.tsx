@@ -13,7 +13,7 @@ export default function AboutPage() {
             </span>
           </Reveal>
           <Reveal delay={120}>
-            <h1 className="text-4xl lg:text-6xl font-extrabold tracking-tight">Our Mission</h1>
+            <h1 className="text-4xl lg:text-6xl font-extrabold tracking-tight text-white">Our Mission</h1>
           </Reveal>
           <Reveal delay={240}>
             <p className="text-white/60 mt-4 text-lg max-w-2xl mx-auto">
@@ -46,7 +46,7 @@ export default function AboutPage() {
               ].map((item, i) => (
                 <Reveal key={item.label} variant="scale" delay={i * 120}>
                   <div className="bg-gray-50 rounded-2xl p-6 text-center">
-                    <div className={`w-12 h-12 mx-auto rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-3`}>
+                    <div className={`w-12 h-12 mx-auto rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-3`}>
                       <item.icon size={22} className="text-white" />
                     </div>
                     <p className="text-sm font-bold text-gray-900">{item.label}</p>

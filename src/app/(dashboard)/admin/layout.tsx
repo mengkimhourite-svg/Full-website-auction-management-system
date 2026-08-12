@@ -86,7 +86,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white lg:hidden transition-colors"
+              className="p-2 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white lg:hidden transition-colors"
             >
               <Menu size={20} />
             </button>
@@ -97,13 +97,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-64 lg:w-80 pl-9 pr-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all"
+                className="w-64 lg:w-80 pl-9 pr-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all"
               />
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <Link href="/admin/notifications" className="relative p-2 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
+            <Link href="/admin/notifications" className="relative p-2 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
               <Bell size={19} />
               {notificationCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
@@ -115,16 +115,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div ref={dropdownRef} className="relative">
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-2.5 pl-2.5 pr-2 py-1.5 rounded-lg hover:bg-white/10 transition-colors"
+                className="flex items-center gap-2.5 pl-2.5 pr-2 py-1.5 rounded-xl hover:bg-white/10 transition-colors"
               >
                 {currentUser?.avatar ? (
                   <img
                     src={currentUser.avatar}
                     alt={userName}
-                    className="w-8 h-8 rounded-lg object-cover"
+                    className="w-8 h-8 rounded-xl object-cover"
                   />
                 ) : (
-                  <span className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+                  <span className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">
                     {userInitial}
                   </span>
                 )}
@@ -139,7 +139,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </button>
 
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-52 rounded-lg bg-[#1e293b] border border-white/10 shadow-xl py-1 z-50">
+                <div className="absolute right-0 mt-2 w-52 rounded-2xl bg-[#1e293b] border border-white/10 shadow-xl py-1 z-50">
                   <div className="px-3.5 py-2.5 border-b border-white/5">
                     <p className="text-sm font-medium text-slate-200">{userName}</p>
                     <p className="text-xs text-slate-500">{currentUser?.email || ""}</p>

@@ -9,13 +9,13 @@ interface PageHeaderProps {
 
 export default function PageHeader({ title, description, icon, actions }: PageHeaderProps) {
   return (
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div className="flex items-center gap-3">
-        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md shrink-0">
+        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-600 to-indigo-700 flex items-center justify-center text-white shadow-md shrink-0">
           {icon}
         </div>
         <div>
-          <h1 className="text-xl font-extrabold text-gray-900">{title}</h1>
+          <h1 className="text-xl font-bold text-gray-900">{title}</h1>
           <p className="text-sm text-gray-500">{description}</p>
         </div>
       </div>

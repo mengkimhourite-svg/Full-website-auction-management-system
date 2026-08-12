@@ -107,7 +107,7 @@ export default function Navbar() {
   }
 
   const linkClass = (active: boolean) =>
-    `nav-link text-sm font-medium transition-colors ${isTransparent ? (active ? "text-white font-semibold" : "text-white/80 hover:text-white") : active ? "text-indigo-600" : "text-gray-600 hover:text-gray-900"}`;
+    `nav-link text-sm font-medium transition-colors ${isTransparent ? (active ? "text-white font-semibold" : "text-white/75 hover:text-white") : active ? "text-amber-600 font-semibold" : "text-gray-500 hover:text-gray-900"}`;
 
   return (
     <nav className={`navbar ${isTransparent ? "navbar-transparent" : "navbar-scrolled"}`}>
@@ -119,10 +119,10 @@ export default function Navbar() {
               alt="AuctionPro logo"
               width={32}
               height={32}
-              className="w-8 h-8 object-contain rounded-lg"
+              className="w-8 h-8 object-contain rounded-xl"
             />
             <span className={`text-xl font-extrabold tracking-[0.12em] hidden lg:inline ${isTransparent ? "text-white" : "text-gray-900"}`}>
-              AUCTION PRO
+              auctionpro
             </span>
           </Link>
         </div>
@@ -145,11 +145,11 @@ export default function Navbar() {
               <div className="relative" ref={notifRef}>
                 <button
                   onClick={() => setNotifOpen(!notifOpen)}
-                  className={`relative p-2 rounded-lg transition-colors ${isTransparent ? "text-white/80 hover:text-white hover:bg-white/10" : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"}`}
+                  className={`relative p-2 rounded-xl transition-colors ${isTransparent ? "text-white/75 hover:text-white hover:bg-white/10" : "text-gray-400 hover:text-gray-700 hover:bg-gray-100"}`}
                 >
                   <Bell size={19} />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
+                    <span className="absolute -top-0.5 -right-0.5 min-w-4.5 h-4.5 flex items-center justify-center px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
                       {unreadCount > 99 ? "99+" : unreadCount}
                     </span>
                   )}
@@ -159,7 +159,7 @@ export default function Navbar() {
                     <div className="flex items-center justify-between p-4 border-b border-gray-100">
                       <h3 className="text-sm font-bold text-gray-900">Notifications</h3>
                       {unreadCount > 0 && (
-                        <button onClick={handleMarkAllNotifRead} className="flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
+                        <button onClick={handleMarkAllNotifRead} className="flex items-center gap-1 text-xs font-semibold text-amber-600 hover:text-amber-800 transition-colors">
                           <CheckCheck size={14} /> Mark all read
                         </button>
                       )}
@@ -175,7 +175,7 @@ export default function Navbar() {
                     </div>
                     {notifications.length > 0 && (
                       <div className="p-2 border-t border-gray-100">
-                        <Link href="/notifications" onClick={() => setNotifOpen(false)} className="block text-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 py-2 rounded-lg hover:bg-indigo-50 transition-colors">
+                        <Link href="/notifications" onClick={() => setNotifOpen(false)} className="block text-center text-xs font-semibold text-amber-600 hover:text-amber-800 py-2 rounded-xl hover:bg-amber-50 transition-colors">
                           View all notifications
                         </Link>
                       </div>
@@ -186,7 +186,7 @@ export default function Navbar() {
               <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${isTransparent ? "bg-white/10 text-white hover:bg-white/15" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-colors ${isTransparent ? "bg-white/10 text-white hover:bg-white/15" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
               >
                 <UserIcon size={15} />
@@ -195,7 +195,7 @@ export default function Navbar() {
               </button>
 
               {userMenuOpen && (
-                <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-50">
+                <div className="absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-lg border border-gray-200 py-1 z-50">
                   <div className="px-3.5 py-2.5 border-b border-gray-100">
                     <p className="text-sm font-medium text-gray-900">{user.name}</p>
                     <p className="text-xs text-gray-500 capitalize">{user.role?.toLowerCase()}</p>
@@ -230,7 +230,7 @@ export default function Navbar() {
               <Link
                 href="/login"
                 aria-label="Login"
-                className={`flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${isTransparent ? "text-white hover:bg-white/10" : "text-gray-700 hover:bg-gray-100"
+                className={`flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-colors ${isTransparent ? "text-white/80 hover:text-white hover:bg-white/10" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                   }`}
               >
                 <LogIn size={15} />
@@ -239,9 +239,9 @@ export default function Navbar() {
               <Link
                 href="/register"
                 aria-label="Register"
-                className={`flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${isTransparent
-                    ? "bg-white text-gray-900 hover:bg-white/90"
-                    : "bg-indigo-600 text-white hover:bg-indigo-700"
+                className={`flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all ${isTransparent
+                    ? "bg-linear-to-r from-amber-500 to-yellow-500 text-slate-900 hover:from-amber-400 hover:to-yellow-400 shadow-lg shadow-amber-500/20"
+                    : "bg-amber-500 text-white hover:bg-amber-600 shadow-sm shadow-amber-500/15"
                   }`}
               >
                 <UserPlus size={15} />
@@ -253,7 +253,7 @@ export default function Navbar() {
 
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className={`md:hidden p-2 rounded-lg transition-colors ${isTransparent ? "text-white hover:bg-white/10" : "text-gray-600 hover:bg-gray-100"}`}
+          className={`md:hidden p-2 rounded-xl transition-colors ${isTransparent ? "text-white hover:bg-white/10" : "text-gray-600 hover:bg-gray-100"}`}
         >
           {mobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
@@ -267,7 +267,7 @@ export default function Navbar() {
                 key={href}
                 href={href}
                 onClick={() => setMobileOpen(false)}
-                className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${pathname === href ? "text-indigo-600 bg-indigo-50" : "text-gray-700 hover:bg-gray-50"}`}
+                className={`px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${pathname === href ? "text-amber-600 bg-amber-50" : "text-gray-700 hover:bg-gray-50"}`}
               >
                 {label}
               </Link>
@@ -282,32 +282,32 @@ export default function Navbar() {
                 <Link
                   href={getDashboardLink()}
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   <LayoutDashboard size={15} /> Dashboard
                 </Link>
                 <Link
                   href="/profile"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   <UserIcon size={15} /> Profile
                 </Link>
                 <Link
                   href="/notifications"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                 >
                   <Bell size={15} /> Notifications
                   {unreadCount > 0 && (
-                    <span className="ml-auto min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
+                    <span className="ml-auto min-w-4.5 h-4.5 flex items-center justify-center px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
                       {unreadCount > 99 ? "99+" : unreadCount}
                     </span>
                   )}
                 </Link>
                 <button
                   onClick={() => { handleLogout(); setMobileOpen(false); }}
-                  className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                  className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
                 >
                   <LogOut size={15} /> Logout
                 </button>
@@ -317,14 +317,14 @@ export default function Navbar() {
                 <Link
                   href="/login"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 transition-colors"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 transition-colors"
                 >
                   <LogIn size={15} /> Login
                 </Link>
                 <Link
                   href="/register"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-white bg-amber-500 hover:bg-amber-600 transition-colors"
                 >
                   <UserPlus size={15} /> Register
                 </Link>

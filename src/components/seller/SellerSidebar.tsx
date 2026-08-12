@@ -30,7 +30,7 @@ export default function SellerSidebar({ open, onClose }: SellerSidebarProps) {
             </span>
             <span className="text-base font-bold text-white">Seller</span>
           </Link>
-          <button onClick={onClose} className="lg:hidden p-1.5 rounded-md text-slate-400 hover:bg-white/10 transition-colors">
+          <button onClick={onClose} className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:bg-white/10 transition-colors">
             <X size={16} />
           </button>
         </div>

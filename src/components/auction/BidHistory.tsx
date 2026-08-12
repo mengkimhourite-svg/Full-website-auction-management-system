@@ -20,7 +20,7 @@ export default function BidHistory({ bids }: BidHistoryProps) {
           style={{ animationDelay: `${i * 0.05}s` }}
         >
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
+            <div className="w-8 h-8 rounded-full bg-linear-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
               {(bid.user?.name || "U")[0].toUpperCase()}
             </div>
             <div>

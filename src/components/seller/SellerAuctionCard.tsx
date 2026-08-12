@@ -15,7 +15,7 @@ export default function SellerAuctionCard({ auction, onEdit, onDelete }: SellerA
   const product: Partial<Product> = auction.product || {};
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden group hover:shadow-md transition-shadow">
+    <div className="card overflow-hidden group">
       <div className="relative h-44 overflow-hidden">
         {product.image ? (
           <Image
@@ -44,8 +44,8 @@ export default function SellerAuctionCard({ auction, onEdit, onDelete }: SellerA
             {auction.status || "DRAFT"}
           </span>
         </div>
-        <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-white/95 rounded-md px-2.5 py-1 text-xs font-medium text-gray-700">
-          <Clock size={11} className="text-indigo-600" />
+        <div className="absolute bottom-3 left-3 flex items-center gap-1.5 bg-white/95 rounded-lg px-2.5 py-1 text-xs font-medium text-gray-700">
+          <Clock size={11} className="text-indigo-500" />
           <CountdownTimer endTime={auction.endTime} />
         </div>
       </div>
@@ -61,14 +61,14 @@ export default function SellerAuctionCard({ auction, onEdit, onDelete }: SellerA
         <div className="flex gap-2 mt-3">
           <button
             onClick={() => onEdit(auction.id)}
-            className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors"
+            className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-colors"
           >
             <Edit size={13} />
             Edit
           </button>
           <button
             onClick={() => onDelete(auction.id)}
-            className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+            className="flex-1 flex items-center justify-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-xl hover:bg-red-100 transition-colors"
           >
             <Trash2 size={13} />
             Delete

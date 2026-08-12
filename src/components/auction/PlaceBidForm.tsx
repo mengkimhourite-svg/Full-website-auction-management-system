@@ -24,7 +24,7 @@ export default function PlaceBidForm({ auctionId, currentPrice, onBidPlaced }: P
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/auctions/${auctionId}/bids`, {
+      const res = await fetch(`/api/auctions/${auctionId}/bids`, { 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ amount }),
@@ -53,7 +53,7 @@ export default function PlaceBidForm({ auctionId, currentPrice, onBidPlaced }: P
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
+    <form onSubmit={handleSubmit} className="card p-5 space-y-3">
       <h3 className="font-semibold text-gray-900 text-sm">Place Your Bid</h3>
 
       {error && (
@@ -70,7 +70,7 @@ export default function PlaceBidForm({ auctionId, currentPrice, onBidPlaced }: P
             onChange={(e) => setAmount(Number(e.target.value))}
             min={currentPrice + 1}
             step={1}
-            className="w-full pl-7 pr-4 py-2.5 border border-gray-200 rounded-lg outline-none text-base font-semibold text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-50 transition-all"
+            className="w-full pl-7 pr-4 py-2.5 border border-gray-200 rounded-xl outline-none text-base font-semibold text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all"
             required
           />
         </div>
@@ -78,9 +78,8 @@ export default function PlaceBidForm({ auctionId, currentPrice, onBidPlaced }: P
       </div>
 
       <button type="submit" disabled={loading}
-        className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-indigo-700 transition-colors disabled:opacity-50"
-      >
-        {loading ? <Loader2 size={16} className="animate-spin" /> : <TrendingUp size={16} />}
+        className="w-full flex items-center justify-center gap-2 bg-indigo-600 text-white py-2.5 rounded-x1 font-semibold text-sm hover:bg-indigo-700 transition-colors disabled:opacity-50">
+        {loading ? <Loader2 size={10} className="animate-spin" /> : <TrendingUp size={10} />}
         {loading ? "Placing Bid..." : `Place Bid — $${amount.toLocaleString()}`}
       </button>
     </form>

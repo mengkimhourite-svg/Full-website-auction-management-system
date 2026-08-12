@@ -23,7 +23,7 @@ export default function BidderHeader() {
               <p className="text-sm font-semibold text-gray-900">{user.name}</p>
               <span className="text-xs text-gray-500">{user.role}</span>
             </div>
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-white">
+            <div className="w-9 h-9 rounded-full bg-linear-to-br from-indigo-600 to-indigo-700 flex items-center justify-center text-white">
               <User size={16} />
             </div>
           </div>
@@ -33,7 +33,7 @@ export default function BidderHeader() {
           className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-red-600 bg-red-50 rounded-xl hover:bg-red-100 transition-all"
         >
           <LogOut size={16} />
-          Logout
+          <span className="hidden sm:inline">Logout</span>
         </button>
       </div>
     </header>

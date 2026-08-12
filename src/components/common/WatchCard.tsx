@@ -30,12 +30,12 @@ export default function WatchCard({ title, currentBid, image, endingIn, bids }: 
           </div>
         )}
 
-        <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-slate-900/70 backdrop-blur-sm rounded-md px-2.5 py-1 text-xs font-medium text-white">
+        <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-slate-900/70 backdrop-blur-sm rounded-xl px-2.5 py-1 text-xs font-medium text-white">
           <Clock size={12} />
           {endingIn || "Ending soon"}
         </div>
 
-        <div className="absolute top-3 right-3 flex items-center gap-1 bg-white/95 rounded-md px-2 py-1 text-xs font-medium text-gray-600">
+        <div className="absolute top-3 right-3 flex items-center gap-1 bg-white/95 rounded-xl px-2 py-1 text-xs font-medium text-gray-600">
           <Eye size={11} />
           {bids}
         </div>
@@ -53,7 +53,7 @@ export default function WatchCard({ title, currentBid, image, endingIn, bids }: 
               ${currentBid.toLocaleString()}
             </p>
           </div>
-          <div className="flex items-center gap-1 text-xs text-gray-500 bg-gray-50 rounded-md px-2 py-1">
+          <div className="flex items-center gap-1 text-xs text-gray-500 bg-gray-50 rounded-xl px-2 py-1">
             <Users size={11} />
             {bids} bids
           </div>
@@ -61,10 +61,10 @@ export default function WatchCard({ title, currentBid, image, endingIn, bids }: 
 
         <Link
           href="/auctions"
-          className="mt-3 w-full flex items-center justify-center gap-1.5 bg-indigo-600 text-white py-2 rounded-lg font-medium text-sm hover:bg-indigo-700 transition-colors"
+          className="mt-3 w-full flex items-center justify-center gap-1.5 bg-indigo-600 text-white py-2 rounded-x1 font-medium text-sm hover:bg-indigo-700 transition-colors"
         >
-          <TrendingUp size={14} />
-          Place Bid
+          <TrendingUp size={10} />
+          Place Bid  
         </Link>
       </div>
     </div>

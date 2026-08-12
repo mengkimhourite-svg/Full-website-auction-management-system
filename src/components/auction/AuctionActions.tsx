@@ -43,7 +43,7 @@ export default function AuctionActions({ auctionId }: AuctionActionsProps) {
     <button
       onClick={handleDelete}
       disabled={deleting}
-      className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-all disabled:opacity-60"
+      className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-red-700 bg-red-50 rounded-xl hover:bg-red-100 transition-all disabled:opacity-60"
     >
       {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
       {deleting ? "Deleting..." : "Delete"}

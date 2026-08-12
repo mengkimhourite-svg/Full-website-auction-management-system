@@ -41,10 +41,10 @@ export default function SellerAuctionTable({ auctions, onEdit, onDelete }: Selle
                     alt=""
                     width={48}
                     height={48}
-                    className="w-12 h-12 rounded-lg object-cover"
+                    className="w-12 h-12 rounded-xl object-cover"
                   />
                 ) : (
-                  <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
+                  <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400">
                     <ImageOff size={16} />
                   </div>
                 )}
@@ -72,14 +72,14 @@ export default function SellerAuctionTable({ auctions, onEdit, onDelete }: Selle
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => onEdit(auction.id)}
-                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-all"
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-indigo-700 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-all"
                   >
                     <Edit size={14} />
                     Edit
                   </button>
                   <button
                     onClick={() => onDelete(auction.id)}
-                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-all"
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-red-700 bg-red-50 rounded-xl hover:bg-red-100 transition-all"
                   >
                     <Trash2 size={14} />
                     Delete

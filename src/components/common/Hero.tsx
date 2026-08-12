@@ -54,7 +54,7 @@ export default function Hero() {
   const slide = heroSlides[current];
 
   return (
-    <section className="relative min-h-[560px] lg:min-h-[640px] flex items-center overflow-hidden bg-slate-900">
+    <section className="relative min-h-140 lg:min-h-160 flex items-center overflow-hidden bg-slate-2000">
       {heroSlides.map((s, i) => (
         <div
           key={i}
@@ -72,13 +72,13 @@ export default function Hero() {
         </div>
       ))}
 
-      <div className="absolute inset-0 bg-gradient-to-r from-slate-900/85 via-slate-900/60 to-slate-900/85 z-[2]" />
+      <div className="absolute inset-0 bg-linear-to-br from-slate-950/95 via-slate-900/80 to-indigo-950/70 z-2" />
 
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
         <div className="max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 mb-6">
-            <Gavel size={13} className="text-indigo-400" />
-            <span className="text-white/70 text-xs font-medium">Premium Online Auction Platform</span>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 mb-6 backdrop-blur-sm">
+            <Gavel size={13} className="text-amber-400" />
+            <span className="text-white/70 text-xs font-medium tracking-wide">Premium Online Auction Platform</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl leading-tight tracking-tight text-white whitespace-pre-line">
@@ -87,45 +87,45 @@ export default function Hero() {
                 {i === 1 ? (
                   <>
                     <br />
-                    <span className="text-indigo-400">{line}</span>
+                    <span className="bg-linear-to-r from-amber-300 via-amber-400 to-amber-300 bg-clip-text text-transparent">{line}</span>
                   </>
                 ) : (
-                  line
+                  <span className="text-white drop-shadow-sm">{line}</span>
                 )}
               </span>
             ))}
           </h1>
 
-          <p className="mt-5 text-base lg:text-lg text-white/50 max-w-lg leading-relaxed">
+          <p className="mt-5 text-base lg:text-lg text-white/60 max-w-lg leading-relaxed">
             {slide.subtitle}
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
             <Link
               href="/auctions"
-              className="group inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold text-sm hover:bg-indigo-700 transition-colors"
+              className="group inline-flex items-center gap-2 px-6 py-3 bg-linear-to-r from-amber-500 to-amber-600 text-white rounded-x1 font-semibold text-sm hover:from-amber-400 hover:to-amber-500 transition-all shadow-lg shadow-amber-500/20"
             >
-              Start Bidding <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+              Start Bidding<ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
             </Link>
             <Link
               href="/register"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 text-white border border-white/20 rounded-lg font-semibold text-sm hover:bg-white/15 transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-3 bg-white/5 text-white border border-white/15 rounded-x1 font-semibold text-sm hover:bg-white/10 transition-all backdrop-blur-sm"
             >
               <TrendingUp size={16} /> Create Auction
             </Link>
           </div>
 
           <div className="mt-10 flex flex-wrap items-center gap-6 text-sm">
-            <div className="flex items-center gap-2 text-white/40">
-              <Shield size={14} className="text-indigo-400" />
+            <div className="flex items-center gap-2 text-white/50">
+              <Shield size={14} className="text-amber-400/80" />
               <span>Secure Bidding</span>
             </div>
-            <div className="flex items-center gap-2 text-white/40">
-              <Award size={14} className="text-indigo-400" />
+            <div className="flex items-center gap-2 text-white/50">
+              <Award size={14} className="text-amber-400/80" />
               <span>Authenticated Items</span>
             </div>
-            <div className="flex items-center gap-2 text-white/40">
-              <Zap size={14} className="text-indigo-400" />
+            <div className="flex items-center gap-2 text-white/50">
+              <Zap size={14} className="text-amber-400/80" />
               <span>Real-time Bids</span>
             </div>
           </div>
@@ -133,7 +133,7 @@ export default function Hero() {
       </div>
 
       <div className="absolute right-8 lg:right-16 top-1/2 -translate-y-1/2 z-10 hidden lg:block">
-        <div className="relative w-72 xl:w-80 h-72 xl:h-80 rounded-xl overflow-hidden border border-white/10">
+        <div className="relative w-72 xl:w-80 h-72 xl:h-80 rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
           {heroSlides.map((s, i) => (
             <div
               key={i}
@@ -169,10 +169,10 @@ export default function Hero() {
           <button
             key={i}
             onClick={() => goTo(i)}
-            className={`h-1.5 rounded-full transition-all duration-300 ${
+            className={`h-1.5 rounded-lg transition-all duration-300 ${
               i === current
-                ? "w-8 bg-indigo-500"
-                : "w-1.5 bg-white/25 hover:bg-white/40"
+                ? "w-8 bg-amber-400/90"
+                : "w-1.5 bg-white/30 hover:bg-white/50"
             }`}
           />
         ))}

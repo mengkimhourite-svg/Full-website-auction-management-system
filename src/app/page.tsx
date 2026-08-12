@@ -99,7 +99,7 @@ export default function Home() {
                 <Link href={`/auctions?category=${encodeURIComponent(cat.name)}`}
                   className="group card p-5 text-center hover:shadow-md transition-all"
                 >
-                  <div className={`w-11 h-11 mx-auto rounded-xl ${cat.color} flex items-center justify-center mb-3`}>
+                  <div className={`w-11 h-11 mx-auto rounded-2xl ${cat.color} flex items-center justify-center mb-3`}>
                     <cat.icon size={20} className="text-white" />
                   </div>
                   <h4 className="text-sm font-semibold text-gray-900">{cat.name}</h4>
@@ -130,7 +130,7 @@ export default function Home() {
           {loading ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="bg-white rounded-xl overflow-hidden border border-gray-200">
+                <div key={i} className="bg-white rounded-2xl overflow-hidden border border-gray-200">
                   <div className="h-48 bg-gray-100 animate-pulse" />
                   <div className="p-4 space-y-3"><div className="h-3.5 bg-gray-100 rounded w-3/4 animate-pulse" /><div className="h-3 bg-gray-100 rounded w-1/2 animate-pulse" /><div className="h-7 bg-gray-100 rounded w-1/3 animate-pulse" /></div>
                 </div>
@@ -178,7 +178,7 @@ export default function Home() {
             ].map((item, i) => (
               <Reveal key={item.title} variant="scale" delay={i * 100}>
                 <div className="card p-7 text-center h-full">
-                  <div className={`w-14 h-14 mx-auto rounded-xl ${item.color} flex items-center justify-center mb-4`}>
+                  <div className={`w-14 h-14 mx-auto rounded-2xl ${item.color} flex items-center justify-center mb-4`}>
                     <item.icon size={26} className="text-white" />
                   </div>
                   <div className="text-3xl font-bold text-gray-200 mb-3">{item.step}</div>
@@ -233,11 +233,11 @@ export default function Home() {
           <h2 className="text-3xl lg:text-5xl font-bold tracking-tight">Ready to Start Bidding?</h2>
           <p className="text-white/50 mt-3 max-w-xl mx-auto text-base">Join thousands of buyers and sellers on the most trusted auction platform.</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link href="/register" className="group inline-flex items-center gap-2 bg-indigo-600 text-white px-7 py-3 rounded-lg font-semibold text-sm hover:bg-indigo-700 transition-colors">
-              Get Started Free <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+            <Link href="/register" className="group inline-flex items-center gap-2 bg-indigo-600 text-white px-7 py-3 rounded-x1 font-semibold text-sm hover:bg-indigo-700 transition-colors">
+              Get Started Free <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
             </Link>
-            <Link href="/auctions" className="inline-flex items-center gap-2 bg-white/10 text-white border border-white/20 px-7 py-3 rounded-lg font-semibold text-sm hover:bg-white/15 transition-colors">
-              Browse Auctions
+            <Link href="/auctions" className="inline-flex items-center gap-2 bg-white/10 text-white border border-white/20 px-7 py-3 rounded-x1 font-semibold text-sm hover:bg-white/15 transition-colors">
+              Browse Auctions <ArrowRight size={10} className="group-hover:translate-x-0.5 transition-transform" />
             </Link>
           </div>
         </Reveal>

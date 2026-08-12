@@ -49,7 +49,7 @@ export default function CreateAuctionPage() {
       <div className="flex items-center gap-3">
         <Link
           href="/seller/auctions"
-          className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 transition-all"
+          className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-all"
         >
           <ArrowLeft size={20} />
         </Link>
@@ -65,7 +65,7 @@ export default function CreateAuctionPage() {
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm font-medium">
+        <div className="flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-sm font-medium">
           <AlertCircle size={16} />
           {error}
         </div>

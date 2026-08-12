@@ -31,7 +31,7 @@ export default function Footer() {
                 alt="AuctionPro logo"
                 width={32}
                 height={32}
-                className="w-8 h-8 object-contain rounded-lg"
+                className="w-8 h-8 object-contain rounded-xl"
               />
               <span className="text-lg font-bold text-white">
                 AuctionPro

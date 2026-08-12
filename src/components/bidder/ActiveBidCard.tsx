@@ -14,7 +14,7 @@ export default function ActiveBidCard({ bid }: ActiveBidCardProps) {
 
   return (
     <Link href={`/auctions/${auction.id}`} className="block no-underline">
-      <div className="bg-white rounded-2xl shadow-md p-5 hover:shadow-xl transition-all">
+      <div className="card p-5">
         <div className="flex items-center justify-between mb-3">
           <span className="badge badge-success">Active</span>
           <div className="flex items-center gap-1 text-xs text-gray-500">
@@ -35,7 +35,7 @@ export default function ActiveBidCard({ bid }: ActiveBidCardProps) {
             <p className="text-sm font-semibold text-gray-700">${(auction.currentPrice || 0).toLocaleString()}</p>
           </div>
         </div>
-        <div className="mt-4 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-sky-500 text-white py-2 rounded-xl font-semibold text-xs hover:shadow-lg transition-all">
+        <div className="mt-4 w-full flex items-center justify-center gap-2 bg-indigo-600 text-white py-2 rounded-xl font-semibold text-xs hover:bg-indigo-700 transition-colors">
           <TrendingUp size={14} />
           View Auction
         </div>

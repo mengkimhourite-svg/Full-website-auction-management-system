@@ -7,6 +7,7 @@ import Link from "next/link";
 import { ArrowLeft, Clock, User, Tag, Loader2, AlertCircle, ImageOff, Heart, CreditCard } from "lucide-react";
 import { getAuctionById } from "@/services/auction.service";
 import { useCountdown } from "@/hooks/useCountdown";
+import { useAuth } from "@/hooks/useAuth";
 import BidHistory from "@/components/auction/BidHistory";
 import PlaceBidForm from "@/components/auction/PlaceBidForm";
 import type { Bid, Product, UserSummary, Watchlist } from "@/types";
@@ -31,6 +32,7 @@ interface AuctionDetail {
 export default function AuctionDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { user } = useAuth();
   const id = params.id as string;
   const [auction, setAuction] = useState<AuctionDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -75,7 +77,9 @@ export default function AuctionDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || !user) {
+      return;
+    }
     fetch("/api/watchlist", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : null))
       .then((json) => {
@@ -83,7 +87,7 @@ export default function AuctionDetailPage() {
         setWatchlisted(items.some((w) => w.auctionId === id));
       })
       .catch(() => {});
-  }, [id]);
+  }, [id, user]);
 
   async function toggleWatchlist() {
     if (watchlistLoading) return;

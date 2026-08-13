@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getAuthUser, isAdminRole } from "@/lib/auth";
-import { syncAuctionStatuses, serializeAuction, cleanText, cleanOptionalText } from "@/lib/auction";
+import { syncAuctionById, serializeAuction, cleanText, cleanOptionalText } from "@/lib/auction";
 
 export async function GET(
   request: NextRequest,
@@ -9,7 +9,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    await syncAuctionStatuses();
+    await syncAuctionById(id);
 
     const auction = await prisma.auction.findUnique({
       where: { id },

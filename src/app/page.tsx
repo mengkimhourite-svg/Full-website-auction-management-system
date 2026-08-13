@@ -42,24 +42,42 @@ function getEndingIn(auction: Auction): string {
   return days > 0 ? `${days}d ${hours}h` : `${hours}h ${mins}m`;
 }
 
+// React StrictMode double-invokes effects in development, which would fire
+// two identical requests. A module-level in-flight promise dedupes them
+// without disabling StrictMode (production builds are unaffected).
+let inflightHomeAuctions: Promise<Auction[]> | null = null;
+
 export default function Home() {
   const [auctions, setAuctions] = useState<Auction[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/auctions", { credentials: "include" })
-      .then((r) => r.json())
-      .then((data) => {
-        const items: Auction[] = (Array.isArray(data) ? data : data?.data || []).slice(0, 6);
-        setAuctions(
-          items.map((a) => ({
-            ...a,
-            endingIn: getEndingIn(a),
-          }))
-        );
-      })
-      .catch(() => { })
-      .finally(() => setLoading(false));
+    if (!inflightHomeAuctions) {
+      inflightHomeAuctions = fetch("/api/auctions?limit=6", { credentials: "include" })
+        .then((r) => r.json())
+        .then((data) => (Array.isArray(data) ? data : data?.data || []))
+        .catch(() => [] as Auction[])
+        .finally(() => {
+          inflightHomeAuctions = null;
+        });
+    }
+
+    let cancelled = false;
+
+    inflightHomeAuctions.then((items) => {
+      if (cancelled) return;
+      setAuctions(
+        items.slice(0, 6).map((a) => ({
+          ...a,
+          endingIn: getEndingIn(a),
+        }))
+      );
+      setLoading(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
@@ -313,7 +331,7 @@ export default function Home() {
                 <MessageSquare size={14} className="text-amber-400" /> Contact Us
               </span>
               <h2 className="text-3xl lg:text-5xl font-bold tracking-tight">
-                &apos;<span className="bg-linear-to-r from-amber-300 via-amber-400 to-amber-300 bg-clip-text text-transparent">We're Here to Help U</span>
+                &apos;<span className="bg-linear-to-r from-amber-300 via-amber-400 to-amber-300 bg-clip-text text-transparent">We&apos;re Here to Help U</span>
               </h2>
               <p className="text-white/60 mt-4 text-base lg:text-lg max-w-lg leading-relaxed">
                 Have questions about bidding, selling, or payments? Our team is ready to assist you every step of the way.

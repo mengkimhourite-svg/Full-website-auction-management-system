@@ -23,8 +23,35 @@ export interface UpdateAuctionInput {
   startTime?: string;
 }
 
-export const getAuctions = async (): Promise<Auction[]> => {
-  const res = await axiosInstance.get("/api/auctions");
+export interface GetAuctionsParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  category?: string;
+  status?: string;
+  sellerId?: string;
+  role?: string;
+  sort?: string;
+  order?: "asc" | "desc";
+}
+
+export const getAuctions = async (
+  params: GetAuctionsParams = {}
+): Promise<Auction[]> => {
+  const qs = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== "") {
+      qs.set(key, String(value));
+    }
+  }
+
+  const query = qs.toString();
+
+  const res = await axiosInstance.get(
+    `/api/auctions${query ? `?${query}` : ""}`
+  );
+
   return res.data.data;
 };
 

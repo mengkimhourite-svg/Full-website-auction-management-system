@@ -269,13 +269,22 @@ function matchesOperator(field: unknown, op: Record<string, unknown>): boolean {
   return true;
 }
 
+function resolvePath(row: Row, path: string): unknown {
+  let value: unknown = row;
+  for (const part of path.split(".")) {
+    if (value == null || typeof value !== "object") return undefined;
+    value = (value as Record<string, unknown>)[part];
+  }
+  return value;
+}
+
 function buildComparator(orderBy: unknown): (a: Row, b: Row) => number {
   const orders = (Array.isArray(orderBy) ? orderBy : [orderBy]) as Record<string, string>[];
   return (a, b) => {
     for (const order of orders) {
       for (const [key, dir] of Object.entries(order)) {
-        const av = a[key];
-        const bv = b[key];
+        const av = resolvePath(a, key);
+        const bv = resolvePath(b, key);
         if (av === bv) continue;
         const asc = dir === "asc";
         let cmp = 0;
@@ -333,6 +342,7 @@ interface QuerySpec {
   include?: Record<string, unknown>;
   where?: Record<string, unknown>;
   orderBy?: unknown;
+  skip?: number;
   take?: number;
 }
 
@@ -514,7 +524,8 @@ class MongoDBStore {
     let rows = this.collection(model);
     if (spec.where) rows = rows.filter((r) => this.matchesWhere(model, r, spec.where!));
     if (spec.orderBy) rows = [...rows].sort(buildComparator(spec.orderBy));
-    if (spec.take != null) rows = rows.slice(0, spec.take);
+    const skip = spec.skip ?? 0;
+    rows = rows.slice(skip, spec.take != null ? skip + spec.take : undefined);
     return rows;
   }
 

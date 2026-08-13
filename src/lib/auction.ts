@@ -70,9 +70,43 @@ export function serializeAuction(auction: AuctionWithRelations) {
   };
 }
 
+async function notifyAuctionEnded(auction: AuctionWithRelations): Promise<void> {
+  const product = auction.product;
+  if (!product) return;
+
+  const topBid = auction.bids?.[0];
+  if (topBid) {
+    await prisma.notification.create({
+      data: {
+        userId: topBid.userId,
+        message: `You won the auction "${product.title}"! Complete your payment to claim it.`,
+      },
+    });
+  }
+
+  await prisma.notification.create({
+    data: {
+      userId: product.sellerId,
+      message: `Your auction "${product.title}" has ended.`,
+    },
+  });
+}
+
 export async function syncAuctionStatuses(): Promise<void> {
+  const now = new Date();
+  // Only auctions that could actually transition are scanned:
+  // - any whose endTime has passed or is within the next minute (UPCOMING/ACTIVE -> ENDED)
+  // - UPCOMING auctions whose startTime has passed (UPCOMING -> ACTIVE)
+  const horizon = new Date(now.getTime() + 60_000);
+
   const auctions = await prisma.auction.findMany({
-    where: { status: { in: ["UPCOMING", "ACTIVE"] } },
+    where: {
+      status: { in: ["UPCOMING", "ACTIVE"] },
+      OR: [
+        { endTime: { lte: horizon } },
+        { status: "UPCOMING", startTime: { lte: now } },
+      ],
+    },
     include: { bids: { orderBy: { amount: "desc" }, take: 1 }, product: true },
   });
 
@@ -83,26 +117,27 @@ export async function syncAuctionStatuses(): Promise<void> {
     await prisma.auction.update({ where: { id: auction.id }, data: { status: effective } });
 
     if (effective === "ENDED") {
-      const topBid = auction.bids[0];
-      if (topBid) {
-        await prisma.notification.create({
-          data: {
-            userId: topBid.userId,
-            message: `You won the auction "${auction.product.title}"! Complete your payment to claim it.`,
-          },
-        });
-      }
-      await prisma.notification.create({
-        data: {
-          userId: auction.product.sellerId,
-          message: `Your auction "${auction.product.title}" has ended.`,
-        },
-      });
+      await notifyAuctionEnded(auction);
     }
   }
 }
 
 export async function syncAuctionById(id: string): Promise<AuctionRecord | null> {
-  await syncAuctionStatuses();
+  const auction = await prisma.auction.findUnique({
+    where: { id },
+    include: { bids: { orderBy: { amount: "desc" }, take: 1 }, product: true },
+  });
+
+  if (!auction) return null;
+
+  const effective = computeStatus(auction);
+  if (effective !== auction.status) {
+    await prisma.auction.update({ where: { id: auction.id }, data: { status: effective } });
+
+    if (effective === "ENDED") {
+      await notifyAuctionEnded(auction);
+    }
+  }
+
   return prisma.auction.findUnique({ where: { id } });
 }

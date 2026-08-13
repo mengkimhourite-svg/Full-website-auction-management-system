@@ -96,7 +96,7 @@ export default function BidderReportsPage() {
             <div key={stat.label} className="stat-card">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-gray-500">{stat.label}</span>
-                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center text-white`}>
+                <div className={`w-8 h-8 rounded-lg bg-linear-to-br ${stat.color} flex items-center justify-center text-white`}>
                   <Icon size={14} />
                 </div>
               </div>

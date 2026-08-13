@@ -98,6 +98,10 @@ export async function PUT(
         return NextResponse.json({ success: false, error: "startPrice must be a positive number" }, { status: 400 });
       }
       data.startPrice = price;
+      const bidCount = await prisma.bid.count({ where: { auctionId: id } });
+      if (bidCount === 0) {
+        data.currentPrice = price;
+      }
     }
     if (body.currentPrice !== undefined) {
       const price = Number(body.currentPrice);

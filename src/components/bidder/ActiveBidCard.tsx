@@ -86,7 +86,7 @@ export default function ActiveBidCard({
 
             <p className="mt-1 text-base font-bold text-black">
               $
-              {(auction.currentPrice || 0).toLocaleString()}
+              {(auction.currentPrice || auction.startPrice || 0).toLocaleString()}
             </p>
 
           </div>

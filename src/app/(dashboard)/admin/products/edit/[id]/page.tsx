@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { Save, ArrowLeft } from "lucide-react";
+import { Save, ArrowLeft, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import ProductImageUpload from "@/components/admin/ProductImageUpload";
 
@@ -10,39 +10,64 @@ const CATEGORIES = ["Watches", "Jewelry", "Art", "Cars", "Wine", "Antiques"];
 
 export default function AdminProductsEditPage() {
   const router = useRouter();
-  const params = useParams();
+  const params = useParams<{ id: string }>();
+  const id = params?.id ?? "";
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [notFound, setNotFound] = useState(false);
   const [form, setForm] = useState({
     title: "",
     description: "",
     image: "",
     category: "",
+    startPrice: "",
   });
 
   useEffect(() => {
+    if (!id) return;
+
+    let cancelled = false;
     (async () => {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch(`/api/auctions/${params.id}`);
-        if (!res.ok) throw new Error("Failed to fetch auction");
+        const res = await fetch(`/api/auctions/${id}`, { credentials: "include" });
+
+        if (res.status === 401 || res.status === 403) {
+          router.push("/login");
+          return;
+        }
+
+        if (!res.ok) {
+          if (res.status === 404) setNotFound(true);
+          else throw new Error("Failed to fetch auction");
+          return;
+        }
+
         const data = await res.json();
         const auction = data.data || data;
-        setForm({
-          title: auction.product?.title || "",
-          description: auction.product?.description || "",
-          image: auction.product?.image || "",
-          category: auction.product?.category || auction.category || "",
-        });
+        if (!cancelled) {
+          setForm({
+            title: auction.product?.title || auction.title || "",
+            description: auction.product?.description || auction.description || "",
+            image: auction.product?.image || auction.image || "",
+            category: auction.product?.category || auction.category || "",
+            startPrice: auction.startPrice != null ? String(auction.startPrice) : "",
+          });
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch auction");
+        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to fetch auction");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
-  }, [params.id]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -51,6 +76,7 @@ export default function AdminProductsEditPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess(false);
     setSaving(true);
 
     try {
@@ -58,23 +84,40 @@ export default function AdminProductsEditPage() {
         throw new Error("Title and category are required");
       }
 
-      const res = await fetch(`/api/auctions/${params.id}`, {
+      const payload: Record<string, unknown> = {
+        productTitle: form.title,
+        productDescription: form.description,
+        productImage: form.image || null,
+        category: form.category,
+      };
+      if (form.startPrice !== "") {
+        const startPrice = Number(form.startPrice);
+        if (!Number.isFinite(startPrice) || startPrice <= 0) {
+          throw new Error("Starting price must be a positive number");
+        }
+        payload.startPrice = startPrice;
+      }
+
+      const res = await fetch(`/api/auctions/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productTitle: form.title,
-          productDescription: form.description,
-          productImage: form.image,
-          category: form.category,
-        }),
+        body: JSON.stringify(payload),
+        credentials: "include",
       });
+
+      if (res.status === 401 || res.status === 403) {
+        router.push("/login");
+        return;
+      }
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.message || "Failed to update product");
       }
 
-      router.push("/admin/products");
+      setSuccess(true);
+      router.refresh();
+      setTimeout(() => router.push("/admin/products"), 700);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update product");
     } finally {
@@ -90,6 +133,18 @@ export default function AdminProductsEditPage() {
       <div className="flex flex-col items-center justify-center py-16 gap-3">
         <div className="loading-spinner" />
         <p className="text-sm text-gray-500">Loading product...</p>
+      </div>
+    );
+  }
+
+  if (notFound) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
+        <p className="text-lg font-semibold text-gray-700">Product not found</p>
+        <Link href="/admin/products" className="flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:text-indigo-700">
+          <ArrowLeft size={16} />
+          Back to Products
+        </Link>
       </div>
     );
   }
@@ -119,6 +174,13 @@ export default function AdminProductsEditPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-2xl p-6 space-y-5">
+        {success && (
+          <div className="flex items-center gap-2.5 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm">
+            <CheckCircle size={16} />
+            Product updated successfully!
+          </div>
+        )}
+
         <div>
           <label className={labelClass}>
             Product Title <span className="text-red-500">*</span>
@@ -129,6 +191,11 @@ export default function AdminProductsEditPage() {
         <div>
           <label className={labelClass}>Description</label>
           <textarea name="description" value={form.description} onChange={handleChange} rows={3} placeholder="Describe the product..." className={inputClass} />
+        </div>
+
+        <div>
+          <label className={labelClass}>Starting Price ($)</label>
+          <input name="startPrice" value={form.startPrice} onChange={handleChange} type="number" min="0" step="0.01" placeholder="e.g. 500" className={inputClass} />
         </div>
 
         <div>

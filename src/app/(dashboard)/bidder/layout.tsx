@@ -2,14 +2,24 @@
 
 import { useState, useEffect, useCallback } from "react";
 import BidderSidebar from "@/components/bidder/BidderSidebar";
-import { Menu, Bell, LogOut, Activity } from "lucide-react";
+import { Menu, Bell, LogOut, Activity, Sun, Moon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function BidderLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [darkMode, setDarkMode] = useState(() =>
+    typeof window !== "undefined" ? localStorage.getItem("bidder-theme") === "dark" : false
+  );
   const router = useRouter();
+
+  function toggleTheme() {
+    setDarkMode((prev) => {
+      localStorage.setItem("bidder-theme", prev ? "light" : "dark");
+      return !prev;
+    });
+  }
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -35,7 +45,7 @@ export default function BidderLayout({ children }: { children: React.ReactNode }
   }
 
   return (
-    <div className="dashboard-layout">
+    <div className={`dashboard-layout dashboard-admin ${darkMode ? "dashboard-dark" : ""}`}>
       <BidderSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="dashboard-main">
@@ -55,10 +65,17 @@ export default function BidderLayout({ children }: { children: React.ReactNode }
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={toggleTheme}
+              title={darkMode ? "Switch to White mode" : "Switch to Dark mode"}
+              className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 hover:text-indigo-600 transition-colors"
+            >
+              {darkMode ? <Sun size={19} /> : <Moon size={19} />}
+            </button>
             <Link href="/notifications" className="relative p-2 rounded-xl hover:bg-gray-100 text-gray-500 hover:text-indigo-600 transition-colors">
               <Bell size={19} />
               {notificationCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
+                <span className="absolute -top-0.5 -right-0.5 min-w-4.5 h-4.5 flex items-center justify-center px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
                   {notificationCount > 99 ? "99+" : notificationCount}
                 </span>
               )}

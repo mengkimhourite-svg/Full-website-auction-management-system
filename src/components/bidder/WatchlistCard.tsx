@@ -111,7 +111,7 @@ export default function WatchlistCard({
 
             <p className="mt-1 text-xl font-extrabold text-blue-600">
               $
-              {(auction.currentPrice || 0).toLocaleString()}
+              {(auction.currentPrice || auction.startPrice || 0).toLocaleString()}
             </p>
 
           </div>

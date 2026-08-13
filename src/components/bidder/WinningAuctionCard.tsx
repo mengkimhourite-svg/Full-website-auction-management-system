@@ -91,7 +91,7 @@ export default function WinningAuctionCard({
 
           <p className="mt-1.5 text-lg font-extrabold text-blue-600">
             $
-            {(auction.currentPrice || 0).toLocaleString()}
+            {(auction.currentPrice || auction.startPrice || 0).toLocaleString()}
           </p>
 
           <p className="mt-0.5 text-[11px] text-slate-400">

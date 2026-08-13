@@ -52,7 +52,7 @@ export default function SellerAuctionCard({ auction, onEdit, onDelete }: SellerA
       <div className="p-4">
         <h3 className="text-sm font-semibold text-gray-900 truncate">{product.title || "Untitled"}</h3>
         <div className="flex items-center justify-between mt-2">
-          <p className="text-base font-bold text-indigo-600">${(auction.currentPrice || 0).toLocaleString()}</p>
+          <p className="text-base font-bold text-indigo-600">${(auction.currentPrice || auction.startPrice || 0).toLocaleString()}</p>
           <div className="flex items-center gap-1 text-xs text-gray-500">
             <Users size={12} />
             {auction._count?.bids || 0}

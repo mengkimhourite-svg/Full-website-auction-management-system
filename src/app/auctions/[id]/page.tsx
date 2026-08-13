@@ -287,7 +287,7 @@ export default function AuctionDetailPage() {
                 <div>
                   <p className="text-xs text-gray-400 font-medium">Current Bid</p>
                   <p className="text-3xl font-bold text-gray-900">
-                    ${(auction.currentPrice || 0).toLocaleString()}
+                    ${(auction.currentPrice || auction.startPrice || 0).toLocaleString()}
                   </p>
                 </div>
                 <div className="text-right">
@@ -312,7 +312,7 @@ export default function AuctionDetailPage() {
             {!isEnded && (
               <PlaceBidForm
                 auctionId={auction.id}
-                currentPrice={auction.currentPrice || 0}
+                currentPrice={auction.currentPrice || auction.startPrice || 0}
                 onBidPlaced={fetchAuction}
               />
             )}

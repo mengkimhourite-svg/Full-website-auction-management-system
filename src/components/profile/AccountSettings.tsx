@@ -53,7 +53,7 @@ export default function AccountSettings({ initialData, onSave, loading }: Accoun
         <label className="block text-sm font-semibold text-gray-700 mb-1">Role</label>
         <input
           type="text"
-          value={initialData.role}
+          value={initialData.role ?? ""}
           disabled
           className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
         />

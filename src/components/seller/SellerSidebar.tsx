@@ -28,7 +28,7 @@ export default function SellerSidebar({ open, onClose }: SellerSidebarProps) {
             <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-600 shrink-0">
               <Image src="/logo.png" alt="AuctionPro" width={24} height={24} className="w-6 h-6 object-contain" />
             </span>
-            <span className="text-base font-bold text-white">Seller</span>
+            <span className="sidebar-brand text-base font-bold text-white">Seller</span>
           </Link>
           <button onClick={onClose} className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:bg-white/10 transition-colors">
             <X size={16} />

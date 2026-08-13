@@ -104,7 +104,7 @@ export default async function SellerAuctionsPage() {
                       )}
                     </td>
                     <td className="px-4 py-3 font-medium text-gray-900">{auction.title}</td>
-                    <td className="px-4 py-3 font-semibold text-gray-900">${auction.currentPrice.toLocaleString()}</td>
+                    <td className="px-4 py-3 font-semibold text-gray-900">${(auction.currentPrice || auction.startPrice || 0).toLocaleString()}</td>
                     <td className="px-4 py-3 text-gray-500">{auction.bidCount}</td>
                     <td className="px-4 py-3">
                       <StatusBadge status={auction.status} />

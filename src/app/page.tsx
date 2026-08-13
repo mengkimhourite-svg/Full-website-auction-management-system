@@ -111,11 +111,19 @@ export default function Home() {
       </section>
 
       {/* Featured Auctions */}
-      <section className="py-16 lg:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative py-16 lg:py-20 overflow-hidden">
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-indigo-100/50 rounded-full blur-3xl pointer-events-none animate-float" />
+        <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-sky-100/50 rounded-full blur-3xl pointer-events-none animate-float-slow" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-10">
             <Reveal variant="left">
-              <span className="eyebrow mb-4">Featured Items</span>
+              <span className="inline-flex items-center gap-2 eyebrow mb-4">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+                </span>
+                Featured Items
+              </span>
               <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 tracking-tight mt-3">Live Auctions</h2>
               <p className="text-gray-500 mt-2 max-w-lg text-base">Place your bids on these exclusive items before time runs out</p>
             </Reveal>
@@ -125,6 +133,30 @@ export default function Home() {
               </Link>
             </Reveal>
           </div>
+
+          {/* Live Bid Ticker */}
+          {(auctions.length > 0 || !loading) && (
+            <Reveal variant="up" delay={80}>
+              <div className="relative overflow-hidden rounded-xl border border-gray-100 bg-white mb-8">
+                <div className="absolute left-0 top-0 bottom-0 w-28 bg-linear-to-r from-white to-transparent z-10 pointer-events-none" />
+                <div className="absolute right-0 top-0 bottom-0 w-28 bg-linear-to-l from-white to-transparent z-10 pointer-events-none" />
+                <div className="flex w-max animate-ticker py-3">
+                  {[...(auctions.length ? auctions : staticAuctions), ...(auctions.length ? auctions : staticAuctions)].map((a, i) => {
+                    const title = "product" in a ? a.product?.title || "Untitled" : a.title;
+                    const bid = "currentPrice" in a ? a.currentPrice ?? 0 : a.currentBid;
+                    return (
+                      <div key={i} className="flex items-center gap-2 px-6 whitespace-nowrap text-sm">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-gray-900 font-semibold">{title}</span>
+                        <span className="text-gray-400">·</span>
+                        <span className="text-indigo-600 font-bold">${bid.toLocaleString()}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </Reveal>
+          )}
 
           {loading ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">

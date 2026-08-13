@@ -161,7 +161,7 @@ export default function AdminAuctionsPage() {
       key: "currentPrice",
       label: "Current Bid",
       render: (a: Auction) => (
-        <span className="text-sm font-bold text-gray-900">${(a.currentPrice || 0).toLocaleString()}</span>
+        <span className="text-sm font-bold text-gray-900">${(a.currentPrice || a.startPrice || 0).toLocaleString()}</span>
       ),
     },
     {
@@ -306,7 +306,7 @@ export default function AdminAuctionsPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs text-gray-400">Current Bid</p>
-                        <p className="text-lg font-extrabold text-gray-900">${(auction.currentPrice || 0).toLocaleString()}</p>
+                        <p className="text-lg font-extrabold text-gray-900">${(auction.currentPrice || auction.startPrice || 0).toLocaleString()}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-xs text-gray-400">Bids</p>

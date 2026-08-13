@@ -50,7 +50,7 @@ export default function SellerAuctionTable({ auctions, onEdit, onDelete }: Selle
                 )}
               </td>
               <td className="font-medium text-gray-900">{auction.product?.title || "Untitled"}</td>
-              <td className="font-semibold text-indigo-600">${(auction.currentPrice || 0).toLocaleString()}</td>
+              <td className="font-semibold text-indigo-600">${(auction.currentPrice || auction.startPrice || 0).toLocaleString()}</td>
               <td className="text-gray-500">{auction._count?.bids || 0}</td>
               <td>
                 <span

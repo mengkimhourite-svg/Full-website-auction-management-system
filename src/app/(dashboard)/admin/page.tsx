@@ -249,7 +249,7 @@ export default function AdminDashboardHomePage() {
                       </div>
                     </td>
                     <td className="text-gray-500 text-sm">{a.product?.seller?.name || "Unknown"}</td>
-                    <td className="font-semibold text-gray-900 text-sm">${(a.currentPrice || 0).toLocaleString()}</td>
+                    <td className="font-semibold text-gray-900 text-sm">${(a.currentPrice || a.startPrice || 0).toLocaleString()}</td>
                     <td>
                       <StatusBadge variant={a.status?.toLowerCase() as "active" | "ended" | "pending" || "active"}>
                         {a.status || "Unknown"}

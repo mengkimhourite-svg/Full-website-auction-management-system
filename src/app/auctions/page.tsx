@@ -1,79 +1,39 @@
 "use client";
-import Link from "next/link";
 
-import { useState, useEffect } from "react";
-import {
-  Search,
-  SlidersHorizontal,
-  AlertCircle,
-  Gavel,
-  Sparkles,
-  TrendingUp,
-  ArrowRight,
-  ShieldCheck,
-} from "lucide-react";
-import AuctionGrid from "@/components/auction/AuctionGrid";
-import FilterPanel from "@/components/search/FilterPanel";
+import { useState, useEffect, useCallback } from "react";
+import { Search, Palette } from "lucide-react";
+import ArtCard from "@/components/auction/ArtCard";
 import SortDropdown from "@/components/search/SortDropdown";
 import type { Auction } from "@/types";
 
-const categories = [
-  "Watches",
-  "Jewelry",
-  "Art",
-  "Cars",
-  "Wine",
-  "Antiques",
-  "Collectibles",
-  "Electronics",
-];
-
 const sortOptions = [
+  { label: "Ending Soon", value: "ending" },
   { label: "Newest", value: "newest" },
   { label: "Price: Low to High", value: "price-asc" },
   { label: "Price: High to Low", value: "price-desc" },
-  { label: "Ending Soon", value: "ending" },
 ];
 
-type AuctionItem = Auction & {
-  title?: string;
-  description?: string;
-  category?: string;
-};
-
 export default function AuctionsPage() {
-  const [auctions, setAuctions] = useState<AuctionItem[]>([]);
+  const [auctions, setAuctions] = useState<Auction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState("newest");
-  const [showFilters, setShowFilters] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [sortBy, setSortBy] = useState("ending");
+  const [watchMap, setWatchMap] = useState<Record<string, string>>({});
+  const [watchLoading, setWatchLoading] = useState(false);
 
   useEffect(() => {
     const fetchAuctions = async () => {
       try {
         setLoading(true);
-
         const params = new URLSearchParams(window.location.search);
         const category = params.get("category");
+        if (category) setSelectedCategory(category);
 
-        if (category) {
-          setSelectedCategories([category]);
-        }
-
-        const res = await fetch("/api/auctions", {
-          credentials: "include",
-        });
-
+        const res = await fetch("/api/auctions", { credentials: "include" });
         const data = await res.json();
-
-        setAuctions(
-          data?.data ||
-            data?.auctions ||
-            data ||
-            []
-        );
+        setAuctions(data?.data || data?.auctions || data || []);
       } catch {
         setError("Failed to load auctions");
       } finally {
@@ -81,450 +41,228 @@ export default function AuctionsPage() {
       }
     };
 
+    const fetchWatchlist = async () => {
+      try {
+        const res = await fetch("/api/watchlist", { credentials: "include" });
+        if (!res.ok) return;
+        const json = await res.json();
+        const items = json.data || [];
+        if (Array.isArray(items)) {
+          const map: Record<string, string> = {};
+          for (const w of items) if (w.auctionId) map[w.auctionId] = w.id;
+          setWatchMap(map);
+        }
+      } catch {
+        // ignore
+      }
+    };
+
     fetchAuctions();
+    fetchWatchlist();
   }, []);
 
-  /* ============================================================
-     FILTER
-  ============================================================ */
+  const toggleWatch = useCallback(
+    async (auctionId: string) => {
+      if (watchLoading) return;
+      const entryId = watchMap[auctionId];
+      const isWatched = !!entryId;
+      setWatchLoading(true);
+      try {
+        if (isWatched) {
+          const res = await fetch(`/api/watchlist/${entryId}`, { method: "DELETE", credentials: "include" });
+          if (res.status === 401) {
+            window.location.href = "/login";
+            return;
+          }
+          if (res.ok) {
+            setWatchMap((prev) => {
+              const next = { ...prev };
+              delete next[auctionId];
+              return next;
+            });
+          }
+        } else {
+          const res = await fetch("/api/watchlist", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ auctionId }),
+            credentials: "include",
+          });
+          if (res.status === 401) {
+            window.location.href = "/login";
+            return;
+          }
+          const json = await res.json().catch(() => ({}));
+          if (res.ok && json.data?.id) setWatchMap((prev) => ({ ...prev, [auctionId]: json.data.id }));
+        }
+      } catch {
+        // ignore network errors
+      } finally {
+        setWatchLoading(false);
+      }
+    },
+    [watchMap, watchLoading]
+  );
+
+  const categories = ["All", ...Array.from(new Set(auctions.map((a) => a.product?.category || a.category || "General")))];
 
   let filtered = [...auctions];
 
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
-
-    filtered = filtered.filter((a) => {
-      const title =
-        a.product?.title ||
-        a.title ||
-        "";
-
-      const desc =
-        a.product?.description ||
-        a.description ||
-        "";
-
-      return (
-        title.toLowerCase().includes(q) ||
-        desc.toLowerCase().includes(q)
-      );
-    });
-  }
-
-  if (selectedCategories.length > 0) {
     filtered = filtered.filter((a) =>
-      selectedCategories.includes(
-        a.product?.category ||
-          a.category ||
-          ""
-      )
+      ((a.product?.title || a.title || "") + " " + (a.product?.description || a.description || "")).toLowerCase().includes(q)
     );
   }
 
-  /* ============================================================
-     SORT
-  ============================================================ */
+  if (selectedCategory !== "All") {
+    filtered = filtered.filter((a) => (a.product?.category || a.category || "General") === selectedCategory);
+  }
 
   switch (sortBy) {
     case "price-asc":
-      filtered.sort(
-        (a, b) =>
-          (a.currentPrice || 0) -
-          (b.currentPrice || 0)
-      );
+      filtered.sort((a, b) => ((a.currentPrice || a.startPrice) || 0) - ((b.currentPrice || b.startPrice) || 0));
       break;
-
     case "price-desc":
-      filtered.sort(
-        (a, b) =>
-          (b.currentPrice || 0) -
-          (a.currentPrice || 0)
-      );
+      filtered.sort((a, b) => ((b.currentPrice || b.startPrice) || 0) - ((a.currentPrice || a.startPrice) || 0));
       break;
-
-    case "ending":
-      filtered.sort(
-        (a, b) =>
-          new Date(a.endTime).getTime() -
-          new Date(b.endTime).getTime()
-      );
+    case "newest":
+      filtered.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
       break;
-
     default:
-      filtered.sort(
-        (a, b) =>
-          new Date(b.createdAt || 0).getTime() -
-          new Date(a.createdAt || 0).getTime()
-      );
+      filtered.sort((a, b) => new Date(a.endTime).getTime() - new Date(b.endTime).getTime());
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-20">
-
-      {/* ========================================================
-          HERO
-      ======================================================== */}
-
-      <section className="relative overflow-hidden bg-white">
-
-        {/* Background decorations */}
+    <div className="min-h-screen dashboard-admin bg-slate-50 pt-20">
+      {/* ===================== HEADER ===================== */}
+      <section className="relative overflow-hidden bg-white border-b border-slate-200">
         <div className="pointer-events-none absolute inset-0">
-
-          <div className="absolute -right-40 -top-40 h-125 w-125 rounded-full bg-blue-100/70 blur-3xl" />
-
-          <div className="absolute -left-40 top-40 h-100 w-100 rounded-full bg-indigo-100/50 blur-3xl" />
-
-          <div className="absolute right-[25%] top-24 h-3 w-3 rounded-full bg-blue-400/40" />
-
-          <div className="absolute right-[12%] top-[50%] h-2 w-2 rounded-full bg-indigo-400/40" />
+          <div className="absolute -right-32 -top-32 h-96 w-96 rounded-full bg-sky-100/60 blur-3xl" />
+          <div className="absolute -left-32 -bottom-32 h-80 w-80 rounded-full bg-indigo-100/50 blur-3xl" />
         </div>
 
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-
-          <div className="grid items-center gap-12 py-16 lg:grid-cols-2 lg:py-24">
-
-            {/* LEFT */}
-            <div>
-
-              {/* Badge */}
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-4 py-2 text-xs font-bold uppercase tracking-wide text-blue-700">
-                <Gavel size={14} />
-                Live Auctions
-              </div>
-
-              {/* Heading */}
-              <h1 className="max-w-3xl text-5xl font-black leading-[1.05] tracking-tight text-slate-950 sm:text-6xl lg:text-7xl">
-                Discover.
-                <br />
-
-                <span className="bg-linear-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                  Bid. Win.
-                </span>
-              </h1>
-
-              {/* Description */}
-              <p className="mt-6 max-w-xl text-lg leading-8 text-slate-600">
-                Explore exclusive products from trusted sellers around
-                the world and participate in exciting real-time auctions.
-              </p>
-
-              {/* CTA */}
-              <div className="mt-8 flex flex-wrap gap-4">
-
-                <a
-                  href="#auctions"
-                  className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition-all hover:-translate-y-0.5 hover:bg-blue-700"
-                >
-                  Explore Auctions
-                  <ArrowRight size={17} />
-                </a>
-
-                <Link href="/how-it-works" className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-6 py-3.5 text-sm font-semibold text-slate-600 transition-all hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-600">
-                    <ShieldCheck size={17} className="text-emerald-500" /> Secure Bidding
-                </Link>
-
-              </div>
-
-              {/* Stats */}
-              
+        <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-600 shadow-lg shadow-indigo-600/20">
+              <Palette size={22} className="text-white" />
             </div>
-
-            {/* RIGHT VISUAL */}
-            <div className="relative mx-auto w-full max-w-xl">
-
-              {/* Main auction preview */}
-              <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl shadow-blue-900/10">
-
-                <div className="relative h-82.5 overflow-hidden rounded-xl bg-slate-100">
-
-                  <img src="https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=1000&q=85" alt="Luxury watch auction" className="h-full w-full object-cover transition duration-700 hover:scale-105"/>
-
-                  {/* Image overlay */}
-                  <div className="absolute inset-0 bg-linear-to-t from-slate-950/70 via-transparent to-transparent" />
-
-                  {/* Live badge */}
-                  <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold text-slate-800 shadow-lg">
-                    <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-
-                    LIVE AUCTION
-                  </div>
-
-                  {/* Category */}
-                  <div className="absolute right-4 top-4 rounded-full bg-blue-600 px-3 py-1.5 text-xs font-bold text-white">
-                    Luxury Watches
-                  </div>
-
-                  {/* Bottom info */}
-                  <div className="absolute bottom-4 left-4 right-4">
-
-                    <div className="rounded-xl bg-slate-950/80 p-4 text-white backdrop-blur-md">
-
-                      <div className="flex items-end justify-between gap-4">
-
-                        <div>
-                          <p className="text-[10px] uppercase tracking-wider text-white/50">
-                            Featured Auction
-                          </p>
-
-                          <h3 className="mt-1 text-lg font-bold">
-                            Rolex Submariner Date
-                          </h3>
-                        </div>
-
-                        <div className="text-right">
-                          <p className="text-[10px] uppercase text-white/50">
-                            Current Bid
-                          </p>
-
-                          
-                        </div>
-
-                      </div>
-
-                    </div>
-
-                  </div>
-
-                </div>
-                {/* Card bottom */}
-                <div className="flex items-center justify-between px-3 py-4">
-
-                  <div>
-                    <p className="text-xs text-slate-400">
-                      Bidding activity
-                    </p>
-
-                    <div className="mt-1 flex items-center gap-2">
-                      <TrendingUp
-                        size={16}
-                        className="text-blue-600"
-                      />
-
-                      <span className="text-sm font-bold text-slate-900">
-                        High demand
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="rounded-md bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700">
-                    24 bids
-                  </div>
-
-                </div>
-
-              </div>
-              {/* Floating card */}
-              {/* Verified card */}
-              
-
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600">Auction Marketplace</p>
+              <h1 className="mt-0.5 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Art Auctions</h1>
             </div>
           </div>
+          <p className="mt-3 max-w-2xl text-base text-slate-500">
+            Discover unique artwork and bid in real time.
+          </p>
         </div>
       </section>
 
-      {/* ========================================================
-          SEARCH / FILTER BAR
-      ======================================================== */}
-
-      <section className="sticky top-16 z-20 border-y border-slate-200 bg-white/95 backdrop-blur-md">
-
+      {/* ===================== SEARCH / SORT ===================== */}
+      <section className="sticky top-16 z-20 border-b border-slate-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-
-            {/* Search */}
             <div className="relative flex-1">
-
-              <Search
-                size={17}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-              />
-
+              <Search size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 value={searchQuery}
-                onChange={(e) =>
-                  setSearchQuery(e.target.value)
-                }
-                placeholder="Search auctions..."
-                className="w-full rounded-md border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search artworks..."
+                className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition-all placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
               />
-
             </div>
-
-            {/* Controls */}
-            <div className="flex items-center gap-2">
-
-              <SortDropdown
-                options={sortOptions}
-                onSort={setSortBy}
-              />
-
-              <button
-                onClick={() =>
-                  setShowFilters(!showFilters)
-                }
-                className={`flex items-center gap-2 rounded-md border px-4 py-2.5 text-sm font-semibold transition-all ${
-                  showFilters
-                    ? "border-blue-500 bg-blue-50 text-blue-700"
-                    : "border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:text-blue-600"
-                }`}
-              >
-                <SlidersHorizontal size={15} />
-
-                Filters
-              </button>
-
+            <div className="shrink-0">
+              <SortDropdown options={sortOptions} onSort={setSortBy} />
             </div>
           </div>
 
-          {/* Filter panel */}
-          {showFilters && (
-            <div className="mt-4 border-t border-slate-100 pt-4 animate-fade-down">
-              <FilterPanel
-                categories={categories}
-                onFilter={(f) =>
-                  setSelectedCategories(
-                    f.categories || []
-                  )
-                }
-              />
-            </div>
-          )}
-
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${
+                  selectedCategory === cat
+                    ? "bg-indigo-600 text-white shadow-sm shadow-indigo-600/30"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* ========================================================
-          RESULTS
-      ======================================================== */}
-
-      <section
-        id="auctions"
-        className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10"
-      >
-
-        {/* Result header */}
-        {!loading && !error && (
-          <div className="mb-7 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-blue-600">
-                Marketplace
-              </p>
-
-              <h2 className="mt-1 text-2xl font-extrabold tracking-tight text-slate-900">
-                Live Auctions
-              </h2>
-
-              <p className="mt-1 text-sm text-slate-500">
-                {filtered.length} auction
-                {filtered.length !== 1 ? "s" : ""} available
-              </p>
-            </div>
-
-            {/* Active filters */}
-            {selectedCategories.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-
-                {selectedCategories.map((category) => (
-                  <span
-                    key={category}
-                    className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700"
-                  >
-                    {category}
-                  </span>
-                ))}
-
-              </div>
-            )}
-
-          </div>
-        )}
-
-        {/* Loading */}
+      {/* ===================== RESULTS ===================== */}
+      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-
-            <div className="h-10 w-10 animate-spin rounded-full border-2 border-slate-200 border-t-blue-600" />
-
-            <p className="mt-4 text-sm font-medium text-slate-500">
-              Loading auctions...
-            </p>
-
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="overflow-hidden rounded-xl border border-slate-200 bg-white animate-pulse">
+                <div className="h-52 bg-slate-200" />
+                <div className="space-y-3 p-5">
+                  <div className="h-3 w-1/4 rounded bg-slate-200" />
+                  <div className="h-4 w-3/4 rounded bg-slate-200" />
+                  <div className="h-3 w-1/2 rounded bg-slate-200" />
+                  <div className="h-10 rounded-lg bg-slate-200" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : error ? (
-
-          /* Error */
-          <div className="mx-auto flex max-w-md flex-col items-center justify-center rounded-xl border border-slate-200 bg-white px-6 py-12 text-center shadow-sm">
-
-            <div className="flex h-12 w-12 items-center justify-center rounded-md bg-red-50">
-              <AlertCircle
-                size={24}
-                className="text-red-500"
-              />
-            </div>
-
-            <h3 className="mt-4 text-base font-bold text-slate-900">
-              Something went wrong
-            </h3>
-
-            <p className="mt-2 text-sm text-slate-500">
-              {error}
-            </p>
-
+          <div className="mx-auto max-w-md py-16 text-center">
+            <p className="text-lg font-bold text-slate-900">Something went wrong</p>
+            <p className="mt-1 text-sm text-slate-500">{error}</p>
             <button
-              onClick={() =>
-                window.location.reload()
-              }
-              className="mt-5 rounded-md bg-blue-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700"
+              onClick={() => window.location.reload()}
+              className="mt-5 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-indigo-700"
             >
               Try Again
             </button>
-
           </div>
-
         ) : filtered.length === 0 ? (
-
-          /* Empty */
-          <div className="mx-auto flex max-w-md flex-col items-center justify-center rounded-xl border border-slate-200 bg-white px-6 py-14 text-center">
-
-            <div className="flex h-14 w-14 items-center justify-center rounded-md bg-blue-50">
-              <Search
-                size={25}
-                className="text-blue-600"
-              />
+          <div className="mx-auto max-w-md py-16 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-lg bg-indigo-50">
+              <Search size={24} className="text-indigo-600" />
             </div>
-
-            <h3 className="mt-5 text-lg font-bold text-slate-900">
-              No auctions found
-            </h3>
-
-            <p className="mt-2 text-sm leading-6 text-slate-500">
-              Try changing your search or removing some filters.
-            </p>
-
+            <h3 className="mt-5 text-lg font-bold text-slate-900">No auctions found</h3>
+            <p className="mt-2 text-sm text-slate-500">Try changing your search or picking a different category.</p>
             <button
               onClick={() => {
                 setSearchQuery("");
-                setSelectedCategories([]);
+                setSelectedCategory("All");
               }}
-              className="mt-5 rounded-md border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-600"
+              className="mt-5 rounded-lg border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-indigo-300 hover:text-indigo-600"
             >
               Clear Filters
             </button>
-
           </div>
-
         ) : (
-
-          /* Auction grid */
-          <AuctionGrid
-            auctions={filtered}
-            loading={false}
-          />
-
+          <>
+            <div className="mb-6 flex items-center gap-3">
+              <p className="text-sm font-medium text-slate-500">
+                {filtered.length} auction{filtered.length !== 1 ? "s" : ""} available
+              </p>
+              {selectedCategory !== "All" && (
+                <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700">
+                  {selectedCategory}
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((auction) => (
+                <ArtCard
+                  key={auction.id}
+                  auction={auction}
+                  watched={!!watchMap[auction.id]}
+                  loading={watchLoading}
+                  onToggleWatch={toggleWatch}
+                />
+              ))}
+            </div>
+          </>
         )}
-
       </section>
     </div>
   );

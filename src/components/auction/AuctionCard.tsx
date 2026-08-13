@@ -40,7 +40,7 @@ export default function AuctionCard({ auction }: AuctionCardProps) {
           <div className="flex items-center justify-between mt-2.5">
             <div>
               <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Current Bid</p>
-              <p className="text-lg font-bold text-gray-900 mt-0.5">${(auction.currentPrice || 0).toLocaleString()}</p>
+              <p className="text-lg font-bold text-gray-900 mt-0.5">${(auction.currentPrice || auction.startPrice || 0).toLocaleString()}</p>
             </div>
             <div className="flex items-center gap-1 text-xs text-gray-500">
               <Eye size={12} />

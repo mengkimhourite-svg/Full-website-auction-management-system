@@ -58,7 +58,7 @@ export default function BidderSidebar({
       ========================================================= */}
 
       <aside
-        className={`dashboard-sidebar ${
+        className={`dashboard-sidebar bidder-sidebar ${
           open ? "open" : ""
         } bg-slate-950`}
       >
@@ -89,7 +89,7 @@ export default function BidderSidebar({
             {/* Brand */}
 
             <div>
-              <span className="block text-sm font-extrabold tracking-wide text-white">
+              <span className="sidebar-brand block text-sm font-extrabold tracking-wide text-white">
                 auctionpro
               </span>
 

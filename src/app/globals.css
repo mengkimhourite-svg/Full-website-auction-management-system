@@ -91,6 +91,9 @@ h1, h2, h3, h4, h5, h6 {
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+@keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-16px); } }
+@keyframes shine { from { transform: translateX(-160%) skewX(-15deg); } to { transform: translateX(380%) skewX(-15deg); } }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
 .animate-fade-in { animation: fadeIn 0.4s ease both; }
 .animate-fade-up { animation: fadeUp 0.4s ease both; }
@@ -100,11 +103,32 @@ h1, h2, h3, h4, h5, h6 {
 .animate-slide-right { animation: slideRight 0.4s ease both; }
 .animate-spin { animation: spin 0.8s linear infinite; }
 .animate-pulse { animation: pulse 2s ease-in-out infinite; }
+.animate-float { animation: float 6s ease-in-out infinite; }
+.animate-float-slow { animation: float 9s ease-in-out infinite; }
+.animate-ticker { animation: ticker 30s linear infinite; }
+.animate-ticker:hover { animation-play-state: paused; }
 .animate-shimmer {
   background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
+
+/* ===== AUCTION CARD EFFECTS ===== */
+.shine-sweep {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 40%;
+  background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+  transform: translateX(-160%) skewX(-15deg);
+  pointer-events: none;
+  transition: transform 0.9s ease;
+}
+.group:hover .shine-sweep { transform: translateX(380%) skewX(-15deg); }
+
+.auction-card { transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; }
+.auction-card:hover { transform: translateY(-6px); }
 
 /* ===== GRADIENT TEXT ===== */
 .gradient-text {
@@ -992,6 +1016,11 @@ h1, h2, h3, h4, h5, h6 {
 .dashboard-admin .hover\:from-indigo-700:hover { --tw-gradient-from: #000000; }
 .dashboard-admin .to-indigo-700, .dashboard-admin .to-purple-600, .dashboard-admin .to-violet-600, .dashboard-admin .to-purple-500, .dashboard-admin .to-blue-600, .dashboard-admin .to-cyan-500, .dashboard-admin .to-cyan-600 { --tw-gradient-to: #4b5563; }
 .dashboard-admin .hover\:to-indigo-800:hover { --tw-gradient-to: #1f2937; }
+
+/* ===== BIDDER SIDEBAR — colored active state in white mode ===== */
+.dashboard-admin:not(.dashboard-dark) .bidder-sidebar .bg-blue-600 { background-color: #2563eb; }
+.dashboard-admin:not(.dashboard-dark) .bidder-sidebar .hover\:bg-blue-600:hover { background-color: #1d4ed8; }
+.dashboard-admin:not(.dashboard-dark) .bidder-sidebar .text-blue-400 { color: #3b82f6; }
 
 /* ============================================================
    ERROR / NOT FOUND / LOADING

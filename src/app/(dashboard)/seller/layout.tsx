@@ -2,14 +2,24 @@
 
 import { useState, useEffect, useCallback } from "react";
 import SellerSidebar from "@/components/seller/SellerSidebar";
-import { Menu, Bell, LogOut, Gavel } from "lucide-react";
+import { Menu, Bell, LogOut, Gavel, Sun, Moon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function SellerLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [darkMode, setDarkMode] = useState(() =>
+    typeof window !== "undefined" ? localStorage.getItem("seller-theme") === "dark" : false
+  );
   const router = useRouter();
+
+  function toggleTheme() {
+    setDarkMode((prev) => {
+      localStorage.setItem("seller-theme", prev ? "light" : "dark");
+      return !prev;
+    });
+  }
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -35,7 +45,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
   }
 
   return (
-    <div className="dashboard-layout dashboard-dark">
+    <div className={`dashboard-layout dashboard-admin ${darkMode ? "dashboard-dark" : ""}`}>
       <SellerSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="dashboard-main">
@@ -55,6 +65,13 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={toggleTheme}
+              title={darkMode ? "Switch to White mode" : "Switch to Dark mode"}
+              className="p-2 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+            >
+              {darkMode ? <Sun size={19} /> : <Moon size={19} />}
+            </button>
             <Link href="/notifications" className="relative p-2 rounded-xl hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
               <Bell size={19} />
               {notificationCount > 0 && (

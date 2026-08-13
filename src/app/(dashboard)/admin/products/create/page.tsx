@@ -17,6 +17,7 @@ export default function AdminProductsCreatePage() {
     description: "",
     image: "",
     category: "",
+    startPrice: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -32,13 +33,17 @@ export default function AdminProductsCreatePage() {
       if (!form.title || !form.category) {
         throw new Error("Title and category are required");
       }
+      const startPrice = Number(form.startPrice);
+      if (!Number.isFinite(startPrice) || startPrice <= 0) {
+        throw new Error("Starting price must be a positive number");
+      }
 
       const payload = {
         productTitle: form.title,
         productDescription: form.description,
         productImage: form.image,
         category: form.category,
-        startPrice: 0,
+        startPrice,
         endTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       };
 
@@ -92,6 +97,13 @@ export default function AdminProductsCreatePage() {
         <div>
           <label className={labelClass}>Description</label>
           <textarea name="description" value={form.description} onChange={handleChange} rows={3} placeholder="Describe the product..." className={inputClass} />
+        </div>
+
+        <div>
+          <label className={labelClass}>
+            Starting Price ($) <span className="text-red-500">*</span>
+          </label>
+          <input name="startPrice" value={form.startPrice} onChange={handleChange} type="number" min="1" step="0.01" placeholder="e.g. 500" className={inputClass} required />
         </div>
 
         <div>

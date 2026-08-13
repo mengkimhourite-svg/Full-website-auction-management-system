@@ -92,7 +92,8 @@ export default function Footer() {
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2.5">
                 <MapPin size={14} className="mt-0.5 text-slate-500 shrink-0" />
-                <span className="text-slate-400">123 Merchant St, London, UK</span>
+                <span className="text-slate-400">123, Sample Street cambodia, Phnom Penh, 12345
+                </span>
               </li>
               <li className="flex items-center gap-2.5">
                 <Mail size={14} className="text-slate-500 shrink-0" />
@@ -100,11 +101,11 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-2.5">
                 <Phone size={14} className="text-slate-500 shrink-0" />
-                <span className="text-slate-400">+44 20 7123 4567</span>
+                <span className="text-slate-400">+885 123 456 789</span>
               </li>
               <li className="flex items-center gap-2.5">
                 <Clock size={14} className="text-slate-500 shrink-0" />
-                <span className="text-slate-400">24/7 Live Support</span>
+                <span className="text-slate-400">Live Support</span>
               </li>
             </ul>
           </div>

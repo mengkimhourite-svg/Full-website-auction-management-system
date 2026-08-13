@@ -50,7 +50,7 @@ export default function AuctionTable({ auctions, onApprove, onDelete }: AuctionT
                 )}
               </td>
               <td className="font-medium text-gray-900">{auction.product?.title || "Untitled"}</td>
-              <td className="font-semibold text-indigo-600">${auction.currentPrice?.toLocaleString() || 0}</td>
+              <td className="font-semibold text-indigo-600">${(auction.currentPrice || auction.startPrice || 0).toLocaleString()}</td>
               <td>
                 <span
                   className={`badge ${

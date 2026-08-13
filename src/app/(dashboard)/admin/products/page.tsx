@@ -35,6 +35,8 @@ interface ExtractedProduct {
   sellerEmail: string;
   hasAuction: boolean;
   auctionId: string;
+  startPrice: number;
+  currentPrice: number;
 }
 
 type AuctionWithProduct = Auction & { product: Product; category?: string };
@@ -55,6 +57,8 @@ const extractProducts = (auctions: Auction[]): ExtractedProduct[] =>
       sellerEmail: a.product.seller?.email || "",
       hasAuction: true,
       auctionId: a.id,
+      startPrice: a.startPrice || 0,
+      currentPrice: a.currentPrice || 0,
     }));
 
 export default function AdminProductsPage() {
@@ -151,6 +155,15 @@ export default function AdminProductsPage() {
       key: "seller",
       label: "Seller",
       render: (p: ExtractedProduct) => <span className="text-sm text-gray-500">{p.seller}</span>,
+    },
+    {
+      key: "price",
+      label: "Price",
+      render: (p: ExtractedProduct) => (
+        <span className="text-sm font-bold text-gray-900">
+          ${((p.currentPrice || p.startPrice) || 0).toLocaleString()}
+        </span>
+      ),
     },
     {
       key: "hasAuction",
@@ -258,6 +271,9 @@ export default function AdminProductsPage() {
                       <StatusBadge variant="info">{product.category}</StatusBadge>
                     </div>
                     <p className="text-xs text-gray-500 truncate">{product.seller}</p>
+                    <p className="text-lg font-bold text-gray-900">
+                      ${((product.currentPrice || product.startPrice) || 0).toLocaleString()}
+                    </p>
                     <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
                       <button
                         onClick={() => router.push(`/admin/products/edit/${product.id}`)}

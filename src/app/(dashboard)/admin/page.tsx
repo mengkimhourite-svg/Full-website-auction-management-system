@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -36,20 +36,66 @@ import {
 import StatCard from "@/components/admin/StatCard";
 import StatusBadge from "@/components/admin/StatusBadge";
 import LoadingSpinner from "@/components/admin/LoadingSpinner";
-import type { Auction, MonthlyReport, User, Payment } from "@/types";
+import type { Auction, MonthlyReport } from "@/types";
+
+interface DashboardCounts {
+  auctions: number;
+  active: number;
+  upcoming: number;
+  ended: number;
+  products: number;
+  users: number;
+  pendingPayments: number;
+  unreadNotifications: number;
+}
+
+const TABLE_LIMIT = 100;
+
+interface SortHeaderProps {
+  label: string;
+  column: string;
+  className?: string;
+  sortKey: string;
+  sortOrder: "asc" | "desc";
+  onSort: (key: string) => void;
+}
+
+function SortHeader({ label, column, className, sortKey, sortOrder, onSort }: SortHeaderProps) {
+  const active = sortKey === column;
+  const Icon = active ? (sortOrder === "asc" ? ArrowUp : ArrowDown) : ArrowUpDown;
+  return (
+    <th className={className}>
+      <button
+        onClick={() => onSort(column)}
+        className={`flex items-center gap-1.5 group transition-colors ${active ? "text-indigo-600" : "text-gray-500 hover:text-gray-900"}`}
+      >
+        {label}
+        <Icon size={13} className={active ? "text-indigo-600" : "text-gray-300 group-hover:text-gray-500"} />
+      </button>
+    </th>
+  );
+}
 
 export default function AdminDashboardHomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [report, setReport] = useState<MonthlyReport | null>(null);
-  const [auctions, setAuctions] = useState<Auction[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [payments, setPayments] = useState<Payment[]>([]);
+  const [counts, setCounts] = useState<DashboardCounts>({
+    auctions: 0,
+    active: 0,
+    upcoming: 0,
+    ended: 0,
+    products: 0,
+    users: 0,
+    pendingPayments: 0,
+    unreadNotifications: 0,
+  });
   const [notificationCount, setNotificationCount] = useState(0);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
 
   const [tableAuctions, setTableAuctions] = useState<Auction[]>([]);
   const [tableLoading, setTableLoading] = useState(true);
+  const [tableTotal, setTableTotal] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
@@ -57,13 +103,53 @@ export default function AdminDashboardHomePage() {
   const [sortKey, setSortKey] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
+  // The initial table rows come from the consolidated dashboard
+  // response, so the filter effect skips its first run.
+  const tableInitialized = useRef(false);
+
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchQuery.trim()), 350);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  // =========================================================
+  // CONSOLIDATED DASHBOARD LOAD (single request)
+  // =========================================================
+
   useEffect(() => {
-    const params = new URLSearchParams();
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/dashboard", { credentials: "include" });
+        const json = await res.json();
+        if (!json.success) {
+          throw new Error(json.error || "Failed to load dashboard");
+        }
+        setReport(json.data.report);
+        setCounts(json.data.counts);
+        setTableAuctions(Array.isArray(json.data.auctions) ? json.data.auctions : []);
+        setTableTotal(json.data.pagination?.total ?? 0);
+        setNotificationCount(json.data.counts?.unreadNotifications || 0);
+        setError("");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load dashboard");
+      } finally {
+        setLoading(false);
+        setTableLoading(false);
+      }
+    })();
+  }, []);
+
+  // =========================================================
+  // FILTERED TABLE (server-driven)
+  // =========================================================
+
+  useEffect(() => {
+    if (!tableInitialized.current) {
+      tableInitialized.current = true;
+      return;
+    }
+
+    const params = new URLSearchParams({ limit: String(TABLE_LIMIT) });
     if (debouncedSearch) params.set("search", debouncedSearch);
     if (roleFilter) params.set("role", roleFilter);
     if (statusFilter) params.set("status", statusFilter);
@@ -77,6 +163,7 @@ export default function AdminDashboardHomePage() {
         const res = await fetch(`/api/auctions?${params.toString()}`, { credentials: "include" });
         const json = await res.json();
         setTableAuctions(json.data || []);
+        if (json.pagination) setTableTotal(json.pagination.total);
       } catch {
         setTableAuctions([]);
       } finally {
@@ -94,45 +181,13 @@ export default function AdminDashboardHomePage() {
     }
   };
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const [reportRes, auctionsRes, usersRes, paymentsRes, notifRes] = await Promise.all([
-          fetch("/api/reports/monthly", { credentials: "include" }),
-          fetch("/api/auctions", { credentials: "include" }),
-          fetch("/api/users", { credentials: "include" }),
-          fetch("/api/payments", { credentials: "include" }),
-          fetch("/api/notifications", { credentials: "include" }),
-        ]);
-        const [reportJson, auctionsJson, usersJson, paymentsJson, notifJson] = await Promise.all([
-          reportRes.json(),
-          auctionsRes.json(),
-          usersRes.json(),
-          paymentsRes.json(),
-          notifRes.json(),
-        ]);
-        setReport(reportJson.data || reportJson.report || reportJson);
-        setAuctions(auctionsJson.data || []);
-        setUsers(usersJson.data || usersJson || []);
-        setPayments(paymentsJson.data || paymentsJson || []);
-        const notifs = notifJson.data || notifJson || [];
-        setNotificationCount(Array.isArray(notifs) ? notifs.filter((n: { read?: boolean }) => !n.read).length : 0);
-        setError("");
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load dashboard");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
-
-  const totalAuctions = auctions.length;
-  const uniqueProducts = new Set(auctions.map((a) => a.productId).filter(Boolean)).size;
-  const totalUsers = Array.isArray(users) ? users.length : 0;
+  const totalAuctions = counts.auctions;
+  const uniqueProducts = counts.products;
+  const totalUsers = counts.users;
   const totalBids = report?.totalBids || 0;
   const totalRevenue = report?.totalRevenue || 0;
-  const pendingPayments = Array.isArray(payments) ? payments.filter((p) => p.status === "PENDING").length : 0;
-  const activeAuctions = auctions.filter((a) => a.status === "ACTIVE").length;
+  const pendingPayments = counts.pendingPayments;
+  const activeAuctions = counts.active;
 
   const stats = [
     { title: "Total Auctions", value: totalAuctions, icon: <Gavel size={18} />, color: "from-blue-500 to-blue-600", description: "All auctions listed" },
@@ -157,22 +212,6 @@ export default function AdminDashboardHomePage() {
 
   const handleImageError = (id: string) => {
     setFailedImages((prev) => new Set(prev).add(id));
-  };
-
-  const SortHeader = ({ label, column, className }: { label: string; column: string; className?: string }) => {
-    const active = sortKey === column;
-    const Icon = active ? (sortOrder === "asc" ? ArrowUp : ArrowDown) : ArrowUpDown;
-    return (
-      <th className={className}>
-        <button
-          onClick={() => handleSort(column)}
-          className={`flex items-center gap-1.5 group transition-colors ${active ? "text-indigo-600" : "text-gray-500 hover:text-gray-900"}`}
-        >
-          {label}
-          <Icon size={13} className={active ? "text-indigo-600" : "text-gray-300 group-hover:text-gray-500"} />
-        </button>
-      </th>
-    );
   };
 
   const today = new Date().toLocaleDateString("en-US", {
@@ -279,7 +318,7 @@ export default function AdminDashboardHomePage() {
             <Gavel size={15} className="text-gray-400" />
             <h3 className="text-sm font-semibold text-gray-900">Auctions Management</h3>
             <span className="text-[11px] font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-              {tableAuctions.length} {tableAuctions.length === 1 ? "auction" : "auctions"}
+              {tableTotal} {tableTotal === 1 ? "auction" : "auctions"}
             </span>
           </div>
           <Link href="/admin/auctions" className="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1">
@@ -334,11 +373,11 @@ export default function AdminDashboardHomePage() {
                 <tr>
                   <th>ID</th>
                   <th>Image</th>
-                  <SortHeader label="Role" column="role" />
-                  <SortHeader label="Product Name" column="name" />
-                  <SortHeader label="Current Bid" column="currentPrice" />
-                  <SortHeader label="Status" column="status" />
-                  <SortHeader label="End Time" column="endTime" />
+                  <SortHeader label="Role" column="role" sortKey={sortKey} sortOrder={sortOrder} onSort={handleSort} />
+                  <SortHeader label="Product Name" column="name" sortKey={sortKey} sortOrder={sortOrder} onSort={handleSort} />
+                  <SortHeader label="Current Bid" column="currentPrice" sortKey={sortKey} sortOrder={sortOrder} onSort={handleSort} />
+                  <SortHeader label="Status" column="status" sortKey={sortKey} sortOrder={sortOrder} onSort={handleSort} />
+                  <SortHeader label="End Time" column="endTime" sortKey={sortKey} sortOrder={sortOrder} onSort={handleSort} />
                 </tr>
               </thead>
               <tbody>

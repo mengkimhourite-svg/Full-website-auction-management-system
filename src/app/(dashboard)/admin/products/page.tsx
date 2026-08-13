@@ -73,7 +73,7 @@ export default function AdminProductsPage() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/auctions", { credentials: "include" });
+      const res = await fetch("/api/auctions?limit=100", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch products");
       const json = await res.json();
       const auctions: Auction[] = json.data || [];

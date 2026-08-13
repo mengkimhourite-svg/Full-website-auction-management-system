@@ -32,22 +32,41 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
-    const usersWithAuctionCount = await Promise.all(
-      users.map(async (user) => {
-        const auctionCount = await prisma.auction.count({
-          where: {
-            product: {
-              sellerId: user.id,
-            },
-          },
-        });
+    // Auction counts per user in two passes instead of one count query
+    // per user (N+1): map auctions -> products -> sellers.
+    const [products, auctions] = await Promise.all([
+      prisma.product.findMany({
+        select: { id: true, sellerId: true },
+      }),
+      prisma.auction.findMany({
+        select: { productId: true },
+      }),
+    ]);
 
-        return {
-          ...user,
-          auctionCount,
-        };
-      })
-    );
+    const auctionsPerProduct = new Map<string, number>();
+    for (const auction of auctions) {
+      const productId = auction.productId;
+      auctionsPerProduct.set(
+        productId,
+        (auctionsPerProduct.get(productId) || 0) + 1
+      );
+    }
+
+    const auctionsPerSeller = new Map<string, number>();
+    for (const product of products) {
+      const count = auctionsPerProduct.get(product.id) || 0;
+      if (count > 0) {
+        auctionsPerSeller.set(
+          product.sellerId,
+          (auctionsPerSeller.get(product.sellerId) || 0) + count
+        );
+      }
+    }
+
+    const usersWithAuctionCount = users.map((user) => ({
+      ...user,
+      auctionCount: auctionsPerSeller.get(user.id) || 0,
+    }));
 
     return NextResponse.json(
       { success: true, data: usersWithAuctionCount },

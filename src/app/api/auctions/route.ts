@@ -201,7 +201,7 @@ export async function GET(request: NextRequest) {
     // are expiring or starting.
     // ---------------------------------------------------------
 
-    const [auctions, total, categoryGroups] =
+    const [auctions, total, categoryGroups, statusGroups] =
       await Promise.all([
         isCustomSort
           ? prisma.auction.findMany({
@@ -226,6 +226,11 @@ export async function GET(request: NextRequest) {
           _count: { category: true },
         }),
 
+        prisma.auction.groupBy({
+          by: ["status"],
+          _count: { id: true },
+        }),
+
         syncAuctionStatuses(),
       ]);
 
@@ -240,6 +245,25 @@ export async function GET(request: NextRequest) {
           a.category.localeCompare(b.category)
       )
       .map((group) => group.category);
+
+    // ---------------------------------------------------------
+    // STATUS COUNTS
+    // ---------------------------------------------------------
+
+    const counts = {
+      total,
+      active: 0,
+      upcoming: 0,
+      ended: 0,
+    };
+
+    for (const group of statusGroups) {
+      const status = String(group.status);
+      const n = Number(group._count?.id || 0);
+      if (status === "ACTIVE") counts.active = n;
+      else if (status === "UPCOMING") counts.upcoming = n;
+      else if (status === "ENDED") counts.ended = n;
+    }
 
     // ---------------------------------------------------------
     // CUSTOM SORT (role / status) + PAGE SLICE
@@ -343,6 +367,8 @@ export async function GET(request: NextRequest) {
         data,
 
         categories,
+
+        counts,
 
         pagination: {
           page,

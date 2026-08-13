@@ -35,13 +35,28 @@ export default function AdminAuctionsPage() {
   const [view, setView] = useState<ViewMode>("grid");
   const [confirmAction, setConfirmAction] = useState<{ type: "approve" | "delete"; id: string } | null>(null);
 
+  const [total, setTotal] = useState(0);
+  const [counts, setCounts] = useState({
+    active: 0,
+    upcoming: 0,
+    ended: 0,
+  });
+
   const fetchAuctions = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/auctions", { credentials: "include" });
+      const res = await fetch("/api/auctions?limit=100", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch auctions");
       const json = await res.json();
       setAuctions(json.data || json.auctions || json || []);
+      setTotal(json.pagination?.total ?? (json.data?.length || 0));
+      if (json.counts) {
+        setCounts({
+          active: json.counts.active || 0,
+          upcoming: json.counts.upcoming || 0,
+          ended: json.counts.ended || 0,
+        });
+      }
       setError("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch auctions");
@@ -51,7 +66,10 @@ export default function AdminAuctionsPage() {
   };
 
   useEffect(() => {
-    fetchAuctions();
+    // Deferred so the effect body never calls setState synchronously.
+    Promise.resolve().then(() => {
+      fetchAuctions();
+    });
   }, []);
 
   const filtered = useMemo(() => {
@@ -66,10 +84,10 @@ export default function AdminAuctionsPage() {
     );
   }, [auctions, search]);
 
-  const totalAuctions = auctions.length;
-  const activeAuctions = auctions.filter((a) => a.status === "ACTIVE").length;
-  const upcomingAuctions = auctions.filter((a) => a.status === "UPCOMING").length;
-  const endedAuctions = auctions.filter((a) => a.status === "ENDED").length;
+  const totalAuctions = total;
+  const activeAuctions = counts.active;
+  const upcomingAuctions = counts.upcoming;
+  const endedAuctions = counts.ended;
 
   const stats = [
     { title: "Total", value: totalAuctions, icon: <Gavel size={22} />, color: "from-indigo-600 to-purple-600" },

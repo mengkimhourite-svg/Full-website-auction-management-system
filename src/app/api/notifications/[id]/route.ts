@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, isAdminRole } from "@/lib/auth";
 
 export async function PUT(
   request: NextRequest,
@@ -51,7 +51,7 @@ export async function DELETE(
       return NextResponse.json({ success: false, error: "Notification not found" }, { status: 404 });
     }
 
-    if (notification.userId !== currentUser.id && currentUser.role !== "ADMIN") {
+    if (notification.userId !== currentUser.id && !isAdminRole(currentUser.role)) {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 

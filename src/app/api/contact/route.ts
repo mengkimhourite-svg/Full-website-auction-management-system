@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     const { name, email, subject, message } = parsed.data;
 
     const admins = await prisma.user.findMany({
-      where: { role: "ADMIN" },
+      where: { role: { in: ["ADMIN", "SUPER_ADMIN"] } },
       select: { id: true },
     });
 

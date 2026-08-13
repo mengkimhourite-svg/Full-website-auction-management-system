@@ -60,7 +60,7 @@ export default function AdminUsersPage() {
   }, [users, search]);
 
   const totalUsers = users.length;
-  const adminCount = users.filter((u) => u.role === "ADMIN").length;
+  const adminCount = users.filter((u) => u.role === "ADMIN" || u.role === "SUPER_ADMIN").length;
   const sellerCount = users.filter((u) => u.role === "SELLER").length;
   const bidderCount = users.filter((u) => u.role === "BIDDER").length;
 

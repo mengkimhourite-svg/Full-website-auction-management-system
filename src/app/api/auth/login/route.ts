@@ -63,7 +63,8 @@ export async function POST(request: NextRequest) {
       { success: true, data: userWithoutPassword },
       { status: 200 }
     );
-  } catch {
+  } catch (error) {
+    console.error("[api/auth/login] error:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: 500 }

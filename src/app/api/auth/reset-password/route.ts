@@ -1,13 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
-import { jwtVerify } from "jose";
-import { hashPassword } from "@/lib/auth";
+import { hashPassword, verifyToken, type JWTPayload } from "@/lib/auth";
 import { resetPasswordSchema } from "@/lib/validation";
 import { rateLimit, getRateLimitHeaders } from "@/lib/rateLimit";
-
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "fallback-secret-do-not-use-in-production"
-);
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,11 +27,8 @@ export async function POST(request: NextRequest) {
     const { token, password } = parsed.data;
 
     // Verify the reset token
-    let payload;
-    try {
-      const result = await jwtVerify(token, JWT_SECRET);
-      payload = result.payload as { id: string; email: string; purpose: string };
-    } catch {
+    const payload = (await verifyToken(token)) as (JWTPayload & { purpose?: string }) | null;
+    if (!payload) {
       return NextResponse.json(
         { success: false, error: "Invalid or expired reset token" },
         { status: 400 }
@@ -70,7 +62,8 @@ export async function POST(request: NextRequest) {
       { success: true, data: { message: "Password reset successful. You can now log in." } },
       { status: 200 }
     );
-  } catch {
+  } catch (error) {
+    console.error("[api/auth/reset-password] error:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: 500 }

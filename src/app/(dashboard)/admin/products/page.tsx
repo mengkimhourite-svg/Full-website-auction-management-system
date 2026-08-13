@@ -130,6 +130,13 @@ export default function AdminProductsPage() {
 
   const columns = [
     {
+      key: "index",
+      label: "ID",
+      render: (p: ExtractedProduct) => (
+        <span className="text-sm font-medium text-gray-600">{filtered.indexOf(p) + 1}</span>
+      ),
+    },
+    {
       key: "image",
       label: "Image",
       render: (p: ExtractedProduct) =>
@@ -142,8 +149,8 @@ export default function AdminProductsPage() {
         ),
     },
     {
-      key: "title",
-      label: "Title",
+      key: "Name",
+      label: "Name",
       render: (p: ExtractedProduct) => <span className="text-sm font-semibold text-gray-900">{p.title}</span>,
     },
     {

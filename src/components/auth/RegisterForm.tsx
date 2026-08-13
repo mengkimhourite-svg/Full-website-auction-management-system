@@ -33,8 +33,17 @@ export default function RegisterForm() {
       }
       if (data.data) {
         setUser(data.data);
+        const role = (data.data.role || "").toUpperCase();
+        if (role === "ADMIN" || role === "SUPER_ADMIN") {
+          router.push("/admin");
+        } else if (role === "SELLER") {
+          router.push("/seller/auctions");
+        } else {
+          router.push("/bidder");
+        }
+      } else {
+        router.push("/login");
       }
-      router.push("/");
     } catch {
       setError("Network error. Please try again.");
     } finally {

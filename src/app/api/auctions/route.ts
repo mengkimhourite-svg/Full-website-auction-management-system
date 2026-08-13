@@ -1,9 +1,12 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
-import { getAuthUser } from "@/lib/auth";
+import { getAuthUser, isAdminRole } from "@/lib/auth";
 import { syncAuctionStatuses, serializeAuction } from "@/lib/auction";
 import { auctionSchema } from "@/lib/validation";
 import { rateLimit, getRateLimitHeaders } from "@/lib/rateLimit";
+
+const ROLE_SORT_ORDER = ["SUPER_ADMIN", "ADMIN", "SELLER", "BIDDER"];
+const STATUS_SORT_ORDER = ["ACTIVE", "ENDED", "UPCOMING"];
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,10 +15,16 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const sellerId = searchParams.get("sellerId");
     const status = searchParams.get("status");
+    const role = searchParams.get("role");
+    const search = searchParams.get("search");
+    const sort = searchParams.get("sort");
+    const order = searchParams.get("order") === "desc" ? "desc" : "asc";
 
     const where: Record<string, unknown> = {};
     if (sellerId) where.product = { sellerId };
     if (status) where.status = status;
+    if (role) where.product = { ...(where.product as object), seller: { role } };
+    if (search) where.product = { ...(where.product as object), title: { contains: search, mode: "insensitive" } };
 
     const auctions = await prisma.auction.findMany({
       where,
@@ -29,11 +38,41 @@ export async function GET(request: NextRequest) {
         },
         _count: { select: { bids: true } },
       },
-      orderBy: { createdAt: "desc" },
+    });
+
+    const sorted = [...auctions].sort((a, b) => {
+      const dir = order === "desc" ? -1 : 1;
+      let result = 0;
+      switch (sort) {
+        case "role": {
+          const ra = ROLE_SORT_ORDER.indexOf(a.product?.seller?.role || "") ?? -1;
+          const rb = ROLE_SORT_ORDER.indexOf(b.product?.seller?.role || "") ?? -1;
+          result = ra - rb;
+          break;
+        }
+        case "name":
+          result = (a.product?.title || "").localeCompare(b.product?.title || "", undefined, { sensitivity: "base" });
+          break;
+        case "currentPrice":
+          result = (a.currentPrice || 0) - (b.currentPrice || 0);
+          break;
+        case "status": {
+          const sa = STATUS_SORT_ORDER.indexOf(a.status) ?? -1;
+          const sb = STATUS_SORT_ORDER.indexOf(b.status) ?? -1;
+          result = sa - sb;
+          break;
+        }
+        case "endTime":
+          result = new Date(a.endTime).getTime() - new Date(b.endTime).getTime();
+          break;
+        default:
+          result = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      }
+      return result * dir;
     });
 
     return NextResponse.json(
-      { success: true, data: auctions.map(serializeAuction) },
+      { success: true, data: sorted.map(serializeAuction) },
       { status: 200 }
     );
   } catch (error) {
@@ -56,7 +95,7 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
-    if (user.role !== "ADMIN" && user.role !== "SELLER") {
+    if (!isAdminRole(user.role) && user.role !== "SELLER") {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 

@@ -149,7 +149,7 @@ export default function AuctionsPage() {
             </div>
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600">Auction Marketplace</p>
-              <h1 className="mt-0.5 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Art Auctions</h1>
+              <h1 className="mt-0.5 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">Auctions</h1>
             </div>
           </div>
           <p className="mt-3 max-w-2xl text-base text-slate-500">

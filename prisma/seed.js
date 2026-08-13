@@ -86,7 +86,7 @@ async function main() {
 
   const users = [
     createUser("u-admin", "Admin", "admin@test.com", "ADMIN", password),
-    createUser("u-admin2", "Super Admin", "admin@gmail.com", "ADMIN", password),
+    createUser("u-admin2", "Super Admin", "admin@gmail.com", "SUPER_ADMIN", password),
     createUser("u-seller", "Premium Seller", "seller@test.com", "SELLER", password),
     createUser("u-seller2", "Elite Seller", "seller@gmail.com", "SELLER", password),
     createUser("u-bidder", "John Bidder", "user@test.com", "BIDDER", password),

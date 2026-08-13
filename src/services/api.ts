@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000",
+  baseURL: "/",
   timeout: 10000,
   headers: { "Content-Type": "application/json" },
   withCredentials: true,
@@ -10,7 +10,13 @@ const axiosInstance: AxiosInstance = axios.create({
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 && typeof window !== "undefined") {
+    const requestUrl: string = error.config?.url ?? "";
+    const isAuthEndpoint = requestUrl.includes("/api/auth/");
+    if (
+      error.response?.status === 401 &&
+      !isAuthEndpoint &&
+      typeof window !== "undefined"
+    ) {
       // Clear any stale client state on auth failure
       try {
         localStorage.clear();

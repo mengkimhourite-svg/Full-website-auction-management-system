@@ -130,6 +130,13 @@ export default function AdminAuctionsPage() {
 
   const columns = [
     {
+      key: "index",
+      label: "ID",
+      render: (a: Auction) => (
+        <span className="text-sm font-medium text-gray-600">{filtered.indexOf(a) + 1}</span>
+      ),
+    },
+    {
       key: "image",
       label: "Image",
       render: (a: Auction) =>
@@ -148,8 +155,8 @@ export default function AdminAuctionsPage() {
         ),
     },
     {
-      key: "product",
-      label: "Product",
+      key: "Name",
+      label: "Name",
       render: (a: Auction) => (
         <div>
           <p className="text-sm font-semibold text-gray-900">{a.product?.title || a.title || "Untitled"}</p>

@@ -29,7 +29,8 @@ export async function GET() {
       { success: true, data: userWithoutPassword },
       { status: 200 }
     );
-  } catch {
+  } catch (error) {
+    console.error("[api/auth/me] error:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: 500 }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
-import { getAuthUser } from "@/lib/auth";
+import { getAuthUser, isAdminRole } from "@/lib/auth";
 import { syncAuctionStatuses, serializeAuction, cleanText, cleanOptionalText } from "@/lib/auction";
 
 export async function GET(
@@ -85,7 +85,7 @@ export async function PUT(
       );
     }
 
-    if (user.role !== "ADMIN" && existing.product.sellerId !== user.id) {
+    if (!isAdminRole(user.role) && existing.product.sellerId !== user.id) {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 
@@ -181,7 +181,7 @@ export async function DELETE(
       return NextResponse.json({ success: false, error: "Auction not found" }, { status: 404 });
     }
 
-    if (user.role !== "ADMIN" && auction.product.sellerId !== user.id) {
+    if (!isAdminRole(user.role) && auction.product.sellerId !== user.id) {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 

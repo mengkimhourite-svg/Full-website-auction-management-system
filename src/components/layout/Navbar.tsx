@@ -101,7 +101,7 @@ export default function Navbar() {
   function getDashboardLink() {
     if (!user) return "/login";
     const role = (user.role || "").toUpperCase();
-    if (role === "ADMIN") return "/admin";
+    if (role === "ADMIN" || role === "SUPER_ADMIN") return "/admin";
     if (role === "SELLER") return "/seller/auctions";
     return "/bidder/reports";
   }

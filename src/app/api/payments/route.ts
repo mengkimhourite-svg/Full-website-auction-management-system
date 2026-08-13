@@ -1,6 +1,6 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
-import { getAuthUser } from "@/lib/auth";
+import { getAuthUser, isAdminRole } from "@/lib/auth";
 import { syncAuctionStatuses } from "@/lib/auction";
 import { paymentSchema } from "@/lib/validation";
 import { rateLimit, getRateLimitHeaders } from "@/lib/rateLimit";
@@ -11,7 +11,7 @@ export async function GET() {
     if (!actor) {
       return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
     }
-    if (actor.role !== "ADMIN") {
+    if (!isAdminRole(actor.role)) {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
       });
 
       const admins = await tx.user.findMany({
-        where: { role: "ADMIN" },
+        where: { role: { in: ["ADMIN", "SUPER_ADMIN"] } },
         select: { id: true },
       });
       for (const admin of admins) {

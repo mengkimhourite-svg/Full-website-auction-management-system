@@ -1,4 +1,4 @@
-export type Role = "ADMIN" | "SELLER" | "BIDDER";
+export type Role = "SUPER_ADMIN" | "ADMIN" | "SELLER" | "BIDDER";
 export type AuctionStatus = "UPCOMING" | "ACTIVE" | "ENDED";
 export type PaymentStatus = "PENDING" | "SUCCESS" | "FAILED";
 

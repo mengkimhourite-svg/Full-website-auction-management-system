@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
-import { getAuthUser } from "@/lib/auth";
+import { getAuthUser, isAdminRole } from "@/lib/auth";
 
 export async function PUT(
   request: NextRequest,
@@ -14,7 +14,7 @@ export async function PUT(
     }
 
     const isSelf = actor.id === id;
-    if (!isSelf && actor.role !== "ADMIN") {
+    if (!isSelf && !isAdminRole(actor.role)) {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 
@@ -38,11 +38,14 @@ export async function PUT(
       }
     }
 
-    if (role !== undefined && actor.role !== "ADMIN") {
+    if (role !== undefined && !isAdminRole(actor.role)) {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
-    if (role !== undefined && !["ADMIN", "SELLER", "BIDDER"].includes(role)) {
+    if (role !== undefined && !["SUPER_ADMIN", "ADMIN", "SELLER", "BIDDER"].includes(role)) {
       return NextResponse.json({ success: false, error: "Invalid role" }, { status: 400 });
+    }
+    if (role === "SUPER_ADMIN" && actor.role !== "SUPER_ADMIN") {
+      return NextResponse.json({ success: false, error: "Only a super admin can assign this role" }, { status: 403 });
     }
 
     const data: Record<string, unknown> = {};

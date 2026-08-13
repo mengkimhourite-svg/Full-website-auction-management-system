@@ -21,9 +21,26 @@ export default function LoginForm() {
     try {
       const user = await login(email, password);
       const role = (user.role || "").toUpperCase();
-      if (role === "ADMIN") router.push("/admin");
-      else if (role === "SELLER") router.push("/seller/auctions");
-      else router.push("/");
+
+      let redirectTarget: string | null = null;
+      try {
+        const redirect = new URLSearchParams(window.location.search).get("redirect");
+        if (redirect && redirect.startsWith("/") && !redirect.startsWith("//")) {
+          redirectTarget = redirect;
+        }
+      } catch {
+        // ignore malformed redirect query
+      }
+
+      if (redirectTarget) {
+        router.push(redirectTarget);
+      } else if (role === "ADMIN" || role === "SUPER_ADMIN") {
+        router.push("/admin");
+      } else if (role === "SELLER") {
+        router.push("/seller/auctions");
+      } else {
+        router.push("/bidder");
+      }
     } catch (err) {
       const axiosError = err as { response?: { data?: { error?: string } } };
       setError(axiosError?.response?.data?.error || "Invalid email or password");

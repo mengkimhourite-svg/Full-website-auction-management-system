@@ -12,7 +12,7 @@ interface UserTableProps {
   onUpdate: (id: string, data: { name: string; role: Role }) => void;
 }
 
-const roles = ["BIDDER", "SELLER", "ADMIN"];
+const roles = ["SUPER_ADMIN", "ADMIN", "SELLER", "BIDDER"];
 
 export default function UserTable({ users, onBan, onUpdate }: UserTableProps) {
   const [editingId, setEditingId] = useState<string | null>(null);

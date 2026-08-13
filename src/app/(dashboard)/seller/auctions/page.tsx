@@ -3,7 +3,7 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { Plus, Gavel, ImageOff } from "lucide-react";
 import AuctionActions from "@/components/auction/AuctionActions";
-import { getAuthUser } from "@/lib/auth";
+import { getAuthUser, isAdminRole } from "@/lib/auth";
 import prisma from "@/lib/db";
 import { serializeAuction } from "@/lib/auction";
 
@@ -22,7 +22,7 @@ function StatusBadge({ status }: { status: string }) {
 export default async function SellerAuctionsPage() {
   const user = await getAuthUser();
   if (!user) redirect("/login");
-  if (user.role !== "SELLER" && user.role !== "ADMIN") redirect("/bidder/reports");
+  if (user.role !== "SELLER" && !isAdminRole(user.role)) redirect("/bidder/reports");
 
   const auctions = await prisma.auction.findMany({
     where: { product: { sellerId: user.id } },

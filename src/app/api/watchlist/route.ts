@@ -1,6 +1,6 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
-import { getAuthUser } from "@/lib/auth";
+import { getAuthUser, isAdminRole } from "@/lib/auth";
 import { syncAuctionStatuses } from "@/lib/auction";
 
 export async function GET(request: NextRequest) {
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const scope = searchParams.get("scope") || "mine";
-    const isAdmin = user.role === "ADMIN";
+    const isAdmin = isAdminRole(user.role);
 
     const where: Record<string, unknown> = {};
     if (scope !== "all" || !isAdmin) {

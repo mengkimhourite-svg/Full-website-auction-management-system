@@ -16,6 +16,11 @@ import {
   Clock,
   AlertCircle,
   ArrowRight,
+  Search,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
+  Loader2,
 } from "lucide-react";
 import {
   AreaChart,
@@ -41,6 +46,53 @@ export default function AdminDashboardHomePage() {
   const [users, setUsers] = useState<User[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+
+  const [tableAuctions, setTableAuctions] = useState<Auction[]>([]);
+  const [tableLoading, setTableLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [sortKey, setSortKey] = useState("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchQuery.trim()), 350);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (debouncedSearch) params.set("search", debouncedSearch);
+    if (roleFilter) params.set("role", roleFilter);
+    if (statusFilter) params.set("status", statusFilter);
+    if (sortKey) {
+      params.set("sort", sortKey);
+      params.set("order", sortOrder);
+    }
+    (async () => {
+      setTableLoading(true);
+      try {
+        const res = await fetch(`/api/auctions?${params.toString()}`, { credentials: "include" });
+        const json = await res.json();
+        setTableAuctions(json.data || []);
+      } catch {
+        setTableAuctions([]);
+      } finally {
+        setTableLoading(false);
+      }
+    })();
+  }, [debouncedSearch, roleFilter, statusFilter, sortKey, sortOrder]);
+
+  const handleSort = (key: string) => {
+    if (sortKey === key) {
+      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortOrder("asc");
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -103,7 +155,25 @@ export default function AdminDashboardHomePage() {
     auctions: item.count || item.auctions || 0,
   }));
 
-  const recentAuctions = auctions.slice(0, 5);
+  const handleImageError = (id: string) => {
+    setFailedImages((prev) => new Set(prev).add(id));
+  };
+
+  const SortHeader = ({ label, column, className }: { label: string; column: string; className?: string }) => {
+    const active = sortKey === column;
+    const Icon = active ? (sortOrder === "asc" ? ArrowUp : ArrowDown) : ArrowUpDown;
+    return (
+      <th className={className}>
+        <button
+          onClick={() => handleSort(column)}
+          className={`flex items-center gap-1.5 group transition-colors ${active ? "text-indigo-600" : "text-gray-500 hover:text-gray-900"}`}
+        >
+          {label}
+          <Icon size={13} className={active ? "text-indigo-600" : "text-gray-300 group-hover:text-gray-500"} />
+        </button>
+      </th>
+    );
+  };
 
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -204,61 +274,123 @@ export default function AdminDashboardHomePage() {
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
+        <div className="flex items-center justify-between flex-wrap gap-3 px-5 py-3.5 border-b border-gray-100">
           <div className="flex items-center gap-2">
             <Gavel size={15} className="text-gray-400" />
-            <h3 className="text-sm font-semibold text-gray-900">Recent Auctions</h3>
+            <h3 className="text-sm font-semibold text-gray-900">Auctions Management</h3>
+            <span className="text-[11px] font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+              {tableAuctions.length} {tableAuctions.length === 1 ? "auction" : "auctions"}
+            </span>
           </div>
           <Link href="/admin/auctions" className="text-xs font-medium text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1">
-            View All <ArrowRight size={12} />
+            Manage <ArrowRight size={12} />
           </Link>
         </div>
-        {recentAuctions.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-10">No auctions yet</p>
+
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 px-5 py-3 border-b border-gray-100 bg-gray-50/50">
+          <div className="relative flex-1 min-w-0">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by product name..."
+              className="w-full pl-9 pr-4 py-2 rounded-lg bg-white border border-gray-200 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all"
+            />
+          </div>
+          <select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            className="px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all cursor-pointer"
+          >
+            <option value="">All Roles</option>
+            <option value="SUPER_ADMIN">SUPER_ADMIN</option>
+            <option value="ADMIN">ADMIN</option>
+            <option value="SELLER">SELLER</option>
+            <option value="BIDDER">BIDDER</option>
+          </select>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3 py-2 rounded-lg bg-white border border-gray-200 text-sm text-gray-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all cursor-pointer"
+          >
+            <option value="">All Statuses</option>
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="ENDED">ENDED</option>
+            <option value="UPCOMING">UPCOMING</option>
+          </select>
+        </div>
+
+        {tableLoading ? (
+          <div className="flex items-center justify-center py-12 gap-2 text-gray-400 text-sm">
+            <Loader2 size={16} className="animate-spin" /> Loading auctions...
+          </div>
+        ) : tableAuctions.length === 0 ? (
+          <p className="text-sm text-gray-400 text-center py-10">No auctions match your filters</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Product</th>
-                  <th>Seller</th>
-                  <th>Current Bid</th>
-                  <th>Status</th>
-                  <th>End Time</th>
+                  <th>ID</th>
+                  <th>Image</th>
+                  <SortHeader label="Role" column="role" />
+                  <SortHeader label="Product Name" column="name" />
+                  <SortHeader label="Current Bid" column="currentPrice" />
+                  <SortHeader label="Status" column="status" />
+                  <SortHeader label="End Time" column="endTime" />
                 </tr>
               </thead>
               <tbody>
-                {recentAuctions.map((a) => (
+                {tableAuctions.map((a, idx) => (
                   <tr key={a.id}>
+                    <td className="text-gray-500 text-sm">{idx + 1}</td>
                     <td>
                       <div className="flex items-center gap-3">
-                        {a.product?.image ? (
+                        {a.product?.image && !failedImages.has(a.id) ? (
                           <Image
                             src={a.product.image}
-                            alt={a.product.title || "Auction"}
+                            alt=""
                             width={36}
                             height={36}
                             className="w-9 h-9 rounded-lg object-cover bg-gray-100"
+                            onError={() => handleImageError(a.id)}
                           />
                         ) : (
                           <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
                             <Package size={14} />
                           </div>
                         )}
-                        <span className="font-medium text-gray-900 text-sm">{a.product?.title || "Untitled"}</span>
                       </div>
                     </td>
-                    <td className="text-gray-500 text-sm">{a.product?.seller?.name || "Unknown"}</td>
+                    <td>
+                      {a.product?.seller?.role ? (
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${
+                          a.product.seller.role === "SUPER_ADMIN"
+                            ? "bg-purple-50 text-purple-700 border border-purple-200"
+                            : a.product.seller.role === "ADMIN"
+                            ? "bg-indigo-50 text-indigo-700 border border-indigo-200"
+                            : a.product.seller.role === "SELLER"
+                            ? "bg-sky-50 text-sky-700 border border-sky-200"
+                            : "bg-gray-100 text-gray-600 border border-gray-200"
+                        }`}>
+                          {a.product.seller.role}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-gray-400">—</span>
+                      )}
+                    </td>
+                    <td className="font-medium text-gray-900 text-sm">{a.product?.title || "Untitled"}</td>
                     <td className="font-semibold text-gray-900 text-sm">${(a.currentPrice || a.startPrice || 0).toLocaleString()}</td>
                     <td>
                       <StatusBadge variant={a.status?.toLowerCase() as "active" | "ended" | "pending" || "active"}>
                         {a.status || "Unknown"}
                       </StatusBadge>
                     </td>
-                    <td className="text-gray-500 text-sm">
+                    <td className="text-gray-500 text-sm whitespace-nowrap">
                       <div className="flex items-center gap-1">
                         <Clock size={12} />
-                        {a.endTime ? new Date(a.endTime).toLocaleDateString() : "N/A"}
+                        {a.endTime ? new Date(a.endTime).toLocaleString() : "N/A"}
                       </div>
                     </td>
                   </tr>

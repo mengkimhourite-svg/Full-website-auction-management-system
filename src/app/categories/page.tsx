@@ -15,7 +15,7 @@ const categories = [
 export default function CategoriesPage() {
   return (
     <div className="min-h-screen bg-white">
-      <section className="bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white py-16 lg:py-20 relative overflow-hidden">
+      <section className="bg-linear-to-br from-slate-950 via-indigo-950 to-slate-900 text-white py-16 lg:py-20 relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.06]"
           style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)", backgroundSize: "64px 64px" }} />
         <div className="absolute -top-32 -right-32 w-96 h-96 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
@@ -40,7 +40,7 @@ export default function CategoriesPage() {
                 href={`/auctions?category=${encodeURIComponent(cat.name)}`}
                 className="group card p-5 lg:p-6 flex flex-col items-center text-center hover:-translate-y-1 transition-all duration-300"
               >
-                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${cat.color} flex items-center justify-center shadow-md transition-transform group-hover:scale-110 duration-300`}>
+                <div className={`w-14 h-14 rounded-2xl bg-linear-to-br ${cat.color} flex items-center justify-center shadow-md transition-transform group-hover:scale-110 duration-300`}>
                   <Icon size={22} className="text-white" />
                 </div>
                 <h3 className="text-sm lg:text-base font-bold text-gray-900 mt-4">{cat.name}</h3>

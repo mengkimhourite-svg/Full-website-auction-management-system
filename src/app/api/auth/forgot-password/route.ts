@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { SignJWT } from "jose";
+import { getJwtSecret } from "@/lib/jwt";
 import { forgotPasswordSchema } from "@/lib/validation";
 import { rateLimit, getRateLimitHeaders } from "@/lib/rateLimit";
-
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "fallback-secret-do-not-use-in-production"
-);
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,7 +49,7 @@ export async function POST(request: NextRequest) {
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
       .setExpirationTime("1h")
-      .sign(JWT_SECRET);
+      .sign(getJwtSecret());
 
     // In production, you would send this token via email.
     // For demo purposes, we return it in the response.
@@ -67,7 +64,8 @@ export async function POST(request: NextRequest) {
       },
       { status: 200 }
     );
-  } catch {
+  } catch (error) {
+    console.error("[api/auth/forgot-password] error:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: 500 }

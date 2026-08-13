@@ -33,12 +33,12 @@ type AuctionWithRelations = AuctionRecord & {
 
 export function computeStatus(auction: {
   status: AuctionStatus;
-  startTime: Date;
-  endTime: Date;
+  startTime: Date | string;
+  endTime: Date | string;
 }): AuctionStatus {
   const now = new Date();
-  if (now >= auction.endTime) return "ENDED";
-  if (auction.status === "UPCOMING" && now >= auction.startTime) return "ACTIVE";
+  if (now >= new Date(auction.endTime)) return "ENDED";
+  if (auction.status === "UPCOMING" && now >= new Date(auction.startTime)) return "ACTIVE";
   return auction.status;
 }
 
@@ -59,7 +59,7 @@ export function serializeAuction(auction: AuctionWithRelations) {
     endTime: auction.endTime,
     startDate: formatDateOnly(auction.startTime),
     endDate: formatDateOnly(auction.endTime),
-    status: auction.status,
+    status: computeStatus(auction),
     bidCount,
     _count: { bids: bidCount },
     product,
@@ -70,13 +70,16 @@ export function serializeAuction(auction: AuctionWithRelations) {
   };
 }
 
-async function notifyAuctionEnded(auction: AuctionWithRelations): Promise<void> {
+async function notifyAuctionEnded(
+  auction: AuctionWithRelations,
+  client: Pick<typeof prisma, "notification"> = prisma
+): Promise<void> {
   const product = auction.product;
   if (!product) return;
 
   const topBid = auction.bids?.[0];
   if (topBid) {
-    await prisma.notification.create({
+    await client.notification.create({
       data: {
         userId: topBid.userId,
         message: `You won the auction "${product.title}"! Complete your payment to claim it.`,
@@ -84,7 +87,7 @@ async function notifyAuctionEnded(auction: AuctionWithRelations): Promise<void> 
     });
   }
 
-  await prisma.notification.create({
+  await client.notification.create({
     data: {
       userId: product.sellerId,
       message: `Your auction "${product.title}" has ended.`,
@@ -92,34 +95,57 @@ async function notifyAuctionEnded(auction: AuctionWithRelations): Promise<void> 
   });
 }
 
+/**
+ * Brings stored auction statuses in line with the clock.
+ *
+ * Serverless-safe design:
+ * - Only auctions that can actually transition are touched (bounded where).
+ * - Transitions are applied with two batched updateMany calls inside a single
+ *   transaction, so at most a handful of Mongo writes happen no matter how
+ *   many auctions transitioned (the store persists only changed rows).
+ * - When nothing transitioned, zero rows are written.
+ * - Winner/seller notifications are created in the same transaction so the
+ *   notifications collection is persisted once.
+ */
 export async function syncAuctionStatuses(): Promise<void> {
   const now = new Date();
-  // Only auctions that could actually transition are scanned:
-  // - any whose endTime has passed or is within the next minute (UPCOMING/ACTIVE -> ENDED)
-  // - UPCOMING auctions whose startTime has passed (UPCOMING -> ACTIVE)
-  const horizon = new Date(now.getTime() + 60_000);
 
-  const auctions = await prisma.auction.findMany({
-    where: {
-      status: { in: ["UPCOMING", "ACTIVE"] },
-      OR: [
-        { endTime: { lte: horizon } },
-        { status: "UPCOMING", startTime: { lte: now } },
-      ],
-    },
-    include: { bids: { orderBy: { amount: "desc" }, take: 1 }, product: true },
-  });
+  await prisma.$transaction(async (tx) => {
+    const endedCandidates = await tx.auction.findMany({
+      where: {
+        status: { in: ["UPCOMING", "ACTIVE"] },
+        endTime: { lte: now },
+      },
+      select: { id: true },
+    });
 
-  for (const auction of auctions) {
-    const effective = computeStatus(auction);
-    if (effective === auction.status) continue;
+    if (endedCandidates.length > 0) {
+      const endedIds = endedCandidates.map((auction) => String(auction.id));
 
-    await prisma.auction.update({ where: { id: auction.id }, data: { status: effective } });
+      await tx.auction.updateMany({
+        where: { id: { in: endedIds } },
+        data: { status: "ENDED" },
+      });
 
-    if (effective === "ENDED") {
-      await notifyAuctionEnded(auction);
+      const endedAuctions = await tx.auction.findMany({
+        where: { id: { in: endedIds } },
+        include: { bids: { orderBy: { amount: "desc" }, take: 1 }, product: true },
+      });
+
+      for (const auction of endedAuctions) {
+        await notifyAuctionEnded(auction, tx);
+      }
     }
-  }
+
+    await tx.auction.updateMany({
+      where: {
+        status: "UPCOMING",
+        startTime: { lte: now },
+        endTime: { gt: now },
+      },
+      data: { status: "ACTIVE" },
+    });
+  });
 }
 
 export async function syncAuctionById(id: string): Promise<AuctionRecord | null> {

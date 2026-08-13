@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { Gavel, DollarSign, Activity, Trophy, RefreshCw } from "lucide-react";
+import { Gavel, DollarSign, Activity, Trophy, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import PageHeader from "@/components/admin/PageHeader";
 import StatCard from "@/components/admin/StatCard";
 import StatusBadge from "@/components/admin/StatusBadge";
@@ -11,49 +11,111 @@ import EmptyState from "@/components/admin/EmptyState";
 import LoadingSpinner from "@/components/admin/LoadingSpinner";
 import type { Bid } from "@/types";
 
+const PAGE_SIZE = 12;
+
+interface Pagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+interface BidStats {
+  total: number;
+  active: number;
+  ended: number;
+  totalValue: number;
+}
+
+// React StrictMode double-invokes effects in development, which would fire
+// two identical requests. A module-level in-flight promise keyed by the
+// request dedupes them without disabling StrictMode (production is unaffected).
+let inflightBids: { key: string; promise: Promise<Record<string, unknown>> } | null = null;
+
 export default function AdminBidsPage() {
   const [bids, setBids] = useState<Bid[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
-
-  const fetchBids = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/bids?scope=all", { credentials: "include" });
-      if (!res.ok) throw new Error("Failed to fetch bids");
-      const json = await res.json();
-      setBids(json.data || json.bids || json || []);
-      setError("");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch bids");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState<Pagination>({
+    page: 1,
+    limit: PAGE_SIZE,
+    total: 0,
+    totalPages: 1,
+    hasNextPage: false,
+    hasPreviousPage: false,
+  });
+  const [stats, setStats] = useState<BidStats>({ total: 0, active: 0, ended: 0, totalValue: 0 });
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    fetchBids();
-  }, []);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+      setPage(1);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    const key = `${page}|${debouncedSearch}|${refreshKey}`;
+    // Deferred so the effect body never calls setState synchronously.
+    Promise.resolve().then(() => {
+      setLoading(true);
+      setError("");
+    });
+
+    if (!inflightBids || inflightBids.key !== key) {
+      const params = new URLSearchParams({
+        scope: "all",
+        page: String(page),
+        limit: String(PAGE_SIZE),
+      });
+      if (debouncedSearch) params.set("search", debouncedSearch);
+      inflightBids = {
+        key,
+        promise: fetch(`/api/bids?${params.toString()}`, { credentials: "include" })
+          .then(async (res) => {
+            if (!res.ok) throw new Error("Failed to fetch bids");
+            return res.json();
+          }),
+      };
+    }
+
+    let cancelled = false;
+    inflightBids.promise
+      .then((json) => {
+        if (cancelled) return;
+        setBids(Array.isArray(json.data) ? json.data : []);
+        if (json.pagination) setPagination(json.pagination as Pagination);
+        if (json.stats) setStats(json.stats as BidStats);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : "Failed to fetch bids");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [page, debouncedSearch, refreshKey]);
+
+  const totalBids = stats.total;
+  const activeBids = stats.active;
+  const wonBids = stats.ended;
+  const totalValue = stats.totalValue;
 
   const filtered = useMemo(() => {
-    if (!search) return bids;
-    const q = search.toLowerCase();
-    return bids.filter(
-      (b) =>
-        (b.user?.name || "").toLowerCase().includes(q) ||
-        (b.user?.email || "").toLowerCase().includes(q) ||
-        (b.auction?.product?.title || "").toLowerCase().includes(q) ||
-        String(b.amount).includes(q)
-    );
-  }, [bids, search]);
+    return bids;
+  }, [bids]);
 
-  const totalBids = bids.length;
-  const activeBids = bids.filter((b) => b.auction?.status === "ACTIVE").length;
-  const wonBids = bids.filter((b) => b.auction?.status === "ENDED").length;
-  const totalValue = bids.reduce((sum, b) => sum + (b.amount || 0), 0);
-
-  const stats = [
+  const statItems = [
     { title: "Total Bids", value: totalBids, icon: <Gavel size={22} />, color: "from-indigo-600 to-purple-600" },
     { title: "Active Bids", value: activeBids, icon: <Activity size={22} />, color: "from-sky-500 to-cyan-500" },
     { title: "Won Bids", value: wonBids, icon: <Trophy size={22} />, color: "from-emerald-500 to-teal-500" },
@@ -126,6 +188,10 @@ export default function AdminBidsPage() {
     },
   ];
 
+  const handleRefresh = () => {
+    setRefreshKey((k) => k + 1);
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <PageHeader
@@ -134,7 +200,7 @@ export default function AdminBidsPage() {
         description="Manage all bids in the system"
         actions={
           <button
-            onClick={fetchBids}
+            onClick={handleRefresh}
             className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all"
           >
             <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
@@ -152,7 +218,7 @@ export default function AdminBidsPage() {
       {!loading && !error && (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {stats.map((stat) => (
+            {statItems.map((stat) => (
               <StatCard key={stat.title} {...stat} />
             ))}
           </div>
@@ -166,7 +232,37 @@ export default function AdminBidsPage() {
               description={search ? "No bids match your search criteria" : "Bids will appear here once users start bidding"}
             />
           ) : (
-            <DataTable columns={columns} data={filtered} />
+            <>
+              <DataTable columns={columns} data={filtered} />
+              {pagination.totalPages > 1 && (
+                <div className="flex items-center justify-between px-5 py-3 bg-white border border-gray-100 rounded-xl">
+                  <p className="text-xs text-gray-400">
+                    Showing {filtered.length} of {pagination.total} bids
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={!pagination.hasPreviousPage}
+                      className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft size={14} />
+                      Previous
+                    </button>
+                    <span className="text-xs font-medium text-gray-500">
+                      Page {pagination.page} of {pagination.totalPages}
+                    </span>
+                    <button
+                      onClick={() => setPage((p) => p + 1)}
+                      disabled={!pagination.hasNextPage}
+                      className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      Next
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </>
       )}

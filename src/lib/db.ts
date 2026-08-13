@@ -350,6 +350,8 @@ class MongoDBStore {
   private data: DBData | null = null;
   private loadPromise: Promise<void> | null = null;
   private dirty: Set<CollectionName> = new Set();
+  private dirtyRows: Map<CollectionName, Set<string>> = new Map();
+  private deletedRows: Map<CollectionName, Set<string>> = new Map();
   private saveQueue: Promise<void> = Promise.resolve();
   private inTransaction = false;
 
@@ -378,21 +380,33 @@ class MongoDBStore {
     const db = await getDb();
     for (const name of targets) {
       const rows = this.data?.[name] ?? [];
-      const col = db.collection(name);
-      const rowIds = new Set(rows.map((r) => String(r.id)));
-      const existing = await col.find({}, { projection: { id: 1 } }).toArray();
-      const writes: AnyBulkWriteOperation[] = [];
-      for (const row of rows) {
-        writes.push({ replaceOne: { filter: { id: row.id }, replacement: row, upsert: true } });
+      const dirtyIds = this.dirtyRows.get(name);
+      const deletedIds = this.deletedRows.get(name);
+      const hasWork =
+        (dirtyIds !== undefined && dirtyIds.size > 0) ||
+        (deletedIds !== undefined && deletedIds.size > 0);
+      if (!hasWork) {
+        // Nothing actually changed in this collection: skip the round trip.
+        this.dirty.delete(name);
+        continue;
       }
-      for (const doc of existing) {
-        if (!rowIds.has(String(doc.id))) {
-          writes.push({ deleteOne: { filter: { id: doc.id } } });
+      const col = db.collection(name);
+      const writes: AnyBulkWriteOperation[] = [];
+      if (dirtyIds && dirtyIds.size > 0) {
+        for (const row of rows) {
+          if (dirtyIds.has(String(row.id))) {
+            writes.push({ replaceOne: { filter: { id: row.id }, replacement: row, upsert: true } });
+          }
         }
       }
+      for (const id of deletedIds ?? []) {
+        writes.push({ deleteOne: { filter: { id } } });
+      }
       if (writes.length > 0) await col.bulkWrite(writes, { ordered: false });
+      this.dirtyRows.delete(name);
+      this.deletedRows.delete(name);
+      this.dirty.delete(name);
     }
-    for (const name of targets) this.dirty.delete(name);
   }
 
   private schedulePersist(collection: CollectionName): void {
@@ -408,6 +422,26 @@ class MongoDBStore {
     this.dirty.add(collection);
     if (!this.inTransaction) this.schedulePersist(collection);
     return result;
+  }
+
+  private markDirtyRow(collection: CollectionName, id: string): void {
+    let ids = this.dirtyRows.get(collection);
+    if (!ids) {
+      ids = new Set();
+      this.dirtyRows.set(collection, ids);
+    }
+    ids.add(id);
+    this.deletedRows.get(collection)?.delete(id);
+  }
+
+  private markDeletedRow(collection: CollectionName, id: string): void {
+    let ids = this.deletedRows.get(collection);
+    if (!ids) {
+      ids = new Set();
+      this.deletedRows.set(collection, ids);
+    }
+    ids.add(id);
+    this.dirtyRows.get(collection)?.delete(id);
   }
 
   private rows(collection: CollectionName): Row[] {
@@ -553,6 +587,7 @@ class MongoDBStore {
     if (!row.updatedAt) row.updatedAt = new Date();
     return this.mutate(MODEL_COLLECTION[model], () => {
       this.collection(model).push(row);
+      this.markDirtyRow(MODEL_COLLECTION[model], String(row.id));
       return this.resolveRow(model, row, spec);
     });
   }
@@ -569,6 +604,7 @@ class MongoDBStore {
       const index = rows.findIndex((r) => this.matchesWhere(model, r, where));
       if (index < 0) throw new Error(`Record not found for ${model} update`);
       rows[index] = { ...rows[index], ...data, updatedAt: new Date() };
+      this.markDirtyRow(MODEL_COLLECTION[model], String(rows[index].id));
       return this.resolveRow(model, rows[index], spec);
     });
   }
@@ -586,6 +622,7 @@ class MongoDBStore {
         if (this.matchesWhere(model, row, where)) {
           Object.assign(row, data);
           row.updatedAt = new Date();
+          this.markDirtyRow(MODEL_COLLECTION[model], String(row.id));
           count++;
         }
       }
@@ -600,6 +637,7 @@ class MongoDBStore {
       const index = rows.findIndex((r) => this.matchesWhere(model, r, where));
       if (index < 0) throw new Error(`Record not found for ${model} delete`);
       const [removed] = rows.splice(index, 1);
+      this.markDeletedRow(MODEL_COLLECTION[model], String(removed.id));
       return removed;
     });
   }
@@ -611,8 +649,12 @@ class MongoDBStore {
       const remaining: Row[] = [];
       let count = 0;
       for (const row of rows) {
-        if (this.matchesWhere(model, row, where)) count++;
-        else remaining.push(row);
+        if (this.matchesWhere(model, row, where)) {
+          this.markDeletedRow(MODEL_COLLECTION[model], String(row.id));
+          count++;
+        } else {
+          remaining.push(row);
+        }
       }
       if (this.data) this.data[MODEL_COLLECTION[model]] = remaining;
       return { count };
@@ -692,6 +734,8 @@ class MongoDBStore {
       this.data = null;
       this.loadPromise = null;
       this.dirty.clear();
+      this.dirtyRows.clear();
+      this.deletedRows.clear();
       throw error;
     } finally {
       this.inTransaction = previousTx;

@@ -29,7 +29,8 @@ export async function DELETE(
       { success: true, data: { message: "Removed from watchlist" } },
       { status: 200 }
     );
-  } catch {
+  } catch (error) {
+    console.error("Error in DELETE /api/watchlist/[id]:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },
       { status: 500 }

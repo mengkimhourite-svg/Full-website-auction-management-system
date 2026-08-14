@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
@@ -43,6 +43,11 @@ type AuctionWithProduct = Auction & { product: Product; category?: string };
 
 type ViewMode = "grid" | "table";
 
+// React StrictMode double-invokes effects in development, which would fire
+// two identical /api/auctions requests. A module-level in-flight promise
+// dedupes them without disabling StrictMode (production is unaffected).
+let inflightProducts: Promise<void> | null = null;
+
 const extractProducts = (auctions: Auction[]): ExtractedProduct[] =>
   auctions
     .filter((a): a is AuctionWithProduct => !!a.product)
@@ -70,7 +75,7 @@ export default function AdminProductsPage() {
   const [view, setView] = useState<ViewMode>("grid");
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch("/api/auctions?limit=100", { credentials: "include" });
@@ -84,11 +89,16 @@ export default function AdminProductsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    // Deferred so the effect body never calls setState synchronously.
+    Promise.resolve().then(() => {
+      if (!inflightProducts) {
+        inflightProducts = fetchProducts();
+      }
+    });
+  }, [fetchProducts]);
 
   const filtered = useMemo(() => {
     if (!search) return products;

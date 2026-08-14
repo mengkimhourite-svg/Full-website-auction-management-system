@@ -30,7 +30,6 @@ const AUCTION_SELECT = {
     select: {
       id: true,
       title: true,
-      description: true,
       image: true,
       category: true,
       sellerId: true,
@@ -64,8 +63,7 @@ export async function GET() {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 
-    const [report, statusGroups, totalAuctions, totalProducts, totalUsers, pendingPayments, unreadNotifications, auctions] =
-      await Promise.all([
+    const dashboardResults = await Promise.all([
         cached("report", REPORT_TTL_MS, () => getMonthlyReport()),
 
         cached("auction-status-counts", STATUS_COUNTS_TTL_MS, () =>
@@ -89,18 +87,30 @@ export async function GET() {
           where: { userId: actor.id, read: { not: true } },
         }),
 
-        (async () => {
-          await syncAuctionStatuses();
+        prisma.auction.findMany({
+          orderBy: { createdAt: "asc" },
+          take: DASHBOARD_LIMIT,
+          select: AUCTION_SELECT,
+        }),
 
-          const rows = await prisma.auction.findMany({
-            orderBy: { createdAt: "asc" },
-            take: DASHBOARD_LIMIT,
-            select: AUCTION_SELECT,
-          });
-
-          return rows.map(serializeAuction);
-        })(),
+        // Status sync is throttled (at most once per 30s) and now runs in
+        // parallel with the auction query instead of serially ahead of it,
+        // so it never adds to the dashboard's latency.
+        syncAuctionStatuses(),
       ]);
+
+    const [
+      report,
+      statusGroups,
+      totalAuctions,
+      totalProducts,
+      totalUsers,
+      pendingPayments,
+      unreadNotifications,
+      auctions,
+    ] = dashboardResults;
+
+    const serializedAuctions = auctions.map(serializeAuction);
 
     const counts = {
       auctions: totalAuctions,
@@ -127,7 +137,7 @@ export async function GET() {
         data: {
           report,
           counts,
-          auctions,
+          auctions: serializedAuctions,
           pagination: {
             page: 1,
             limit: DASHBOARD_LIMIT,

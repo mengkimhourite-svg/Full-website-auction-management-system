@@ -10,16 +10,6 @@ import type { AnyBulkWriteOperation, Db } from "mongodb";
  * inside the database from the DATABASE_URL environment variable.
  */
 
-const COLLECTIONS: CollectionName[] = [
-  "users",
-  "products",
-  "auctions",
-  "bids",
-  "payments",
-  "notifications",
-  "watchlists",
-];
-
 type Row = Record<string, unknown>;
 type ModelName =
   | "user"
@@ -347,31 +337,87 @@ interface QuerySpec {
 }
 
 class MongoDBStore {
-  private data: DBData | null = null;
-  private loadPromise: Promise<void> | null = null;
+  private data: DBData = emptyData();
+  private loaded: Set<CollectionName> = new Set();
+  private loadPromises: Map<CollectionName, Promise<void>> = new Map();
   private dirty: Set<CollectionName> = new Set();
   private dirtyRows: Map<CollectionName, Set<string>> = new Map();
   private deletedRows: Map<CollectionName, Set<string>> = new Map();
   private saveQueue: Promise<void> = Promise.resolve();
   private inTransaction = false;
 
-  private async ensureLoaded(): Promise<void> {
-    if (this.data) return;
-    if (!this.loadPromise) {
-      this.loadPromise = this.doLoad();
-    }
-    await this.loadPromise;
+  /**
+   * Loads only the collections a query actually touches (its own model plus
+   * any collections reachable through where/select/include relations), each
+   * in parallel. A /api/auth/me lookup therefore fetches just the small
+   * users collection instead of every collection (products alone can hold
+   * tens of MB of base64 images on a remote Atlas cluster), which removes
+   * the multi-second cold-start cost from the first request of a process.
+   */
+  private async ensureLoaded(collections: CollectionName[]): Promise<void> {
+    await Promise.all(collections.map((name) => this.loadCollection(name)));
   }
 
-  private async doLoad(): Promise<void> {
-    const db = await getDb();
-    const data = emptyData();
-    for (const name of COLLECTIONS) {
-      const docs = await db.collection(name).find({}).toArray();
-      // strip the Mongo _id: the wrapper keys everything by the string `id` field
-      data[name] = docs.map(({ _id, ...rest }) => rest as Row);
+  private async loadCollection(name: CollectionName): Promise<void> {
+    if (this.loaded.has(name)) return;
+    if (!this.loadPromises.has(name)) {
+      this.loadPromises.set(name, this.doLoadCollection(name));
     }
-    this.data = data;
+    await this.loadPromises.get(name);
+  }
+
+  private async doLoadCollection(name: CollectionName): Promise<void> {
+    const db = await getDb();
+    const docs = await db.collection(name).find({}).toArray();
+    // strip the Mongo _id: the wrapper keys everything by the string `id` field
+    this.data[name] = docs.map(({ _id, ...rest }) => rest as Row);
+    this.loaded.add(name);
+  }
+
+  private neededCollections(model: ModelName, spec: QuerySpec): CollectionName[] {
+    const out = new Set<CollectionName>();
+    out.add(MODEL_COLLECTION[model]);
+
+    const walkWhere = (m: ModelName, where: Record<string, unknown>): void => {
+      for (const [key, value] of Object.entries(where)) {
+        if (key === "OR" || key === "AND") {
+          for (const clause of value as Record<string, unknown>[]) walkWhere(m, clause);
+          continue;
+        }
+        const rel = RELATIONS[m]?.[key];
+        if (rel) {
+          out.add(MODEL_COLLECTION[rel.model]);
+          if (value && typeof value === "object" && !Array.isArray(value)) {
+            walkWhere(rel.model, value as Record<string, unknown>);
+          }
+        }
+      }
+    };
+
+    const walkSpec = (m: ModelName, s: QuerySpec): void => {
+      if (s.where) walkWhere(m, s.where);
+      for (const container of [s.select, s.include]) {
+        if (!container) continue;
+        for (const [key, value] of Object.entries(container)) {
+          if (key === "_count") {
+            const countSelect = (value as { select?: Record<string, unknown> } | undefined)?.select ?? {};
+            for (const relKey of Object.keys(countSelect)) {
+              const rel = RELATIONS[m]?.[relKey];
+              if (rel) out.add(MODEL_COLLECTION[rel.model]);
+            }
+            continue;
+          }
+          const rel = RELATIONS[m]?.[key];
+          if (rel && value && typeof value === "object" && !Array.isArray(value)) {
+            out.add(MODEL_COLLECTION[rel.model]);
+            walkSpec(rel.model, value as QuerySpec);
+          }
+        }
+      }
+    };
+
+    walkSpec(model, spec);
+    return [...out];
   }
 
   private async persist(collection?: CollectionName): Promise<void> {
@@ -564,24 +610,24 @@ class MongoDBStore {
   }
 
   async findMany(model: ModelName, spec: QuerySpec = {}): Promise<Row[]> {
-    await this.ensureLoaded();
+    await this.ensureLoaded(this.neededCollections(model, spec));
     return this.findRows(model, spec).map((r) => this.resolveRow(model, r, spec));
   }
 
   async findFirst(model: ModelName, spec: QuerySpec = {}): Promise<Row | null> {
-    await this.ensureLoaded();
+    await this.ensureLoaded(this.neededCollections(model, spec));
     const rows = this.findRows(model, { ...spec, take: spec.take ?? 1 });
     return rows.length ? this.resolveRow(model, rows[0], spec) : null;
   }
 
   async findUnique(model: ModelName, spec: QuerySpec = {}): Promise<Row | null> {
-    await this.ensureLoaded();
+    await this.ensureLoaded(this.neededCollections(model, spec));
     const rows = this.findRows(model, { ...spec, take: 1 });
     return rows.length ? this.resolveRow(model, rows[0], spec) : null;
   }
 
   async create(model: ModelName, data: Row, spec: QuerySpec = {}): Promise<Row> {
-    await this.ensureLoaded();
+    await this.ensureLoaded(this.neededCollections(model, spec));
     const row: Row = { id: data.id ?? randomUUID(), ...data };
     if (!row.createdAt) row.createdAt = new Date();
     if (!row.updatedAt) row.updatedAt = new Date();
@@ -598,7 +644,7 @@ class MongoDBStore {
     data: Row,
     spec: QuerySpec = {}
   ): Promise<Row> {
-    await this.ensureLoaded();
+    await this.ensureLoaded(this.neededCollections(model, { where, ...spec }));
     return this.mutate(MODEL_COLLECTION[model], () => {
       const rows = this.collection(model);
       const index = rows.findIndex((r) => this.matchesWhere(model, r, where));
@@ -614,7 +660,7 @@ class MongoDBStore {
     where: Record<string, unknown>,
     data: Row
   ): Promise<{ count: number }> {
-    await this.ensureLoaded();
+    await this.ensureLoaded(this.neededCollections(model, { where }));
     return this.mutate(MODEL_COLLECTION[model], () => {
       const rows = this.collection(model);
       let count = 0;
@@ -631,7 +677,7 @@ class MongoDBStore {
   }
 
   async delete(model: ModelName, where: Record<string, unknown>): Promise<Row> {
-    await this.ensureLoaded();
+    await this.ensureLoaded(this.neededCollections(model, { where }));
     return this.mutate(MODEL_COLLECTION[model], () => {
       const rows = this.collection(model);
       const index = rows.findIndex((r) => this.matchesWhere(model, r, where));
@@ -643,7 +689,7 @@ class MongoDBStore {
   }
 
   async deleteMany(model: ModelName, where: Record<string, unknown>): Promise<{ count: number }> {
-    await this.ensureLoaded();
+    await this.ensureLoaded(this.neededCollections(model, { where }));
     return this.mutate(MODEL_COLLECTION[model], () => {
       const rows = this.collection(model);
       const remaining: Row[] = [];
@@ -656,13 +702,13 @@ class MongoDBStore {
           remaining.push(row);
         }
       }
-      if (this.data) this.data[MODEL_COLLECTION[model]] = remaining;
+      this.data[MODEL_COLLECTION[model]] = remaining;
       return { count };
     });
   }
 
   async count(model: ModelName, where: Record<string, unknown> = {}): Promise<number> {
-    await this.ensureLoaded();
+    await this.ensureLoaded(this.neededCollections(model, { where }));
     return this.collection(model).filter((r) => this.matchesWhere(model, r, where)).length;
   }
 
@@ -670,7 +716,7 @@ class MongoDBStore {
     model: ModelName,
     spec: { by: string[]; _count?: Record<string, boolean>; where?: Record<string, unknown> } = { by: [] }
   ): Promise<Row[]> {
-    await this.ensureLoaded();
+    await this.ensureLoaded(this.neededCollections(model, { where: spec.where }));
     const rows = spec.where
       ? this.collection(model).filter((r) => this.matchesWhere(model, r, spec.where!))
       : this.collection(model);
@@ -700,7 +746,7 @@ class MongoDBStore {
     model: ModelName,
     spec: { _sum?: Record<string, boolean>; where?: Record<string, unknown> } = {}
   ): Promise<{ _sum: Row }> {
-    await this.ensureLoaded();
+    await this.ensureLoaded(this.neededCollections(model, { where: spec.where }));
     const rows = spec.where
       ? this.collection(model).filter((r) => this.matchesWhere(model, r, spec.where!))
       : this.collection(model);
@@ -714,7 +760,10 @@ class MongoDBStore {
   async $transaction<T>(arg: (tx: DbProxy) => Promise<T> | T, proxy: DbProxy): Promise<T>;
   async $transaction<T>(arg: Promise<T>[], proxy: DbProxy): Promise<T[]>;
   async $transaction(arg: any, proxy: DbProxy): Promise<any> {
-    await this.ensureLoaded();
+    // No eager load here: every operation inside the transaction loads the
+    // collections it touches lazily (see neededCollections), so a status-sync
+    // transaction only pulls auctions/bids/products/notifications, never
+    // unrelated collections.
     const previousTx = this.inTransaction;
     this.inTransaction = true;
     try {
@@ -731,8 +780,9 @@ class MongoDBStore {
       return results;
     } catch (error) {
       // roll back to the last persisted state
-      this.data = null;
-      this.loadPromise = null;
+      this.data = emptyData();
+      this.loaded.clear();
+      this.loadPromises.clear();
       this.dirty.clear();
       this.dirtyRows.clear();
       this.deletedRows.clear();

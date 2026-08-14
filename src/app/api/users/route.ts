@@ -1,6 +1,7 @@
 ﻿import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getAuthUser, isAdminRole } from "@/lib/auth";
+import { toImageUrl } from "@/lib/images";
 
 export async function GET() {
   try {
@@ -31,8 +32,10 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
+    const data = users.map((u) => ({ ...u, avatar: toImageUrl(u.avatar, "user", u.id) }));
+
     return NextResponse.json(
-      { success: true, data: users },
+      { success: true, data },
       { status: 200 }
     );
   } catch {

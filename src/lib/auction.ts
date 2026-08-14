@@ -2,6 +2,7 @@ import prisma from "@/lib/db";
 import type { AuctionStatus } from "@/types";
 import { formatDateOnly } from "@/lib/utils";
 import { invalidateCache } from "@/lib/cache";
+import { toImageUrl } from "@/lib/images";
 
 export type { AuctionStatus };
 export { cleanText, cleanOptionalText, formatDateOnly } from "@/lib/utils";
@@ -46,14 +47,26 @@ export function computeStatus(auction: {
 export function serializeAuction(auction: AuctionWithRelations) {
   const product = auction.product ?? null;
   const bidCount = auction._count?.bids ?? auction.bids?.length ?? 0;
+
+  // Base64 data URLs can be hundreds of KB each; rewrite them to
+  // /api/images/... URLs so list payloads stay small (UI is unchanged —
+  // the client still receives a plain src-able string).
+  const image = product ? toImageUrl(product.image, "product", product.id) : null;
+  const seller = product?.seller
+    ? {
+        ...product.seller,
+        avatar: toImageUrl(product.seller.avatar, "user", product.seller.id),
+      }
+    : null;
+
   return {
     id: auction.id,
     title: product?.title || "Untitled Auction",
     description: product?.description || "",
-    image: product?.image || null,
+    image,
     category: product?.category || "General",
     sellerId: product?.sellerId || null,
-    seller: product?.seller || null,
+    seller,
     startPrice: auction.startPrice,
     currentPrice: auction.currentPrice,
     startTime: auction.startTime,
@@ -63,7 +76,7 @@ export function serializeAuction(auction: AuctionWithRelations) {
     status: computeStatus(auction),
     bidCount,
     _count: { bids: bidCount },
-    product,
+    product: product ? { ...product, image, seller } : null,
     bids: auction.bids ?? [],
     createdAt: auction.createdAt,
     updatedAt: auction.updatedAt,

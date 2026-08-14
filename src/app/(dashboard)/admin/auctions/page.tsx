@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import {
@@ -26,6 +26,12 @@ import type { Auction } from "@/types";
 
 type ViewMode = "grid" | "table";
 
+// React StrictMode double-invokes effects in development, which would fire
+// two identical /api/auctions requests. A module-level in-flight promise
+// dedupes them without disabling StrictMode (production is unaffected);
+// the manual Refresh button bypasses it with force=true.
+let inflightAuctions: Promise<void> | null = null;
+
 export default function AdminAuctionsPage() {
   const router = useRouter();
   const [auctions, setAuctions] = useState<Auction[]>([]);
@@ -42,7 +48,7 @@ export default function AdminAuctionsPage() {
     ended: 0,
   });
 
-  const fetchAuctions = async () => {
+  const fetchAuctions = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch("/api/auctions?limit=100", { credentials: "include" });
@@ -63,14 +69,23 @@ export default function AdminAuctionsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  const loadAuctions = useCallback(
+    (force = false) => {
+      if (!force && inflightAuctions) return inflightAuctions;
+      inflightAuctions = fetchAuctions();
+      return inflightAuctions;
+    },
+    [fetchAuctions]
+  );
 
   useEffect(() => {
     // Deferred so the effect body never calls setState synchronously.
     Promise.resolve().then(() => {
-      fetchAuctions();
+      loadAuctions();
     });
-  }, []);
+  }, [loadAuctions]);
 
   const filtered = useMemo(() => {
     if (!search) return auctions;

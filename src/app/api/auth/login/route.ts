@@ -3,6 +3,7 @@ import prisma from "@/lib/db";
 import { comparePassword, createToken, setAuthCookie } from "@/lib/auth";
 import { loginSchema } from "@/lib/validation";
 import { rateLimit, getRateLimitHeaders } from "@/lib/rateLimit";
+import { toImageUrl } from "@/lib/images";
 
 export async function POST(request: NextRequest) {
   try {
@@ -60,7 +61,10 @@ export async function POST(request: NextRequest) {
     const { password: _, ...userWithoutPassword } = user;
 
     return NextResponse.json(
-      { success: true, data: userWithoutPassword },
+      {
+        success: true,
+        data: { ...userWithoutPassword, avatar: toImageUrl(user.avatar, "user", user.id) },
+      },
       { status: 200 }
     );
   } catch (error) {

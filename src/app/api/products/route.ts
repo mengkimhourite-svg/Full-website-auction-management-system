@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getAuthUser } from "@/lib/auth";
+import { toImageUrl } from "@/lib/images";
 
 export async function GET() {
   try {
@@ -24,7 +25,15 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ success: true, data: products }, { status: 200 });
+    const data = products.map((product) => ({
+      ...product,
+      image: toImageUrl(product.image, "product", product.id),
+      seller: product.seller
+        ? { ...product.seller, avatar: toImageUrl(product.seller.avatar, "user", product.seller.id) }
+        : undefined,
+    }));
+
+    return NextResponse.json({ success: true, data }, { status: 200 });
   } catch {
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
   }

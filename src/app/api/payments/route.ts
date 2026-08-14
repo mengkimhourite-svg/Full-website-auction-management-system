@@ -4,6 +4,29 @@ import { getAuthUser, isAdminRole } from "@/lib/auth";
 import { syncAuctionStatuses } from "@/lib/auction";
 import { paymentSchema } from "@/lib/validation";
 import { rateLimit, getRateLimitHeaders } from "@/lib/rateLimit";
+import { invalidateCache } from "@/lib/cache";
+
+// The admin Payments page renders user name/email, product title, amount,
+// method, status and date. Returning only those fields (via select) instead
+// of the full auction row keeps the payload small.
+const PAYMENT_SELECT = {
+  id: true,
+  amount: true,
+  status: true,
+  method: true,
+  userId: true,
+  auctionId: true,
+  createdAt: true,
+  user: {
+    select: { id: true, name: true, email: true, role: true },
+  },
+  auction: {
+    select: {
+      id: true,
+      product: { select: { id: true, title: true } },
+    },
+  },
+};
 
 export async function GET() {
   try {
@@ -16,16 +39,7 @@ export async function GET() {
     }
 
     const payments = await prisma.payment.findMany({
-      include: {
-        user: {
-          select: { id: true, name: true, email: true, role: true },
-        },
-        auction: {
-          include: {
-            product: { select: { id: true, title: true } },
-          },
-        },
-      },
+      select: PAYMENT_SELECT,
       orderBy: { createdAt: "desc" },
     });
 
@@ -144,6 +158,9 @@ export async function POST(request: NextRequest) {
 
       return created;
     });
+
+    // A successful payment changes revenue aggregates.
+    invalidateCache("report");
 
     return NextResponse.json({ success: true, data: payment }, { status: 201 });
   } catch {

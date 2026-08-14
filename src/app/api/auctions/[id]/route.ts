@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getAuthUser, isAdminRole } from "@/lib/auth";
 import { syncAuctionById, serializeAuction, cleanText, cleanOptionalText } from "@/lib/auction";
+import { invalidateCaches } from "@/lib/cache";
 
 export async function GET(
   request: NextRequest,
@@ -149,6 +150,9 @@ export async function PUT(
       });
     });
 
+    // Auction/product/status changes affect every cached aggregate.
+    invalidateCaches();
+
     return NextResponse.json(
       { success: true, data: auction ? serializeAuction(auction) : null },
       { status: 200 }
@@ -193,6 +197,9 @@ export async function DELETE(
       prisma.auction.delete({ where: { id } }),
       prisma.product.delete({ where: { id: auction.productId } }),
     ]);
+
+    // Deletions affect every cached aggregate.
+    invalidateCaches();
 
     return NextResponse.json(
       { success: true, data: { message: "Auction and associated product deleted" } },

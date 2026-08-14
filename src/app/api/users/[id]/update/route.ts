@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getAuthUser, isAdminRole } from "@/lib/auth";
+import { invalidateCache } from "@/lib/cache";
 
 export async function PUT(
   request: NextRequest,
@@ -58,6 +59,9 @@ export async function PUT(
       where: { id },
       data,
     });
+
+    // Role/name changes affect the users-by-role report aggregate.
+    invalidateCache("report");
 
     const { password: _, ...userWithoutPassword } = user;
 

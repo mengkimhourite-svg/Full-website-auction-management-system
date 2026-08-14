@@ -1,6 +1,7 @@
 import prisma from "@/lib/db";
 import type { AuctionStatus } from "@/types";
 import { formatDateOnly } from "@/lib/utils";
+import { invalidateCache } from "@/lib/cache";
 
 export type { AuctionStatus };
 export { cleanText, cleanOptionalText, formatDateOnly } from "@/lib/utils";
@@ -106,8 +107,28 @@ async function notifyAuctionEnded(
  * - When nothing transitioned, zero rows are written.
  * - Winner/seller notifications are created in the same transaction so the
  *   notifications collection is persisted once.
+ *
+ * Throttled: list/dashboard endpoints call this on every request, but the
+ * stored status is only used for data-at-rest consistency — every API
+ * response reports the effective clock-based status via `computeStatus()`.
+ * Running the write-back at most once per interval removes the heaviest
+ * work (full-collection scans + potential Mongo writes) from ~every request
+ * without changing what clients see.
  */
-export async function syncAuctionStatuses(): Promise<void> {
+const STATUS_SYNC_INTERVAL_MS = 30_000;
+
+let lastStatusSyncAt = 0;
+
+export async function syncAuctionStatuses(
+  options?: { force?: boolean }
+): Promise<void> {
+  if (
+    !options?.force &&
+    Date.now() - lastStatusSyncAt < STATUS_SYNC_INTERVAL_MS
+  ) {
+    return;
+  }
+
   const now = new Date();
 
   await prisma.$transaction(async (tx) => {
@@ -146,6 +167,12 @@ export async function syncAuctionStatuses(): Promise<void> {
       data: { status: "ACTIVE" },
     });
   });
+
+  // Stored statuses changed (or were re-verified): drop the cached
+  // status-count aggregate so the dashboard shows the synced numbers.
+  invalidateCache("auction-status-counts");
+
+  lastStatusSyncAt = Date.now();
 }
 
 export async function syncAuctionById(id: string): Promise<AuctionRecord | null> {

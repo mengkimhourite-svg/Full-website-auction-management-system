@@ -4,6 +4,7 @@ import { getAuthUser } from "@/lib/auth";
 import { computeStatus } from "@/lib/auction";
 import { bidSchema } from "@/lib/validation";
 import { rateLimit, getRateLimitHeaders } from "@/lib/rateLimit";
+import { invalidateCache } from "@/lib/cache";
 
 export async function POST(
   request: NextRequest,
@@ -102,6 +103,9 @@ export async function POST(
         },
       }),
     ]);
+
+    // A bid changes currentPrice/bid counts and the monthly bid report.
+    invalidateCache("report");
 
     return NextResponse.json({ success: true, data: bid }, { status: 201 });
   } catch {

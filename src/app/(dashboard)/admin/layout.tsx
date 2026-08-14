@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Menu,
   Search,
@@ -28,11 +29,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [notificationCount, setNotificationCount] = useState(0);
   const [darkMode, setDarkMode] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  // Auth state is already loaded app-wide by AuthProvider (/api/auth/me is
+  // fetched once per session there). Deriving the header user from it avoids
+  // a second identical request on every admin page load.
+  const { user } = useAuth();
+
+  const currentUser: CurrentUser | null = useMemo(
+    () =>
+      user
+        ? {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            avatar: user.avatar,
+          }
+        : null,
+    [user]
+  );
 
   useEffect(() => {
     const saved = localStorage.getItem("admin-theme");
@@ -47,29 +66,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   useEffect(() => {
-    fetch("/api/auth/me", { credentials: "include" })
-      .then((res) => res.json())
-      .then((json) => setCurrentUser(json.data || json.user || json))
-      .catch(() => {});
-  }, []);
-
-  useEffect(() => {
     if (!currentUser) return;
 
-    const fetchNotifications = async () => {
+    // Only the unread/total counts are needed for the bell badge — the
+    // server returns a tiny summary payload instead of the full list.
+    const fetchNotificationSummary = async () => {
       try {
-        const res = await fetch("/api/notifications", { credentials: "include" });
+        const res = await fetch("/api/notifications?summary=1", { credentials: "include" });
         if (!res.ok) return;
         const json = await res.json();
-        const notifs = json.data || json || [];
-        if (Array.isArray(notifs)) {
-          setNotificationCount(notifs.filter((n: { read?: boolean }) => !n.read).length);
-        }
+        setNotificationCount(typeof json.unread === "number" ? json.unread : 0);
       } catch {}
     };
 
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000);
+    fetchNotificationSummary();
+    const interval = setInterval(fetchNotificationSummary, 30000);
     return () => clearInterval(interval);
   }, [currentUser]);
 

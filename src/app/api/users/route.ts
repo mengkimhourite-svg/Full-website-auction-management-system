@@ -12,6 +12,11 @@ export async function GET() {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 
+    // The admin Users page renders name/email/role/status/joined and
+    // nothing else — no per-user counts are displayed. Returning only the
+    // scalar fields avoids the two extra full-collection scans (products +
+    // auctions) that were previously needed to compute an unused
+    // auctionCount, and keeps the JSON payload small.
     const users = await prisma.user.findMany({
       select: {
         id: true,
@@ -22,54 +27,12 @@ export async function GET() {
         banned: true,
         createdAt: true,
         updatedAt: true,
-        _count: {
-          select: {
-            bids: true,
-            products: true,
-          },
-        },
       },
       orderBy: { createdAt: "desc" },
     });
 
-    // Auction counts per user in two passes instead of one count query
-    // per user (N+1): map auctions -> products -> sellers.
-    const [products, auctions] = await Promise.all([
-      prisma.product.findMany({
-        select: { id: true, sellerId: true },
-      }),
-      prisma.auction.findMany({
-        select: { productId: true },
-      }),
-    ]);
-
-    const auctionsPerProduct = new Map<string, number>();
-    for (const auction of auctions) {
-      const productId = auction.productId;
-      auctionsPerProduct.set(
-        productId,
-        (auctionsPerProduct.get(productId) || 0) + 1
-      );
-    }
-
-    const auctionsPerSeller = new Map<string, number>();
-    for (const product of products) {
-      const count = auctionsPerProduct.get(product.id) || 0;
-      if (count > 0) {
-        auctionsPerSeller.set(
-          product.sellerId,
-          (auctionsPerSeller.get(product.sellerId) || 0) + count
-        );
-      }
-    }
-
-    const usersWithAuctionCount = users.map((user) => ({
-      ...user,
-      auctionCount: auctionsPerSeller.get(user.id) || 0,
-    }));
-
     return NextResponse.json(
-      { success: true, data: usersWithAuctionCount },
+      { success: true, data: users },
       { status: 200 }
     );
   } catch {

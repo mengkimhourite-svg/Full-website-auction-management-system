@@ -4,6 +4,7 @@ import { getAuthUser, isAdminRole } from "@/lib/auth";
 import { syncAuctionStatuses, serializeAuction } from "@/lib/auction";
 import { auctionSchema } from "@/lib/validation";
 import { rateLimit, getRateLimitHeaders } from "@/lib/rateLimit";
+import { cached, invalidateCaches } from "@/lib/cache";
 
 const ROLE_SORT_ORDER = [
   "SUPER_ADMIN",
@@ -23,6 +24,47 @@ const STATUS_SORT_ORDER = [
 // (the store sorts raw rows before relations are attached). For these we
 // fetch the full matching set, sort in JS, then slice the requested page.
 const CUSTOM_SORTS = new Set(["role", "status", "name"]);
+
+// Category list and status counts change only when auctions/products are
+// created, updated or deleted (writes invalidate the cache), never per
+// read request. Caching them removes two full-collection scans from every
+// list request — including the admin auctions/products pages.
+const CATEGORIES_TTL_MS = 60_000;
+const STATUS_COUNTS_TTL_MS = 30_000;
+
+// Only the fields the cards/tables render plus what serializeAuction needs.
+// Avoids pulling full product/seller rows (descriptions, timestamps, ...)
+// into memory and into the JSON payload.
+const AUCTION_SELECT = {
+  id: true,
+  startPrice: true,
+  currentPrice: true,
+  startTime: true,
+  endTime: true,
+  status: true,
+  productId: true,
+  createdAt: true,
+  updatedAt: true,
+  _count: { select: { bids: true } },
+  product: {
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      image: true,
+      category: true,
+      sellerId: true,
+      seller: {
+        select: {
+          id: true,
+          name: true,
+          role: true,
+          avatar: true,
+        },
+      },
+    },
+  },
+};
 
 /**
  * GET /api/auctions
@@ -163,27 +205,6 @@ export async function GET(request: NextRequest) {
             ? { createdAt: order === "desc" ? "asc" : "desc" }
             : { createdAt: order };
 
-    const include = {
-      product: {
-        include: {
-          seller: {
-            select: {
-              id: true,
-              name: true,
-              role: true,
-              avatar: true,
-            },
-          },
-        },
-      },
-
-      _count: {
-        select: {
-          bids: true,
-        },
-      },
-    };
-
     // ---------------------------------------------------------
     // DATABASE QUERY
     // ---------------------------------------------------------
@@ -206,12 +227,12 @@ export async function GET(request: NextRequest) {
         isCustomSort
           ? prisma.auction.findMany({
               where,
-              include,
+              select: AUCTION_SELECT,
               orderBy: dbOrderBy,
             })
           : prisma.auction.findMany({
               where,
-              include,
+              select: AUCTION_SELECT,
               orderBy: dbOrderBy,
               skip,
               take: limit,
@@ -221,15 +242,19 @@ export async function GET(request: NextRequest) {
           where,
         }),
 
-        prisma.product.groupBy({
-          by: ["category"],
-          _count: { category: true },
-        }),
+        cached("product-categories", CATEGORIES_TTL_MS, () =>
+          prisma.product.groupBy({
+            by: ["category"],
+            _count: { category: true },
+          })
+        ),
 
-        prisma.auction.groupBy({
-          by: ["status"],
-          _count: { id: true },
-        }),
+        cached("auction-status-counts", STATUS_COUNTS_TTL_MS, () =>
+          prisma.auction.groupBy({
+            by: ["status"],
+            _count: { id: true },
+          })
+        ),
 
         syncAuctionStatuses(),
       ]);
@@ -663,6 +688,9 @@ export async function POST(
           },
         },
       });
+
+    // A new auction/product changed every cached aggregate.
+    invalidateCaches();
 
     // ---------------------------------------------------------
     // RESPONSE

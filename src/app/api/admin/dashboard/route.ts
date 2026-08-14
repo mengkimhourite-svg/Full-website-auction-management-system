@@ -3,8 +3,48 @@ import prisma from "@/lib/db";
 import { getAuthUser, isAdminRole } from "@/lib/auth";
 import { syncAuctionStatuses, serializeAuction } from "@/lib/auction";
 import { getMonthlyReport } from "@/lib/reports";
+import { cached } from "@/lib/cache";
 
 const DASHBOARD_LIMIT = 100;
+
+// Report/status statistics are monthly analytics and stored-status counts —
+// not real-time bidding data. They are cached briefly and invalidated on
+// every write, so the dashboard only pays for them once per window.
+const REPORT_TTL_MS = 60_000;
+const STATUS_COUNTS_TTL_MS = 30_000;
+
+// Only the fields the dashboard table renders (image, seller role/name,
+// title, prices, status, end time) plus what serializeAuction needs.
+const AUCTION_SELECT = {
+  id: true,
+  startPrice: true,
+  currentPrice: true,
+  startTime: true,
+  endTime: true,
+  status: true,
+  productId: true,
+  createdAt: true,
+  updatedAt: true,
+  _count: { select: { bids: true } },
+  product: {
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      image: true,
+      category: true,
+      sellerId: true,
+      seller: {
+        select: {
+          id: true,
+          name: true,
+          role: true,
+          avatar: true,
+        },
+      },
+    },
+  },
+};
 
 /**
  * GET /api/admin/dashboard
@@ -26,12 +66,14 @@ export async function GET() {
 
     const [report, statusGroups, totalAuctions, totalProducts, totalUsers, pendingPayments, unreadNotifications, auctions] =
       await Promise.all([
-        getMonthlyReport(),
+        cached("report", REPORT_TTL_MS, () => getMonthlyReport()),
 
-        prisma.auction.groupBy({
-          by: ["status"],
-          _count: { id: true },
-        }),
+        cached("auction-status-counts", STATUS_COUNTS_TTL_MS, () =>
+          prisma.auction.groupBy({
+            by: ["status"],
+            _count: { id: true },
+          })
+        ),
 
         prisma.auction.count(),
 
@@ -53,23 +95,7 @@ export async function GET() {
           const rows = await prisma.auction.findMany({
             orderBy: { createdAt: "asc" },
             take: DASHBOARD_LIMIT,
-            include: {
-              product: {
-                include: {
-                  seller: {
-                    select: {
-                      id: true,
-                      name: true,
-                      role: true,
-                      avatar: true,
-                    },
-                  },
-                },
-              },
-              _count: {
-                select: { bids: true },
-              },
-            },
+            select: AUCTION_SELECT,
           });
 
           return rows.map(serializeAuction);

@@ -51,6 +51,36 @@ interface DashboardCounts {
 
 const TABLE_LIMIT = 100;
 
+interface DashboardData {
+  report: MonthlyReport;
+  counts: DashboardCounts;
+  auctions: Auction[];
+  pagination?: { total: number };
+}
+
+// React StrictMode (dev) double-invokes effects; sharing the in-flight
+// promise module-wide means the consolidated dashboard request is fired
+// at most once concurrently per page load.
+let dashboardLoadPromise: Promise<DashboardData> | null = null;
+
+function fetchDashboardOnce(): Promise<DashboardData> {
+  if (!dashboardLoadPromise) {
+    dashboardLoadPromise = fetch("/api/admin/dashboard", { credentials: "include" })
+      .then(async (res) => {
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+          throw new Error(json.error || "Failed to load dashboard");
+        }
+        return json.data as DashboardData;
+      })
+      .catch((err) => {
+        dashboardLoadPromise = null;
+        throw err;
+      });
+  }
+  return dashboardLoadPromise;
+}
+
 interface SortHeaderProps {
   label: string;
   column: string;
@@ -117,26 +147,31 @@ export default function AdminDashboardHomePage() {
   // =========================================================
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/admin/dashboard", { credentials: "include" });
-        const json = await res.json();
-        if (!json.success) {
-          throw new Error(json.error || "Failed to load dashboard");
-        }
-        setReport(json.data.report);
-        setCounts(json.data.counts);
-        setTableAuctions(Array.isArray(json.data.auctions) ? json.data.auctions : []);
-        setTableTotal(json.data.pagination?.total ?? 0);
-        setNotificationCount(json.data.counts?.unreadNotifications || 0);
+        const data = await fetchDashboardOnce();
+        if (cancelled) return;
+        setReport(data.report);
+        setCounts(data.counts);
+        setTableAuctions(Array.isArray(data.auctions) ? data.auctions : []);
+        setTableTotal(data.pagination?.total ?? 0);
+        setNotificationCount(data.counts?.unreadNotifications || 0);
         setError("");
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load dashboard");
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Failed to load dashboard");
+        }
       } finally {
-        setLoading(false);
-        setTableLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          setTableLoading(false);
+        }
       }
     })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // =========================================================

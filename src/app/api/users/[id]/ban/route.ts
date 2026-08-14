@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getAuthUser, isAdminRole } from "@/lib/auth";
+import { invalidateCache } from "@/lib/cache";
 
 export async function PUT(
   request: NextRequest,
@@ -34,6 +35,10 @@ export async function PUT(
       where: { id },
       data: { banned },
     });
+
+    // Ban state is not part of the report, but the update goes through the
+    // user collection — cheap to invalidate the user-count aggregates.
+    invalidateCache("report");
 
     const { password: _, ...userWithoutPassword } = updated;
 

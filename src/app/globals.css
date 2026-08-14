@@ -617,6 +617,85 @@ h1, h2, h3, h4, h5, h6 {
 .auth-header p { color: var(--text-secondary); margin-top: 4px; font-size: 0.875rem; }
 .auth-input-group { margin-bottom: 1rem; }
 .auth-input-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.875rem; color: var(--text-primary); }
+.auth-role-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.auth-role-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 1rem 0.75rem;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+.auth-role-card:hover {
+  border-color: var(--primary-light);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.08);
+  transform: translateY(-1px);
+}
+.auth-role-card-active {
+  border-color: var(--primary);
+  background: #eef2ff;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
+.auth-role-card-active:hover { border-color: var(--primary); }
+.auth-role-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--bg-page);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.auth-role-card-active .auth-role-icon {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+.auth-role-label { font-weight: 600; font-size: 0.9375rem; color: var(--text-primary); }
+.auth-role-desc { font-size: 0.75rem; color: var(--text-secondary); line-height: 1.35; min-height: 2.7em; }
+.auth-role-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  background: white;
+  transition: all 0.2s;
+}
+.auth-role-card-active .auth-role-select {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+.auth-terms {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary) !important;
+  cursor: pointer;
+}
+.auth-terms input[type="checkbox"] { accent-color: var(--primary); width: 16px; height: 16px; }
+@media (max-width: 400px) {
+  .auth-role-grid { grid-template-columns: 1fr; }
+}
 .auth-input-box { position: relative; }
 .auth-input-box input {
   width: 100%;

@@ -12,7 +12,10 @@ export const registerSchema = z.object({
     .string()
     .min(6, "Password must be at least 6 characters")
     .max(100),
-  role: z.enum(["ADMIN", "SELLER", "BIDDER"]).optional().default("BIDDER"),
+  // Public registration is limited to SELLER/BIDDER: ADMIN accounts are
+  // created/managed separately by existing admins, never via this form.
+  // Role is required — an empty/omitted role is rejected server-side.
+  role: z.enum(["SELLER", "BIDDER"], { message: "Please select an account role" }),
 });
 
 export const changePasswordSchema = z.object({

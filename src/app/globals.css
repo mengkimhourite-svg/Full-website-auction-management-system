@@ -673,8 +673,8 @@ h1, h2, h3, h4, h5, h6 {
   margin-top: 4px;
   font-size: 0.75rem;
   font-weight: 600;
-  padding: 4px 12px;
-  border-radius: 999px;
+  padding: 6px 14px;
+  border-radius: 5px;
   border: 1px solid var(--border);
   color: var(--text-secondary);
   background: white;

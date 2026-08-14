@@ -213,10 +213,10 @@ export default function RegisterForm() {
                   <span className="auth-role-select">
                     {selected ? (
                       <>
-                        <Check size={14} /> Selected
+                        <Check size={15} /> Selected
                       </>
                     ) : (
-                      "Select"
+                      "SELECT"
                     )}
                   </span>
                 </button>
